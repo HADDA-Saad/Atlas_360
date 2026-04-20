@@ -1,26 +1,234 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@custom-variant dark (&:is(.dark *));
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-sans);
   --font-mono: var(--font-geist-mono);
+  --font-heading: var(--font-heading);
+  --font-display: var(--font-display);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+
+  /* Atlas 360 brand palette */
+  --color-atlas-terracotta: #C1440E;
+  --color-atlas-terracotta-light: #D4622E;
+  --color-atlas-amber: #D4A574;
+  --color-atlas-sand: #E8D5B7;
+  --color-atlas-sand-muted: #BFA882;
+  --color-atlas-dark: #0F0D0A;
+  --color-atlas-surface: #1A1610;
+  --color-atlas-surface-raised: #231F18;
+  --color-atlas-warm-gray: #2D2720;
+  --color-atlas-text-primary: #F0E6D8;
+  --color-atlas-text-secondary: #8B7355;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+:root {
+  --background: #0F0D0A;
+  --foreground: #F0E6D8;
+  --card: #1A1610;
+  --card-foreground: #F0E6D8;
+  --popover: #1A1610;
+  --popover-foreground: #F0E6D8;
+  --primary: #C1440E;
+  --primary-foreground: #FFF8F0;
+  --secondary: #231F18;
+  --secondary-foreground: #E8D5B7;
+  --muted: #231F18;
+  --muted-foreground: #8B7355;
+  --accent: #2D2720;
+  --accent-foreground: #E8D5B7;
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: rgba(232, 213, 183, 0.08);
+  --input: rgba(232, 213, 183, 0.12);
+  --ring: #C1440E;
+  --chart-1: #C1440E;
+  --chart-2: #D4A574;
+  --chart-3: #E8D5B7;
+  --chart-4: #8B7355;
+  --chart-5: #231F18;
+  --radius: 0.625rem;
+  --sidebar: #141210;
+  --sidebar-foreground: #F0E6D8;
+  --sidebar-primary: #C1440E;
+  --sidebar-primary-foreground: #FFF8F0;
+  --sidebar-accent: #231F18;
+  --sidebar-accent-foreground: #E8D5B7;
+  --sidebar-border: rgba(232, 213, 183, 0.06);
+  --sidebar-ring: #C1440E;
+
+  --font-heading: var(--font-outfit);
+  --font-display: var(--font-cormorant);
+}
+
+/* No separate .dark block needed — the app is permanently dark */
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* ============================================
+   Atlas 360 — Custom Design System
+   ============================================ */
+
+/* Grain texture overlay for premium feel */
+@layer utilities {
+  .atlas-grain {
+    position: relative;
+  }
+  .atlas-grain::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    opacity: 0.03;
+    pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+    background-size: 128px 128px;
+    z-index: 1;
+  }
+
+  .atlas-glow {
+    box-shadow:
+      0 0 20px rgba(193, 68, 14, 0.08),
+      0 0 60px rgba(193, 68, 14, 0.04);
+  }
+}
+
+/* Staggered animations for list items */
+@keyframes atlas-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes atlas-slide-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes atlas-scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes atlas-pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(193, 68, 14, 0);
+  }
+  50% {
+    box-shadow: 0 0 16px 4px rgba(193, 68, 14, 0.15);
+  }
+}
+
+@keyframes atlas-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.atlas-stagger-item {
+  animation: atlas-fade-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  opacity: 0;
+}
+
+.atlas-slide-item {
+  animation: atlas-slide-in-right 0.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  opacity: 0;
+}
+
+/* Custom scrollbar for sidebar */
+.atlas-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.atlas-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.atlas-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(232, 213, 183, 0.12);
+  border-radius: 4px;
+}
+
+.atlas-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(232, 213, 183, 0.2);
+}
+
+/* Loading shimmer for skeletons */
+.atlas-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(232, 213, 183, 0.04) 25%,
+    rgba(232, 213, 183, 0.08) 50%,
+    rgba(232, 213, 183, 0.04) 75%
+  );
+  background-size: 200% 100%;
+  animation: atlas-shimmer 1.8s ease-in-out infinite;
 }
