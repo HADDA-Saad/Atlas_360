@@ -119,3 +119,4 @@ Currently, Atlas 360 operates on a standard authenticated user model. To manage 
 
 Distributed under the MIT License. See `LICENSE` for more information.
 
+---
