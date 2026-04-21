@@ -1,4 +1,4 @@
-<img width="497" height="95" alt="Capture d’écran 2026-04-21 013239" src="https://github.com/user-attachments/assets/cc0c2311-b11b-444f-ad20-3fdccbb78dff" />
+<img width="1041" height="585" alt="canvas" src="https://github.com/user-attachments/assets/366808e3-faa7-4466-91b8-425d508ee16b" />
   # Atlas 360
 
   **Immersive Moroccan Travel Itineraries in 360°**
