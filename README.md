@@ -113,32 +113,3 @@ Atlas 360 deviates from standard generic UI components to provide a luxurious ex
 
 Distributed under the MIT License. See `LICENSE` for more information.
 
----
-
-> [!NOTE]  
-> **How to upload this project to GitHub:**
-> 
-> 1. In your terminal, make sure you are in the project folder (`cd path/to/atlas-360`).
-> 2. Initialize a local Git repository (if one isn't already created):
->    ```bash
->    git init
->    ```
-> 3. Add all your project files to staging:
->    ```bash
->    git add .
->    ```
-> 4. Commit your changes:
->    ```bash
->    git commit -m "Initial commit: Atlas 360 MVP"
->    ```
-> 5. Create a new, empty repository on [GitHub](https://github.com/new). Do not check the boxes for "Add a README" or "Add .gitignore".
-> 6. Copy the URL of your new repository.
-> 7. Link your local repository to the new GitHub repository:
->    ```bash
->    git branch -M main
->    git remote add origin https://github.com/yourusername/your-repo-name.git
->    ```
-> 8. Push your code to GitHub:
->    ```bash
->    git push -u origin main
->    ```
