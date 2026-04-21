@@ -1,6 +1,4 @@
-<div align="center">
-  <img src="https://via.placeholder.com/1200x400/0F0D0A/D4A574?text=Atlas+360+-+Explore+Morocco+in+360" alt="Atlas 360 Banner" width="100%" />
-
+<img width="497" height="95" alt="Capture d’écran 2026-04-21 013239" src="https://github.com/user-attachments/assets/cc0c2311-b11b-444f-ad20-3fdccbb78dff" />
   # Atlas 360
 
   **Immersive Moroccan Travel Itineraries in 360°**
