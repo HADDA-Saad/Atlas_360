@@ -99,13 +99,19 @@ src/
 supabase/                 # SQL Migrations and Seed data
 ```
 
----
+## Authentication & Testing
 
-## Design System
+### Testing the Workflow
+1. Visit the **Sign Up** page and create a new account.
+2. By default, Supabase requires email confirmation. You can either:
+   - Click the confirmation link in the email sent to you.
+   - Go to your **Supabase Dashboard > Authentication > Users** and manually select "Confirm User".
+3. Once confirmed, you can use the **Login** page to access the full application state.
 
-Atlas 360 deviates from standard generic UI components to provide a luxurious experience:
-- **Palette**: Deep warm black (`#0F0D0A`) background coupled with Moroccan Terracotta (`#C1440E`) and Sand (`#E8D5B7`) accents.
-- **Typography:** *Cormorant Garamond* for elegant, display-sized headers and *Outfit* for all geometric, legible body text.
+### Creating an Admin Account
+Currently, Atlas 360 operates on a standard authenticated user model. To manage users or provide "admin" capabilities:
+- **User Management**: Use the **Supabase Dashboard > Authentication** section to view, confirm, or delete users.
+- **Admin Roles**: To restrict specific actions to admins in the future, you can add a `is_admin` boolean to your user metadata or a dedicated `profiles` table with role definitions.
 
 ---
 
