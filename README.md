@@ -1,7 +1,7 @@
 <img width="1041" height="585" alt="canvas" src="https://github.com/user-attachments/assets/366808e3-faa7-4466-91b8-425d508ee16b" />
-  # Atlas 360
-
-  **Immersive Moroccan Travel Itineraries in 360°**
+                                                                # Atlas 360
+                                                              
+                                                 **Immersive Moroccan Travel Itineraries in 360°**
 
 </div>
 
