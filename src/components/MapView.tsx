@@ -1,8 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useRef } from 'react'
-import { Map, AdvancedMarker, useMap } from '@vis.gl/react-google-maps'
-import MarkerPin from '@/components/MarkerPin'
+import { Map, Marker, useMap } from '@vis.gl/react-google-maps'
 import type { Location } from '@/types'
 
 interface MapViewProps {
@@ -84,26 +83,25 @@ export default function MapView({
       id="atlas360-map"
       defaultCenter={{ lat: 31.7917, lng: -7.0926 }}
       defaultZoom={6}
-      mapId="atlas360-map"
-      mapTypeId="roadmap"
+      mapTypeId="hybrid"
       gestureHandling="greedy"
       disableDefaultUI={false}
       clickableIcons={false}
       className="w-full h-full"
     >
       {sortedLocations.map((location) => (
-        <AdvancedMarker
+        <Marker
           key={location.id}
           position={{ lat: location.lat, lng: location.lng }}
+          title={location.name}
+          label={{
+            text: String(location.order_index),
+            color: 'white',
+            className: 'font-bold'
+          }}
           onClick={() => handleMarkerClick(location)}
           zIndex={selectedLocationId === location.id ? 10 : 1}
-        >
-          <MarkerPin
-            isSelected={selectedLocationId === location.id}
-            label={location.name}
-            index={location.order_index}
-          />
-        </AdvancedMarker>
+        />
       ))}
     </Map>
   )

@@ -32,28 +32,10 @@ export default function PanoramaModal({ location, isOpen, onClose }: PanoramaMod
       panControl: true,
       zoomControl: true,
       enableCloseButton: false,
-      visible: true // Keep true so the engine fetches data; CSS hides it
+      visible: false // Start hidden to prevent unnecessary tile loading
     })
 
     panoramaInstanceRef.current = panorama
-
-    // Listen for status changes
-    panorama.addListener('status_changed', () => {
-      const status = panorama.getStatus()
-      if (status === google.maps.StreetViewStatus.ZERO_RESULTS) {
-        setError('No 360° imagery available exactly here.')
-        setIsLoading(false)
-      } else if (status === google.maps.StreetViewStatus.OK) {
-        setError(null)
-        setIsLoading(false)
-      }
-    })
-
-    // Fallback: pano_changed also indicates successful load
-    panorama.addListener('pano_changed', () => {
-      setIsLoading(false)
-      setError(null)
-    })
 
     // Cleanup when component fully unmounts
     return () => {
@@ -66,29 +48,37 @@ export default function PanoramaModal({ location, isOpen, onClose }: PanoramaMod
   // 2. React to location or isOpen changes
   useEffect(() => {
     if (!isOpen) {
+      if (panoramaInstanceRef.current) {
+        panoramaInstanceRef.current.setVisible(false)
+      }
       setIsLoading(false)
       return
     }
     
-    if (!location || !panoramaInstanceRef.current) return
+    if (!location || !panoramaInstanceRef.current || !streetViewLib) return
 
     setIsLoading(true)
     setError(null)
+    panoramaInstanceRef.current.setVisible(true)
 
     // Force streetview to resize, helpful if it initialized when the container was scaled/hidden
     google.maps.event.trigger(panoramaInstanceRef.current, 'resize')
 
-    // Set the new location! This reuses the heavy Street View engine natively
     const position = { lat: location.lat, lng: location.lng }
     
-    // Safety timeout in case StreetView fails to fire events
-    const timeout = setTimeout(() => setIsLoading(false), 5000)
+    const svs = new streetViewLib.StreetViewService()
     
-    panoramaInstanceRef.current.setPosition(position)
-    panoramaInstanceRef.current.setPov({ heading: 0, pitch: 0 })
-
-    return () => clearTimeout(timeout)
-  }, [location, isOpen])
+    svs.getPanorama({ location: position, radius: 50 }, (data, status) => {
+      if (status === google.maps.StreetViewStatus.OK && data && data.location && data.location.pano) {
+        panoramaInstanceRef.current!.setPano(data.location.pano)
+        panoramaInstanceRef.current!.setPov({ heading: 0, pitch: 0 })
+        setError(null)
+      } else {
+        setError('No 360° imagery available exactly here.')
+      }
+      setIsLoading(false)
+    })
+  }, [location, isOpen, streetViewLib])
 
   // Handle escape key to close
   useEffect(() => {
