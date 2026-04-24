@@ -4,7 +4,6 @@ import { useState, useCallback } from 'react'
 import MapView from '@/components/MapView'
 import PanoramaModal from '@/components/PanoramaModal'
 import ItinerarySidebar from '@/components/ItinerarySidebar'
-import Navbar from '@/components/Navbar'
 import type { Itinerary, Location } from '@/types'
 
 interface AtlasAppProps {
@@ -63,9 +62,6 @@ export default function AtlasApp({ itineraries }: AtlasAppProps) {
 
   return (
     <div className="h-screen w-screen overflow-hidden flex flex-col bg-[#0F0D0A]">
-      {/* Navbar */}
-      <Navbar />
-
       {/* Main content: sidebar + map */}
       <div className="flex flex-1 min-h-0">
         {/* Sidebar */}

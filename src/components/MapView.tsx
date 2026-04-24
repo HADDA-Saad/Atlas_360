@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useRef } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Map, Marker, useMap } from '@vis.gl/react-google-maps'
 import type { Location } from '@/types'
 
@@ -78,31 +78,51 @@ export default function MapView({
     [onMarkerClick]
   )
 
+  const [mapTypeId, setMapTypeId] = useState<string>('roadmap')
+
   return (
-    <Map
-      id="atlas360-map"
-      defaultCenter={{ lat: 31.7917, lng: -7.0926 }}
-      defaultZoom={6}
-      mapTypeId="hybrid"
-      gestureHandling="greedy"
-      disableDefaultUI={false}
-      clickableIcons={false}
-      className="w-full h-full"
-    >
-      {sortedLocations.map((location) => (
-        <Marker
-          key={location.id}
-          position={{ lat: location.lat, lng: location.lng }}
-          title={location.name}
-          label={{
-            text: String(location.order_index),
-            color: 'white',
-            className: 'font-bold'
-          }}
-          onClick={() => handleMarkerClick(location)}
-          zIndex={selectedLocationId === location.id ? 10 : 1}
-        />
-      ))}
-    </Map>
+    <div className="relative w-full h-full">
+      {/* Map Type Toggle */}
+      <div className="absolute top-24 right-4 z-10 bg-[#0F0D0A]/90 backdrop-blur-md border border-[#C1440E]/30 rounded-lg p-1 flex shadow-lg">
+        <button 
+          onClick={() => setMapTypeId('roadmap')}
+          className={`px-4 py-2 text-[10px] font-bold uppercase tracking-widest rounded-md transition-colors ${mapTypeId === 'roadmap' ? 'bg-[#C1440E] text-white' : 'text-[#F0E6D8]/60 hover:text-[#C1440E]'}`}
+        >
+          Map
+        </button>
+        <button 
+          onClick={() => setMapTypeId('hybrid')}
+          className={`px-4 py-2 text-[10px] font-bold uppercase tracking-widest rounded-md transition-colors ${mapTypeId === 'hybrid' ? 'bg-[#C1440E] text-white' : 'text-[#F0E6D8]/60 hover:text-[#C1440E]'}`}
+        >
+          Satellite
+        </button>
+      </div>
+
+      <Map
+        id="atlas360-map"
+        defaultCenter={{ lat: 31.7917, lng: -7.0926 }}
+        defaultZoom={6}
+        mapTypeId={mapTypeId}
+        gestureHandling="greedy"
+        disableDefaultUI={true}
+        clickableIcons={false}
+        className="w-full h-full"
+      >
+        {sortedLocations.map((location) => (
+          <Marker
+            key={location.id}
+            position={{ lat: location.lat, lng: location.lng }}
+            title={location.name}
+            label={{
+              text: String(location.order_index),
+              color: 'white',
+              className: 'font-bold'
+            }}
+            onClick={() => handleMarkerClick(location)}
+            zIndex={selectedLocationId === location.id ? 10 : 1}
+          />
+        ))}
+      </Map>
+    </div>
   )
 }

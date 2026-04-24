@@ -1,0 +1,92 @@
+'use client'
+
+import Image from 'next/image'
+
+export default function HeritageSection() {
+  return (
+    <section className="bg-[#0F0D0A] py-24 md:py-32 border-b border-white/5">
+      <div className="max-w-7xl mx-auto px-6 md:px-12">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 items-center">
+          
+          {/* Left Column: Text */}
+          <div className="flex flex-col gap-8 order-2 lg:order-1">
+            <div className="flex flex-col gap-4">
+              <span className="text-[#C1440E] text-[10px] tracking-[0.3em] font-semibold uppercase">
+                Our Heritage
+              </span>
+              <h2 className="font-[family-name:var(--font-cormorant)] text-4xl md:text-5xl lg:text-6xl text-white font-semibold leading-tight">
+                Tradition meets <br className="hidden md:block" /> contemporary luxury.
+              </h2>
+            </div>
+            
+            <div className="flex flex-col gap-6 text-[#8B7355] text-base md:text-lg leading-relaxed font-light">
+              <p>
+                Atlas 360 was born from a passion for the untamed beauty of the Maghreb. 
+                We believe travel should be more than just movement; it should be an 
+                immersion into the rhythm of a culture that has endured for millennia.
+              </p>
+              <p>
+                Our mission is to bridge the gap between the ancient soul of Morocco and 
+                the needs of the modern traveler. Every itinerary is a hand-crafted 
+                narrative, designed to lead you through secret medinas, towering peaks, 
+                and the infinite stillness of the Sahara.
+              </p>
+            </div>
+
+            <div className="pt-4 flex items-center gap-4">
+              <div className="h-[1px] w-12 bg-[#C1440E]"></div>
+              <span className="font-[family-name:var(--font-cormorant)] italic text-[#F0E6D8] text-xl">
+                The Atlas 360 Founders
+              </span>
+            </div>
+          </div>
+
+          {/* Right Column: Masonry Image Grid */}
+          <div className="order-1 lg:order-2 grid grid-cols-2 gap-4 md:gap-6 relative">
+            {/* Top Left Image */}
+            <div className="flex items-end">
+              <div className="relative w-full aspect-square rounded-sm overflow-hidden group">
+                <img
+                  src="https://images.unsplash.com/photo-1538964522858-a5da14eb611a?q=80&w=800&auto=format&fit=crop"
+                  alt="Moroccan geometric tile pattern"
+                  className="object-cover w-full h-full transform group-hover:scale-105 transition-transform duration-700"
+                />
+              </div>
+            </div>
+            {/* Top Right Image */}
+            <div className="flex items-start pt-12">
+              <div className="relative w-full aspect-[4/3] rounded-sm overflow-hidden group">
+                <img
+                  src="https://images.unsplash.com/photo-1596564251268-d06909fa658d?q=80&w=800&auto=format&fit=crop"
+                  alt="Colorful spices in a souk"
+                  className="object-cover w-full h-full transform group-hover:scale-105 transition-transform duration-700"
+                />
+              </div>
+            </div>
+            {/* Bottom Left Image */}
+            <div className="flex items-start">
+              <div className="relative w-full aspect-[4/3] rounded-sm overflow-hidden group">
+                <img
+                  src="https://images.unsplash.com/photo-1539020140153-e479b8c22e70?q=80&w=800&auto=format&fit=crop"
+                  alt="Traditional Moroccan courtyard riad"
+                  className="object-cover w-full h-full transform group-hover:scale-105 transition-transform duration-700"
+                />
+              </div>
+            </div>
+            {/* Bottom Right Image */}
+            <div className="flex items-start -mt-12">
+              <div className="relative w-full aspect-[3/4] rounded-sm overflow-hidden group">
+                <img
+                  src="https://images.unsplash.com/photo-1596324121712-5bbc14482174?q=80&w=800&auto=format&fit=crop"
+                  alt="Woven Moroccan rug"
+                  className="object-cover w-full h-full transform group-hover:scale-105 transition-transform duration-700"
+                />
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+  )
+}
