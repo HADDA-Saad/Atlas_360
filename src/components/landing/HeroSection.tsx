@@ -8,7 +8,7 @@ export default function HeroSection() {
       {/* Background Image */}
       <div 
         className="absolute inset-0 bg-cover bg-center bg-no-repeat z-0"
-        style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1542384701-c0e46e0eda04?q=80&w=2500&auto=format&fit=crop")' }}
+        style={{ backgroundImage: 'url("/Images/sunset backfground.png")' }}
       >
         {/* Gradient Overlay for text readability */}
         <div className="absolute inset-0 bg-gradient-to-t from-[#0F0D0A] via-[#0F0D0A]/50 to-transparent"></div>

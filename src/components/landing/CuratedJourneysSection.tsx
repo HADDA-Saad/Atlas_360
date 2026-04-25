@@ -8,21 +8,21 @@ const FEATURED_ITINERARIES = [
     title: 'The Red City & Beyond',
     duration: '7 DAYS',
     description: 'Immerse yourself in the vibrant soul of Marrakech before retreating to the peaceful foothills of the High Atlas.',
-    image: 'https://images.unsplash.com/photo-1597212618440-806262de4f6b?q=80&w=800&auto=format&fit=crop',
+    image: '/Images/jame3.png',
   },
   {
     id: 'sahara-sands',
     title: 'Sands of the Sahara',
     duration: '12 DAYS',
     description: 'A majestic odyssey through the kasbahs of Ouarzazate to the towering golden dunes of Erg Chebbi.',
-    image: 'https://images.unsplash.com/photo-1534081048604-ee9c3d406bd5?q=80&w=800&auto=format&fit=crop',
+    image: '/Images/camels.png',
   },
   {
     id: 'coastal-whispers',
     title: 'Coastal Whispers',
     duration: '5 DAYS',
     description: 'Experience the bohemian breeze of Essaouira and the pristine sun-drenched beaches of the Atlantic coast.',
-    image: 'https://images.unsplash.com/photo-1558293731-9257d0799d63?q=80&w=800&auto=format&fit=crop',
+    image: '/Images/sea.png',
   }
 ]
 

@@ -1,7 +1,8 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Map, Marker, useMap } from '@vis.gl/react-google-maps'
+import { Map, AdvancedMarker, useMap } from '@vis.gl/react-google-maps'
+import MarkerPin from '@/components/MarkerPin'
 import type { Location } from '@/types'
 
 interface MapViewProps {
@@ -71,6 +72,23 @@ export default function MapView({
     }
   }, [map, selectedLocationId, locations])
 
+  // Fit map bounds when itinerary is selected (locations load) but no specific location is selected
+  useEffect(() => {
+    if (!map || locations.length === 0 || selectedLocationId) return
+
+    const bounds = new window.google.maps.LatLngBounds()
+    locations.forEach((loc) => {
+      bounds.extend({ lat: loc.lat, lng: loc.lng })
+    })
+
+    if (locations.length === 1) {
+      map.panTo({ lat: locations[0].lat, lng: locations[0].lng })
+      map.setZoom(12)
+    } else {
+      map.fitBounds(bounds, 100)
+    }
+  }, [map, locations, selectedLocationId])
+
   const handleMarkerClick = useCallback(
     (location: Location) => {
       onMarkerClick(location)
@@ -79,6 +97,12 @@ export default function MapView({
   )
 
   const [mapTypeId, setMapTypeId] = useState<string>('roadmap')
+
+  useEffect(() => {
+    if (map) {
+      map.setMapTypeId(mapTypeId)
+    }
+  }, [map, mapTypeId])
 
   return (
     <div className="relative w-full h-full">
@@ -100,6 +124,7 @@ export default function MapView({
 
       <Map
         id="atlas360-map"
+        mapId="DEMO_MAP_ID"
         defaultCenter={{ lat: 31.7917, lng: -7.0926 }}
         defaultZoom={6}
         mapTypeId={mapTypeId}
@@ -109,18 +134,19 @@ export default function MapView({
         className="w-full h-full"
       >
         {sortedLocations.map((location) => (
-          <Marker
+          <AdvancedMarker
             key={location.id}
             position={{ lat: location.lat, lng: location.lng }}
             title={location.name}
-            label={{
-              text: String(location.order_index),
-              color: 'white',
-              className: 'font-bold'
-            }}
             onClick={() => handleMarkerClick(location)}
             zIndex={selectedLocationId === location.id ? 10 : 1}
-          />
+          >
+            <MarkerPin
+              isSelected={selectedLocationId === location.id}
+              label={location.name}
+              index={location.order_index}
+            />
+          </AdvancedMarker>
         ))}
       </Map>
     </div>

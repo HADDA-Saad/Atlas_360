@@ -47,7 +47,7 @@ export default function HeritageSection() {
             <div className="flex items-end">
               <div className="relative w-full aspect-square rounded-sm overflow-hidden group">
                 <img
-                  src="https://images.unsplash.com/photo-1538964522858-a5da14eb611a?q=80&w=800&auto=format&fit=crop"
+                  src="/Images/Zellige.png"
                   alt="Moroccan geometric tile pattern"
                   className="object-cover w-full h-full transform group-hover:scale-105 transition-transform duration-700"
                 />
@@ -57,7 +57,7 @@ export default function HeritageSection() {
             <div className="flex items-start pt-12">
               <div className="relative w-full aspect-[4/3] rounded-sm overflow-hidden group">
                 <img
-                  src="https://images.unsplash.com/photo-1596564251268-d06909fa658d?q=80&w=800&auto=format&fit=crop"
+                  src="/Images/spices.png"
                   alt="Colorful spices in a souk"
                   className="object-cover w-full h-full transform group-hover:scale-105 transition-transform duration-700"
                 />
@@ -67,7 +67,7 @@ export default function HeritageSection() {
             <div className="flex items-start">
               <div className="relative w-full aspect-[4/3] rounded-sm overflow-hidden group">
                 <img
-                  src="https://images.unsplash.com/photo-1539020140153-e479b8c22e70?q=80&w=800&auto=format&fit=crop"
+                  src="/Images/riad.png"
                   alt="Traditional Moroccan courtyard riad"
                   className="object-cover w-full h-full transform group-hover:scale-105 transition-transform duration-700"
                 />
@@ -77,7 +77,7 @@ export default function HeritageSection() {
             <div className="flex items-start -mt-12">
               <div className="relative w-full aspect-[3/4] rounded-sm overflow-hidden group">
                 <img
-                  src="https://images.unsplash.com/photo-1596324121712-5bbc14482174?q=80&w=800&auto=format&fit=crop"
+                  src="/Images/Zerbia.png"
                   alt="Woven Moroccan rug"
                   className="object-cover w-full h-full transform group-hover:scale-105 transition-transform duration-700"
                 />
