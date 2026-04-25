@@ -42,9 +42,10 @@ export default function HeritageSection() {
           </div>
 
           {/* Right Column: Masonry Image Grid */}
-          <div className="order-1 lg:order-2 grid grid-cols-2 gap-4 md:gap-6 relative">
-            {/* Top Left Image */}
-            <div className="flex items-end">
+          <div className="order-1 lg:order-2 grid grid-cols-2 gap-4 md:gap-6">
+            {/* Left Column of Grid */}
+            <div className="flex flex-col gap-4 md:gap-6 pt-12">
+              {/* Top Left Image */}
               <div className="relative w-full aspect-square rounded-sm overflow-hidden group">
                 <img
                   src="/Images/Zellige.png"
@@ -52,19 +53,7 @@ export default function HeritageSection() {
                   className="object-cover w-full h-full transform group-hover:scale-105 transition-transform duration-700"
                 />
               </div>
-            </div>
-            {/* Top Right Image */}
-            <div className="flex items-start pt-12">
-              <div className="relative w-full aspect-[4/3] rounded-sm overflow-hidden group">
-                <img
-                  src="/Images/spices.png"
-                  alt="Colorful spices in a souk"
-                  className="object-cover w-full h-full transform group-hover:scale-105 transition-transform duration-700"
-                />
-              </div>
-            </div>
-            {/* Bottom Left Image */}
-            <div className="flex items-start">
+              {/* Bottom Left Image */}
               <div className="relative w-full aspect-[4/3] rounded-sm overflow-hidden group">
                 <img
                   src="/Images/riad.png"
@@ -73,8 +62,18 @@ export default function HeritageSection() {
                 />
               </div>
             </div>
-            {/* Bottom Right Image */}
-            <div className="flex items-start -mt-12">
+
+            {/* Right Column of Grid */}
+            <div className="flex flex-col gap-4 md:gap-6">
+              {/* Top Right Image */}
+              <div className="relative w-full aspect-[4/3] rounded-sm overflow-hidden group">
+                <img
+                  src="/Images/spices.png"
+                  alt="Colorful spices in a souk"
+                  className="object-cover w-full h-full transform group-hover:scale-105 transition-transform duration-700"
+                />
+              </div>
+              {/* Bottom Right Image */}
               <div className="relative w-full aspect-[3/4] rounded-sm overflow-hidden group">
                 <img
                   src="/Images/Zerbia.png"
