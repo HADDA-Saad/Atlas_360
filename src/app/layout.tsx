@@ -33,7 +33,7 @@ export default function RootLayout({
       lang="en"
       className={`${outfit.variable} ${cormorant.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col font-[family-name:var(--font-outfit)] bg-[#0F0D0A]">
+      <body suppressHydrationWarning className="min-h-full flex flex-col font-[family-name:var(--font-outfit)] bg-[#0F0D0A]">
         <Navbar />
         <main className="flex-1 flex flex-col min-h-0">
           {children}

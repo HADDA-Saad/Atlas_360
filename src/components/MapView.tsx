@@ -3,13 +3,17 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Map, AdvancedMarker, useMap } from '@vis.gl/react-google-maps'
 import MarkerPin from '@/components/MarkerPin'
-import type { Location } from '@/types'
+import PlaceMarker from '@/components/PlaceMarker'
+import type { Location, PlaceResult, PlaceType } from '@/types'
 
 interface MapViewProps {
   locations: Location[]
-  onMarkerClick: (location: Location) => void
+  onMarkerClick?: (location: Location) => void
   selectedLocationId?: string
   itineraryPath?: boolean
+  hotelPlaces?: PlaceResult[]
+  restaurantPlaces?: PlaceResult[]
+  onPlaceMarkerClick?: (place: PlaceResult) => void
 }
 
 export default function MapView({
@@ -17,6 +21,9 @@ export default function MapView({
   onMarkerClick,
   selectedLocationId,
   itineraryPath = false,
+  hotelPlaces,
+  restaurantPlaces,
+  onPlaceMarkerClick,
 }: MapViewProps) {
   const map = useMap('atlas360-map')
   const polylineRef = useRef<google.maps.Polyline | null>(null)
@@ -91,7 +98,7 @@ export default function MapView({
 
   const handleMarkerClick = useCallback(
     (location: Location) => {
-      onMarkerClick(location)
+      if (onMarkerClick) onMarkerClick(location)
     },
     [onMarkerClick]
   )
@@ -147,6 +154,24 @@ export default function MapView({
               index={location.order_index}
             />
           </AdvancedMarker>
+        ))}
+
+        {hotelPlaces && onPlaceMarkerClick && hotelPlaces.map((place) => (
+          <PlaceMarker
+            key={place.place_id}
+            place={place}
+            placeType="lodging"
+            onClick={onPlaceMarkerClick}
+          />
+        ))}
+
+        {restaurantPlaces && onPlaceMarkerClick && restaurantPlaces.map((place) => (
+          <PlaceMarker
+            key={place.place_id}
+            place={place}
+            placeType="restaurant"
+            onClick={onPlaceMarkerClick}
+          />
         ))}
       </Map>
     </div>

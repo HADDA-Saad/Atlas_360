@@ -5,12 +5,14 @@ import Link from 'next/link'
 import { useRouter, usePathname } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import type { User } from '@supabase/supabase-js'
+import type { UserTier } from '@/types'
 
 export default function Navbar() {
   const router = useRouter()
   const pathname = usePathname()
   const [scrolled, setScrolled] = useState(false)
   const [user, setUser] = useState<User | null>(null)
+  const [tier, setTier] = useState<UserTier | null>(null)
   const [isLoggingOut, setIsLoggingOut] = useState(false)
 
   useEffect(() => {
@@ -28,6 +30,10 @@ export default function Navbar() {
     const getUser = async () => {
       const { data: { user: currentUser } } = await supabase.auth.getUser()
       setUser(currentUser)
+      if (currentUser) {
+        const { data } = await supabase.from('profiles').select('tier').eq('id', currentUser.id).single()
+        if (data) setTier(data.tier)
+      }
     }
     getUser()
 
@@ -35,6 +41,9 @@ export default function Navbar() {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (_event, session) => {
         setUser(session?.user ?? null)
+        if (!session?.user) {
+          setTier(null)
+        }
       }
     )
 
@@ -52,6 +61,9 @@ export default function Navbar() {
     }
   }
 
+  // Hide navbar on /explore page
+  if (pathname === '/explore') return null
+
   return (
     <nav
       className={`
@@ -59,9 +71,10 @@ export default function Navbar() {
         flex items-center justify-between
         px-6 md:px-8 h-16
         transition-all duration-500 ease-out
-        ${scrolled
+        border-b border-white/5
+        ${scrolled || pathname === '/'
           ? 'bg-[#0F0D0A]/90 backdrop-blur-xl shadow-lg shadow-black/20'
-          : 'bg-gradient-to-b from-[#0F0D0A]/80 to-transparent'
+          : 'bg-[#0F0D0A]/90 backdrop-blur-xl'
         }
       `}
     >
@@ -102,7 +115,7 @@ export default function Navbar() {
             Atlas
             <span className="text-[#C1440E] ml-1">360</span>
           </span>
-          <span className="text-[10px] uppercase tracking-[0.25em] text-[#8B7355] -mt-1 hidden sm:block">
+          <span className="text-[9px] uppercase tracking-widest text-[#8B7355] -mt-1 hidden sm:block">
             Explore Morocco
           </span>
         </div>
@@ -110,13 +123,13 @@ export default function Navbar() {
 
       {/* Center Links */}
       <div className="hidden md:flex items-center gap-8 absolute left-1/2 -translate-x-1/2">
-        {pathname === '/explore' && (
-          <Link href="/" className="text-[11px] font-semibold tracking-[0.2em] text-[#F0E6D8]/80 hover:text-[#C1440E] transition-colors">HOME</Link>
+        {pathname !== '/' && (
+          <Link href="/" className="text-[11px] font-medium tracking-[0.2em] text-[#F0E6D3]/70 hover:text-[#C1440E] transition-all duration-200">HOME</Link>
         )}
-        <Link href="/explore" className="text-[11px] font-semibold tracking-[0.2em] text-[#F0E6D8]/80 hover:text-[#C1440E] transition-colors">ITINERARIES</Link>
-        <Link href="#" className="text-[11px] font-semibold tracking-[0.2em] text-[#F0E6D8]/80 hover:text-[#C1440E] transition-colors">DESTINATIONS</Link>
-        <Link href="#" className="text-[11px] font-semibold tracking-[0.2em] text-[#F0E6D8]/80 hover:text-[#C1440E] transition-colors">ABOUT</Link>
-        <Link href="#" className="text-[11px] font-semibold tracking-[0.2em] text-[#F0E6D8]/80 hover:text-[#C1440E] transition-colors">JOURNAL</Link>
+        <Link href="/explore" className="text-[11px] font-medium tracking-[0.2em] text-[#F0E6D3]/70 hover:text-[#C1440E] transition-all duration-200">ITINERARIES</Link>
+        <Link href="/pricing" className="text-[11px] font-medium tracking-[0.2em] text-[#F0E6D3]/70 hover:text-[#C1440E] transition-all duration-200">PRICING</Link>
+        <Link href="/destinations" className="text-[11px] font-medium tracking-[0.2em] text-[#F0E6D3]/70 hover:text-[#C1440E] transition-all duration-200">DESTINATIONS</Link>
+        <Link href="/about" className="text-[11px] font-medium tracking-[0.2em] text-[#F0E6D3]/70 hover:text-[#C1440E] transition-all duration-200">ABOUT</Link>
       </div>
 
       {/* Right side — Auth */}
@@ -132,10 +145,24 @@ export default function Navbar() {
                     {user.email?.charAt(0) ?? 'U'}
                   </span>
                 </div>
-                <span className="text-[13px] text-[#BFA882] max-w-[160px] truncate">
-                  {user.email}
-                </span>
+                <div className="flex flex-col">
+                  <span className="text-[13px] text-[#BFA882] max-w-[160px] truncate leading-tight">
+                    {user.email}
+                  </span>
+                  {tier && (
+                    <span className="text-[10px] font-semibold text-[#C1440E] uppercase tracking-widest mt-0.5">
+                      {tier}
+                    </span>
+                  )}
+                </div>
               </div>
+
+              <Link
+                href="/dashboard"
+                className="hidden md:block text-[11px] font-semibold tracking-[0.2em] text-[#F0E6D8]/80 hover:text-[#C1440E] transition-colors mx-2"
+              >
+                MY ACCOUNT
+              </Link>
 
               {/* Logout button */}
               <button

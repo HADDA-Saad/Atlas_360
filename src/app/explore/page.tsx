@@ -1,6 +1,16 @@
 import { createClient } from '@/lib/supabase/server'
 import MapProvider from '@/components/MapProvider'
 import type { Itinerary } from '@/types'
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Explore Morocco | Atlas 360',
+  description: "Discover immersive 360° itineraries across Morocco's most iconic destinations.",
+  openGraph: {
+    title: 'Explore Morocco | Atlas 360',
+    description: "Discover immersive 360° itineraries across Morocco's most iconic destinations.",
+  },
+}
 
 export default async function Home() {
   // Fetch itineraries server-side

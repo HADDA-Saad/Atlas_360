@@ -4,7 +4,8 @@ import { useState, useCallback } from 'react'
 import MapView from '@/components/MapView'
 import PanoramaModal from '@/components/PanoramaModal'
 import ItinerarySidebar from '@/components/ItinerarySidebar'
-import type { Itinerary, Location } from '@/types'
+import PlaceCard from '@/components/PlaceCard'
+import type { Itinerary, Location, PlaceResult } from '@/types'
 
 interface AtlasAppProps {
   itineraries: Itinerary[]
@@ -16,6 +17,11 @@ export default function AtlasApp({ itineraries }: AtlasAppProps) {
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(null)
   const [isPanoramaOpen, setIsPanoramaOpen] = useState(false)
   const [isLoadingLocations, setIsLoadingLocations] = useState(false)
+  const [selectedPlace, setSelectedPlace] = useState<PlaceResult | null>(null)
+  const [isPlacePopoverOpen, setIsPlacePopoverOpen] = useState(false)
+  const [activeTab, setActiveTab] = useState<'stops' | 'places'>('stops')
+  const [hotels, setHotels] = useState<PlaceResult[]>([])
+  const [restaurants, setRestaurants] = useState<PlaceResult[]>([])
 
   // Fetch locations when an itinerary is selected
   const handleItinerarySelect = useCallback(async (itinerary: Itinerary) => {
@@ -60,6 +66,11 @@ export default function AtlasApp({ itineraries }: AtlasAppProps) {
     setIsPanoramaOpen(false)
   }, [])
 
+  const handlePlaceMarkerClick = useCallback((place: PlaceResult) => {
+    setSelectedPlace(place)
+    setIsPlacePopoverOpen(true)
+  }, [])
+
   return (
     <div className="h-screen w-screen overflow-hidden flex flex-col bg-[#0F0D0A]">
       {/* Main content: sidebar + map */}
@@ -74,6 +85,8 @@ export default function AtlasApp({ itineraries }: AtlasAppProps) {
           onLocationSelect={handleLocationSelect}
           onBack={handleBack}
           isLoadingLocations={isLoadingLocations}
+          onTabChange={setActiveTab}
+          onPlacesLoaded={(h, r) => { setHotels(h); setRestaurants(r) }}
         />
 
         {/* Map area */}
@@ -109,6 +122,9 @@ export default function AtlasApp({ itineraries }: AtlasAppProps) {
             onMarkerClick={handleMarkerClick}
             selectedLocationId={selectedLocation?.id}
             itineraryPath={locations.length > 0}
+            onPlaceMarkerClick={handlePlaceMarkerClick}
+            hotelPlaces={activeTab === 'places' ? hotels : []}
+            restaurantPlaces={activeTab === 'places' ? restaurants : []}
           />
         </div>
       </div>
@@ -119,6 +135,21 @@ export default function AtlasApp({ itineraries }: AtlasAppProps) {
         isOpen={isPanoramaOpen}
         onClose={handlePanoramaClose}
       />
+
+      {/* Place Popover Overlay */}
+      {isPlacePopoverOpen && selectedPlace && (
+        <div className="fixed bottom-4 right-4 z-[40] w-full max-w-[320px] bg-[#1A1814] border border-white/10 rounded-xl shadow-2xl">
+          <button 
+            onClick={() => setIsPlacePopoverOpen(false)}
+            className="absolute top-2 right-2 text-[#8B7355] hover:text-[#C1440E] transition-colors p-1 z-10"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+          </button>
+          <div className="p-1 pt-6">
+            <PlaceCard place={selectedPlace} type="lodging" />
+          </div>
+        </div>
+      )}
     </div>
   )
 }
