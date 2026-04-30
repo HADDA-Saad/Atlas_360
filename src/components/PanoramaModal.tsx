@@ -18,63 +18,58 @@ export default function PanoramaModal({ location, isOpen, onClose }: PanoramaMod
 
   const streetViewLib = useMapsLibrary('streetView')
 
-  // 1. Initialize the StreetView instance exactly ONCE to prevent heavy recalculations
+  // We will initialize the panorama when it's open and location is present.
+  // Clean it up when closed.
+
+  // React to location or isOpen changes
   useEffect(() => {
-    if (!streetViewLib || !panoramaRef.current || panoramaInstanceRef.current) return
-
-    // Create the persistent panorama instance
-    const panorama = new streetViewLib.StreetViewPanorama(panoramaRef.current, {
-      pov: { heading: 0, pitch: 0 },
-      motionTracking: false,
-      addressControl: false,
-      fullscreenControl: true,
-      linksControl: true,
-      panControl: true,
-      zoomControl: true,
-      enableCloseButton: false,
-      visible: false // Start hidden to prevent unnecessary tile loading
-    })
-
-    panoramaInstanceRef.current = panorama
-
-    // Cleanup when component fully unmounts
-    return () => {
-      if (panoramaInstanceRef.current) {
+    if (!isOpen || !location || !streetViewLib || !panoramaRef.current) {
+      if (!isOpen && panoramaInstanceRef.current) {
         google.maps.event.clearInstanceListeners(panoramaInstanceRef.current)
-      }
-    }
-  }, [streetViewLib])
-
-  // 2. React to location or isOpen changes
-  useEffect(() => {
-    if (!isOpen) {
-      if (panoramaInstanceRef.current) {
-        panoramaInstanceRef.current.setVisible(false)
+        panoramaInstanceRef.current = null
       }
       setIsLoading(false)
       return
     }
-    
-    if (!location || !panoramaInstanceRef.current || !streetViewLib) return
 
     setIsLoading(true)
     setError(null)
-    panoramaInstanceRef.current.setVisible(true)
 
-    // Force streetview to resize, helpful if it initialized when the container was scaled/hidden
-    google.maps.event.trigger(panoramaInstanceRef.current, 'resize')
+    // Recreate panorama instance each time it opens to prevent black screen issues
+    // caused by resizing or CSS visibility transitions.
+    if (!panoramaInstanceRef.current) {
+      panoramaInstanceRef.current = new streetViewLib.StreetViewPanorama(panoramaRef.current, {
+        pov: { heading: 0, pitch: 0 },
+        motionTracking: false,
+        addressControl: false,
+        fullscreenControl: true,
+        linksControl: true,
+        panControl: true,
+        zoomControl: true,
+        enableCloseButton: false,
+        visible: true
+      })
+    }
 
     const position = { lat: location.lat, lng: location.lng }
-    
     const svs = new streetViewLib.StreetViewService()
     
     svs.getPanorama({ location: position, radius: 50 }, (data, status) => {
       if (status === google.maps.StreetViewStatus.OK && data && data.location && data.location.pano) {
         panoramaInstanceRef.current!.setPano(data.location.pano)
         panoramaInstanceRef.current!.setPov({ heading: 0, pitch: 0 })
+        // Delaying resize just in case the CSS transition is still animating
+        setTimeout(() => {
+          if (panoramaInstanceRef.current) {
+            google.maps.event.trigger(panoramaInstanceRef.current, 'resize')
+          }
+        }, 100)
         setError(null)
       } else {
         setError('No 360° imagery available exactly here.')
+        if (panoramaInstanceRef.current) {
+          panoramaInstanceRef.current.setVisible(false)
+        }
       }
       setIsLoading(false)
     })
