@@ -21,7 +21,7 @@ export default async function SuccessPage({
   let session
   try {
     session = await stripe.checkout.sessions.retrieve(sessionId, {
-      expand: ['subscription'],
+      expand: ['subscription.items'],
     })
   } catch (error) {
     redirect('/explore')
@@ -32,8 +32,11 @@ export default async function SuccessPage({
   
   let nextBillingDate = ''
   if (session.subscription && typeof session.subscription !== 'string') {
-    const date = new Date(session.subscription.current_period_end * 1000)
-    nextBillingDate = `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()}`
+    const firstItem = session.subscription.items?.data?.[0]
+    if (firstItem) {
+      const date = new Date(firstItem.current_period_end * 1000)
+      nextBillingDate = `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()}`
+    }
   }
 
   return (

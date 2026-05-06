@@ -10,7 +10,9 @@ interface MapProviderProps {
 
 export default function MapProvider({ itineraries }: MapProviderProps) {
   return (
-    <APIProvider apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ''}>
+    <APIProvider
+      apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ''}
+      region="MA">
       <AtlasApp itineraries={itineraries} />
     </APIProvider>
   )

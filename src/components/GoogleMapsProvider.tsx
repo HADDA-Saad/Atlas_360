@@ -5,7 +5,8 @@ import React from 'react'
 
 export default function GoogleMapsProvider({ children }: { children: React.ReactNode }) {
   return (
-    <APIProvider apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ''}>
+    <APIProvider
+      apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ''} region="MA">
       {children}
     </APIProvider>
   )
