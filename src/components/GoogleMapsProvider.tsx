@@ -44,6 +44,7 @@ export default function GoogleMapsProvider({ children }: { children: React.React
   return (
     <APIProvider
       apiKey={googleMapsApiKey}
+      region="MA"
       onError={() => setLoadError(true)}
     >
       {children}

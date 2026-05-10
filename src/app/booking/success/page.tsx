@@ -21,7 +21,7 @@ export default async function SuccessPage({
   let session
   try {
     session = await stripe.checkout.sessions.retrieve(sessionId, {
-      expand: ['subscription'],
+      expand: ['subscription.items'],
     })
   } catch {
     redirect('/explore')

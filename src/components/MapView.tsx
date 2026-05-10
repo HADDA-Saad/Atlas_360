@@ -117,13 +117,13 @@ export default function MapView({
     <div className="relative w-full h-full">
       {/* Map Type Toggle */}
       <div className="absolute top-24 right-4 z-10 bg-[#0F0D0A]/90 backdrop-blur-md border border-[#C1440E]/30 rounded-lg p-1 flex shadow-lg">
-        <button 
+        <button
           onClick={() => setMapTypeId('roadmap')}
           className={`px-4 py-2 text-[10px] font-bold uppercase tracking-widest rounded-md transition-colors ${mapTypeId === 'roadmap' ? 'bg-[#C1440E] text-white' : 'text-[#F0E6D8]/60 hover:text-[#C1440E]'}`}
         >
           Map
         </button>
-        <button 
+        <button
           onClick={() => setMapTypeId('hybrid')}
           className={`px-4 py-2 text-[10px] font-bold uppercase tracking-widest rounded-md transition-colors ${mapTypeId === 'hybrid' ? 'bg-[#C1440E] text-white' : 'text-[#F0E6D8]/60 hover:text-[#C1440E]'}`}
         >
