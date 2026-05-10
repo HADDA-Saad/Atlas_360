@@ -3,6 +3,7 @@ import Link from 'next/link'
 import MapView from '@/components/MapView'
 import GoogleMapsProvider from '@/components/GoogleMapsProvider'
 import PDFDownloadButton from '@/components/pdf/PDFDownloadButton'
+import ReviewPanel from '@/components/reviews/ReviewPanel'
 import type { Itinerary, Location, UserTier } from '@/types'
 import type { Metadata } from 'next'
 
@@ -208,6 +209,8 @@ export default async function PublicItineraryPage({
   let description: string | null = null
   let isOwner = false
   let stops: PublicStop[] = []
+  let reviewItineraryId: string | null = null
+  let pdfCoverImageUrl: string | null = null
 
   if (customItinerary) {
     isOwner = Boolean(user && user.id === customItinerary.user_id)
@@ -219,6 +222,7 @@ export default async function PublicItineraryPage({
     title = customItinerary.title
     description = customItinerary.description
     stops = customItinerary.user_itinerary_stops || []
+    pdfCoverImageUrl = stops[0]?.locations.image_url || null
   } else {
     const { data: curatedData, error: curatedError } = await supabase
       .from('itineraries')
@@ -249,6 +253,8 @@ export default async function PublicItineraryPage({
 
     title = curatedItinerary.title
     description = curatedItinerary.description
+    reviewItineraryId = curatedItinerary.id
+    pdfCoverImageUrl = curatedItinerary.cover_image_url
     stops = (curatedStops as Location[] | null || []).map((location) => ({
       day_number: location.day_number || 1,
       order_index: location.order_index,
@@ -289,11 +295,16 @@ export default async function PublicItineraryPage({
             <span className="text-[11px] uppercase tracking-widest text-[#8B7355] font-semibold">
               {stops.length} stops | {Object.keys(groupedByDay).length} days
             </span>
-            {isOwner && (
-              <Link href="/compose" className="text-[10px] uppercase tracking-widest text-[#C1440E] hover:text-[#D4622E] border border-[#C1440E]/30 px-3 py-1.5 rounded-full transition-colors">
-                Open Composer
+            <div className="flex items-center gap-2">
+              <Link href={`/itinerary/${id}/magazine`} className="text-[10px] uppercase tracking-widest text-[#C1440E] hover:text-[#D4622E] border border-[#C1440E]/30 px-3 py-1.5 rounded-full transition-colors">
+                Magazine
               </Link>
-            )}
+              {isOwner && (
+                <Link href="/compose" className="text-[10px] uppercase tracking-widest text-[#C1440E] hover:text-[#D4622E] border border-[#C1440E]/30 px-3 py-1.5 rounded-full transition-colors">
+                  Open Composer
+                </Link>
+              )}
+            </div>
           </div>
         </div>
 
@@ -351,11 +362,21 @@ export default async function PublicItineraryPage({
                 transport_duration_minutes: stop.locations.transport_duration_minutes ?? null,
                 best_time: stop.locations.best_time ?? null,
                 tips: stop.locations.tips ?? null,
+                image_url: stop.locations.image_url ?? null,
               }))}
               title={title}
               userEmail={viewerEmail}
               tier={viewerTier}
+              coverImageUrl={pdfCoverImageUrl}
             />
+
+            {reviewItineraryId && (
+              <ReviewPanel
+                targetType="itinerary"
+                itineraryId={reviewItineraryId}
+                title="Journey feedback"
+              />
+            )}
           </div>
         </div>
       </div>

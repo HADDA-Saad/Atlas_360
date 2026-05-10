@@ -49,3 +49,26 @@ export interface PlaceResult {
 }
 
 export type PlaceType = 'lodging' | 'restaurant'
+
+export type ReviewTargetType = 'itinerary' | 'location'
+
+export interface Review {
+  id: string
+  user_id: string
+  target_type: ReviewTargetType
+  itinerary_id: string | null
+  location_id: string | null
+  rating: number
+  body: string
+  status: 'published' | 'hidden'
+  created_at: string
+  updated_at: string
+  is_own?: boolean
+}
+
+export interface ReviewsResponse {
+  reviews: Review[]
+  averageRating: number | null
+  reviewCount: number
+  viewerReviewId: string | null
+}

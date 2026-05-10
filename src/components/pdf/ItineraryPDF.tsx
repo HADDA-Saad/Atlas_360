@@ -1,5 +1,5 @@
 import React from 'react'
-import { Document, Page, Text, View, StyleSheet, Font } from '@react-pdf/renderer'
+import { Document, Image, Page, Text, View, StyleSheet, Font } from '@react-pdf/renderer'
 
 Font.register({
   family: 'Cormorant',
@@ -16,10 +16,28 @@ const styles = StyleSheet.create({
     padding: 40,
     flexDirection: 'column',
   },
+  coverImage: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: '100%',
+    height: '100%',
+    objectFit: 'cover',
+  },
+  coverShade: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: '100%',
+    height: '100%',
+    backgroundColor: '#0F0D0A',
+    opacity: 0.72,
+  },
   coverContent: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    position: 'relative',
   },
   logoText: {
     position: 'absolute',
@@ -48,6 +66,14 @@ const styles = StyleSheet.create({
     fontFamily: 'Outfit',
     fontSize: 9,
     textAlign: 'center',
+  },
+  magazineLabel: {
+    color: '#C1440E',
+    fontFamily: 'Outfit',
+    fontSize: 8,
+    letterSpacing: 3,
+    textTransform: 'uppercase',
+    marginBottom: 16,
   },
   dayHeaderContainer: {
     marginBottom: 30,
@@ -88,6 +114,13 @@ const styles = StyleSheet.create({
   },
   stopDetails: {
     flex: 1,
+  },
+  stopImage: {
+    width: '100%',
+    height: 92,
+    objectFit: 'cover',
+    marginTop: 8,
+    marginBottom: 8,
   },
   stopNameRow: {
     flexDirection: 'row',
@@ -172,6 +205,7 @@ const styles = StyleSheet.create({
 
 export interface ItineraryPDFProps {
   title: string
+  coverImageUrl?: string | null
   stops: Array<{
     name: string
     description: string
@@ -183,12 +217,13 @@ export interface ItineraryPDFProps {
     transport_duration_minutes: number | null
     best_time: string | null
     tips: string | null
+    image_url?: string | null
   }>
   userEmail: string
   generatedDate: string
 }
 
-export default function ItineraryPDF({ title, stops, userEmail, generatedDate }: ItineraryPDFProps) {
+export default function ItineraryPDF({ title, coverImageUrl, stops, userEmail, generatedDate }: ItineraryPDFProps) {
   const daysMap = stops.reduce((acc, stop) => {
     const day = stop.day_number || 1
     if (!acc[day]) acc[day] = []
@@ -215,8 +250,11 @@ export default function ItineraryPDF({ title, stops, userEmail, generatedDate }:
   return (
     <Document>
       <Page size="A4" style={styles.page}>
+        {coverImageUrl && <Image src={coverImageUrl} style={styles.coverImage} />}
+        {coverImageUrl && <View style={styles.coverShade} />}
         <Text style={styles.logoText}>ATLAS 360</Text>
         <View style={styles.coverContent}>
+          <Text style={styles.magazineLabel}>Travel Magazine</Text>
           <Text style={styles.title}>{title}</Text>
           <View style={styles.coverRule} />
           <Text style={styles.summaryText}>
@@ -257,6 +295,8 @@ export default function ItineraryPDF({ title, stops, userEmail, generatedDate }:
                       <Text style={styles.descriptionText}>
                         {stop.description ? (stop.description.length > 180 ? stop.description.substring(0, 180) + '...' : stop.description) : ''}
                       </Text>
+
+                      {stop.image_url && <Image src={stop.image_url} style={styles.stopImage} />}
                       
                       {stop.tips && (
                         <Text style={styles.tipsText}>→ Tip: {stop.tips}</Text>

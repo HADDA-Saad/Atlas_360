@@ -13,9 +13,10 @@ interface PDFDownloadButtonProps {
   title: string
   userEmail: string
   tier: string
+  coverImageUrl?: string | null
 }
 
-export default function PDFDownloadButton({ stops, title, userEmail, tier }: PDFDownloadButtonProps) {
+export default function PDFDownloadButton({ stops, title, userEmail, tier, coverImageUrl }: PDFDownloadButtonProps) {
   const generatedDate = new Date().toLocaleDateString('en-GB')
   const filename = `atlas360-${title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}.pdf`
 
@@ -31,7 +32,7 @@ export default function PDFDownloadButton({ stops, title, userEmail, tier }: PDF
           <polyline points="7 10 12 15 17 10"/>
           <line x1="12" y1="15" x2="12" y2="3"/>
         </svg>
-        Download Itinerary PDF
+        Download Travel Book
       </button>
     )
   }
@@ -39,7 +40,7 @@ export default function PDFDownloadButton({ stops, title, userEmail, tier }: PDF
   return (
     <div className="mt-4 w-full">
       <PDFDownloadLink
-        document={<ItineraryPDF title={title} stops={stops} userEmail={userEmail} generatedDate={generatedDate} />}
+        document={<ItineraryPDF title={title} coverImageUrl={coverImageUrl} stops={stops} userEmail={userEmail} generatedDate={generatedDate} />}
         fileName={filename}
         className="w-full border border-white/10 bg-transparent text-[#8B7355] hover:text-white hover:border-white/30 transition-colors text-xs tracking-widest uppercase px-4 py-2 flex items-center justify-center gap-2 rounded-lg"
       >
@@ -50,7 +51,7 @@ export default function PDFDownloadButton({ stops, title, userEmail, tier }: PDF
               <polyline points="7 10 12 15 17 10"/>
               <line x1="12" y1="15" x2="12" y2="3"/>
             </svg>
-            {loading ? 'Preparing PDF...' : 'Download Itinerary PDF'}
+            {loading ? 'Preparing PDF...' : 'Download Travel Book'}
           </>
         )}
       </PDFDownloadLink>

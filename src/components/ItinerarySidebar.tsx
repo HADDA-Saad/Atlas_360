@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import type { UserTier } from '@/types'
 import PDFDownloadButton from '@/components/pdf/PDFDownloadButton'
+import ReviewPanel from '@/components/reviews/ReviewPanel'
 import ItineraryCard from '@/components/ItineraryCard'
 import PlacesTab from '@/components/PlacesTab'
 import {
@@ -399,6 +400,12 @@ function SidebarContent({
                   {selectedItinerary.description}
                 </p>
               )}
+              <Link
+                href={`/itinerary/${selectedItinerary.id}/magazine`}
+                className="mt-4 inline-flex text-[10px] font-semibold uppercase tracking-widest text-[#C1440E] hover:text-[#D4622E] transition-colors"
+              >
+                Open Magazine View
+              </Link>
             </div>
 
             {/* Divider */}
@@ -512,10 +519,18 @@ function SidebarContent({
                         transport_duration_minutes: l.transport_duration_minutes ?? null,
                         best_time: l.best_time ?? null,
                         tips: l.tips ?? null,
+                        image_url: l.image_url ?? null,
                       }))}
                       title={selectedItinerary.title}
                       userEmail={userEmail}
                       tier={userTier}
+                      coverImageUrl={selectedItinerary.cover_image_url}
+                    />
+
+                    <ReviewPanel
+                      targetType="itinerary"
+                      itineraryId={selectedItinerary.id}
+                      title="Journey feedback"
                     />
                   </div>
                   
