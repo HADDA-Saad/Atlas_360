@@ -127,7 +127,7 @@ export default async function DashboardPage() {
                 </div>
               ) : (
                 <div className="text-center py-8 bg-[#0F0D0A] rounded-xl border border-dashed border-[#E8D5B7]/10">
-                  <p className="text-[13px] text-[#8B7355] mb-4">You haven't created any custom itineraries yet.</p>
+                  <p className="text-[13px] text-[#8B7355] mb-4">You haven&apos;t created any custom itineraries yet.</p>
                 </div>
               )}
             </div>

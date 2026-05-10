@@ -13,7 +13,6 @@ import {
   DragStartEvent,
   DragOverEvent,
   DragEndEvent,
-  defaultDropAnimationSideEffects,
 } from '@dnd-kit/core'
 import {
   SortableContext,
@@ -24,6 +23,22 @@ import {
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { useDroppable, useDraggable } from '@dnd-kit/core'
+import type { Location } from '@/types'
+
+interface ComposerLocation extends Location {
+  itineraries?: {
+    title?: string | null
+  } | null
+}
+
+interface SaveItineraryResponse {
+  id: string
+  is_public: boolean | null
+}
+
+function getErrorMessage(error: unknown) {
+  return error instanceof Error ? error.message : 'An unexpected error occurred'
+}
 
 // === SVGs ===
 const CategoryIcon = ({ cat, className = "" }: { cat: string | null, className?: string }) => {
@@ -54,7 +69,7 @@ const formatDuration = (mins: number | null) => {
 function SortableStop({ 
   id, location, dayNumber, onRemove, customNotes, onNotesChange 
 }: { 
-  id: string, location: any, dayNumber: number, onRemove: () => void, customNotes: string, onNotesChange: (v: string) => void 
+  id: string, location: ComposerLocation, dayNumber: number, onRemove: () => void, customNotes: string, onNotesChange: (v: string) => void
 }) {
   const {
     attributes,
@@ -111,7 +126,7 @@ function SortableStop({
   )
 }
 
-function DraggableLibraryItem({ loc, isAdded, onAdd }: { loc: any, isAdded: boolean, onAdd: () => void }) {
+function DraggableLibraryItem({ loc, isAdded, onAdd }: { loc: ComposerLocation, isAdded: boolean, onAdd: () => void }) {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: `library-${loc.id}`,
     disabled: isAdded,
@@ -164,7 +179,7 @@ function DroppableColumn({ day, items, children }: { day: number, items: string[
 }
 
 // === Main Composer Component ===
-export default function ComposerClient({ initialLocations }: { initialLocations: any[] }) {
+export default function ComposerClient({ initialLocations }: { initialLocations: ComposerLocation[] }) {
   const router = useRouter()
   const [search, setSearch] = useState('')
   const [title, setTitle] = useState('My Custom Itinerary')
@@ -191,7 +206,7 @@ export default function ComposerClient({ initialLocations }: { initialLocations:
   }, [initialLocations, search])
 
   const groupedLocs = useMemo(() => {
-    const groups: Record<string, any[]> = {}
+    const groups: Record<string, ComposerLocation[]> = {}
     filteredLocs.forEach(loc => {
       const itName = loc.itineraries?.title || 'Other'
       if (!groups[itName]) groups[itName] = []
@@ -202,7 +217,7 @@ export default function ComposerClient({ initialLocations }: { initialLocations:
 
   const allAddedIds = useMemo(() => new Set(Object.values(itemsByDay).flat()), [itemsByDay])
 
-  const handleAddStop = (loc: any) => {
+  const handleAddStop = (loc: ComposerLocation) => {
     if (allAddedIds.has(loc.id)) return
     
     // Safety check: if activeDayForAdd isn't in days array, default to first day
@@ -261,20 +276,20 @@ export default function ComposerClient({ initialLocations }: { initialLocations:
         })
       }
 
-      const res = await fetch('/api/user-itineraries', {
-        method: 'POST',
+      const res = await fetch(savedItineraryId ? `/api/user-itineraries/${savedItineraryId}` : '/api/user-itineraries', {
+        method: savedItineraryId ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ title, description: '', stops })
       })
       
-      const data = await res.json()
+      const data = await res.json() as SaveItineraryResponse & { error?: string }
       if (!res.ok) throw new Error(data.error || 'Failed to save itinerary')
       
       setSavedItineraryId(data.id)
-      setIsPublic(data.is_public)
-      alert('Itinerary saved successfully!')
-    } catch (err: any) {
-      setError(err.message)
+      setIsPublic(Boolean(data.is_public))
+      alert(savedItineraryId ? 'Itinerary updated successfully!' : 'Itinerary saved successfully!')
+    } catch (err: unknown) {
+      setError(getErrorMessage(err))
     } finally {
       setIsSaving(false)
     }
@@ -285,14 +300,17 @@ export default function ComposerClient({ initialLocations }: { initialLocations:
     const newValue = !isPublic
     setIsPublic(newValue)
     try {
-      await fetch(`/api/user-itineraries/${savedItineraryId}`, {
+      const res = await fetch(`/api/user-itineraries/${savedItineraryId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ is_public: newValue })
       })
+      const data = await res.json() as { error?: string }
+      if (!res.ok) throw new Error(data.error || 'Failed to update sharing')
     } catch (err) {
       console.error(err)
       setIsPublic(!newValue)
+      setError(getErrorMessage(err))
     }
   }
 
@@ -306,7 +324,8 @@ export default function ComposerClient({ initialLocations }: { initialLocations:
   // --- DND Handlers ---
   const findContainer = (id: string) => {
     if (days.includes(Number(id))) return Number(id) // dropped on an empty column
-    return Object.keys(itemsByDay).find((key) => itemsByDay[Number(key)].includes(id)) ? Number(Object.keys(itemsByDay).find((key) => itemsByDay[Number(key)].includes(id))) : null
+    const container = Object.keys(itemsByDay).find((key) => itemsByDay[Number(key)].includes(id))
+    return container ? Number(container) : null
   }
 
   const handleDragStart = (event: DragStartEvent) => {
@@ -325,9 +344,7 @@ export default function ComposerClient({ initialLocations }: { initialLocations:
     if (!activeContainer || !overContainer || activeContainer === overContainer) return
 
     setItemsByDay((prev) => {
-      const activeItems = prev[activeContainer]
       const overItems = prev[overContainer]
-      const activeIndex = activeItems.indexOf(active.id as string)
       const overIndex = overItems.indexOf(overId as string)
 
       let newIndex = overItems.length
@@ -373,8 +390,13 @@ export default function ComposerClient({ initialLocations }: { initialLocations:
       return
     }
 
+    if (!over) {
+      setActiveId(null)
+      return
+    }
+
     const activeContainer = findContainer(active.id as string)
-    const overContainer = findContainer(over?.id as string)
+    const overContainer = findContainer(over.id as string)
 
     if (!activeContainer || !overContainer || activeContainer !== overContainer) {
       setActiveId(null)
@@ -382,7 +404,7 @@ export default function ComposerClient({ initialLocations }: { initialLocations:
     }
 
     const activeIndex = itemsByDay[activeContainer].indexOf(active.id as string)
-    const overIndex = itemsByDay[overContainer].indexOf(over?.id as string)
+    const overIndex = itemsByDay[overContainer].indexOf(over.id as string)
 
     if (activeIndex !== overIndex) {
       setItemsByDay((prev) => ({
@@ -394,7 +416,8 @@ export default function ComposerClient({ initialLocations }: { initialLocations:
     setActiveId(null)
   }
 
-  const activeLoc = activeId ? initialLocations.find(l => l.id === activeId) : null
+  const activeLocationId = activeId?.startsWith('library-') ? activeId.replace('library-', '') : activeId
+  const activeLoc = activeLocationId ? initialLocations.find(l => l.id === activeLocationId) : null
 
   return (
     <DndContext
@@ -565,7 +588,7 @@ export default function ComposerClient({ initialLocations }: { initialLocations:
             disabled={isSaving || allAddedIds.size === 0}
             className="px-8 py-3 rounded-full bg-[#C1440E] hover:bg-[#D4622E] disabled:bg-[#C1440E]/50 disabled:cursor-not-allowed text-white text-[12px] font-semibold uppercase tracking-widest transition-colors shadow-lg shadow-[#C1440E]/20"
           >
-            {isSaving ? 'Saving...' : (savedItineraryId ? 'Save Copy' : 'Save Itinerary')}
+            {isSaving ? 'Saving...' : (savedItineraryId ? 'Save Changes' : 'Save Itinerary')}
           </button>
         </div>
       </div>

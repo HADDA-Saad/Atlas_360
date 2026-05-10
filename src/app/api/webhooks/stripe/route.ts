@@ -1,11 +1,41 @@
 import Stripe from 'stripe'
 import { createClient } from '@supabase/supabase-js'
+import type { UserTier } from '@/types'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
   apiVersion: '2026-04-22.dahlia',
 })
 
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET || ''
+const paidStatuses = new Set<Stripe.Subscription.Status>(['active', 'trialing'])
+
+type PaidTier = Exclude<UserTier, 'explorer'>
+
+function jsonResponse(body: Record<string, unknown>, status: number) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { 'Content-Type': 'application/json' },
+  })
+}
+
+function getErrorMessage(error: unknown) {
+  return error instanceof Error ? error.message : 'Unknown error'
+}
+
+function getPaidTier(value: string | null | undefined): PaidTier {
+  return value === 'elite' ? 'elite' : 'nomad'
+}
+
+function tierForSubscription(subscription: Stripe.Subscription): UserTier {
+  return paidStatuses.has(subscription.status)
+    ? getPaidTier(subscription.metadata?.tier)
+    : 'explorer'
+}
+
+const supabaseAdmin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL || '',
+  process.env.SUPABASE_SERVICE_ROLE_KEY || ''
+)
 
 export async function POST(req: Request) {
   try {
@@ -14,102 +44,95 @@ export async function POST(req: Request) {
 
     if (!signature) {
       console.error('Webhook Error: No signature found')
-      return new Response(JSON.stringify({ error: 'No signature found' }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' },
-      })
+      return jsonResponse({ error: 'No signature found' }, 400)
     }
 
     let event: Stripe.Event
 
     try {
       event = stripe.webhooks.constructEvent(body, signature, webhookSecret)
-    } catch (err: any) {
-      console.error(`Webhook signature verification failed: ${err.message}`)
-      return new Response(JSON.stringify({ error: 'Webhook Error' }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' },
-      })
+    } catch (error: unknown) {
+      console.error(`Webhook signature verification failed: ${getErrorMessage(error)}`)
+      return jsonResponse({ error: 'Webhook Error' }, 400)
     }
 
-    // Initialize Supabase Admin Client
-    const supabaseAdmin = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-      process.env.SUPABASE_SERVICE_ROLE_KEY || ''
-    )
-
-    // Handle the specific events
     if (event.type === 'checkout.session.completed') {
       const session = event.data.object as Stripe.Checkout.Session
-
       const userId = session.client_reference_id
-      const customerId = session.customer as string
-      const amountTotal = session.amount_total
+      const customerId = typeof session.customer === 'string' ? session.customer : null
+      const tier = getPaidTier(session.metadata?.tier)
 
-      // Safely read the exact tier they purchased from the metadata we attached during checkout
-      // (This prevents bugs if Stripe prorates the price or applies a discount code)
-      const tier = session.metadata?.tier || 'nomad'
-
-      if (userId && customerId) {
-        const { error } = await supabaseAdmin
-          .from('profiles')
-          .update({
-            tier: tier,
-            stripe_customer_id: customerId,
-            subscription_status: 'active',
-          })
-          .eq('id', userId)
-
-        if (error) {
-          console.error('Error updating profile in Supabase on checkout completed:', error)
-          return new Response(JSON.stringify({ error: 'Database Update Failed' }), {
-            status: 500,
-            headers: { 'Content-Type': 'application/json' },
-          })
-        }
-        
-        console.log(`Successfully upgraded user ${userId} to ${tier} tier.`)
-      } else {
+      if (!userId || !customerId) {
         console.error('Missing userId or customerId in checkout session:', { userId, customerId })
+        return jsonResponse({ received: true }, 200)
       }
-    } else if (event.type === 'customer.subscription.deleted') {
+
+      const { error } = await supabaseAdmin
+        .from('profiles')
+        .update({
+          tier,
+          stripe_customer_id: customerId,
+          subscription_status: 'active',
+        })
+        .eq('id', userId)
+
+      if (error) {
+        console.error('Error updating profile in Supabase on checkout completed:', error)
+        return jsonResponse({ error: 'Database Update Failed' }, 500)
+      }
+
+      console.log(`Successfully upgraded user ${userId} to ${tier} tier.`)
+    } else if (
+      event.type === 'customer.subscription.updated' ||
+      event.type === 'customer.subscription.deleted'
+    ) {
       const subscription = event.data.object as Stripe.Subscription
-      const customerId = subscription.customer as string
+      const customerId = typeof subscription.customer === 'string' ? subscription.customer : null
+
+      if (!customerId) {
+        console.error('Missing customerId in subscription event.')
+        return jsonResponse({ received: true }, 200)
+      }
+
+      const { error } = await supabaseAdmin
+        .from('profiles')
+        .update({
+          tier: event.type === 'customer.subscription.deleted'
+            ? 'explorer'
+            : tierForSubscription(subscription),
+          subscription_status: event.type === 'customer.subscription.deleted'
+            ? 'cancelled'
+            : subscription.status,
+        })
+        .eq('stripe_customer_id', customerId)
+
+      if (error) {
+        console.error('Error updating profile on subscription event:', error)
+        return jsonResponse({ error: 'Database Update Failed' }, 500)
+      }
+    } else if (event.type === 'invoice.payment_failed') {
+      const invoice = event.data.object as Stripe.Invoice
+      const customerId = typeof invoice.customer === 'string' ? invoice.customer : null
 
       if (customerId) {
         const { error } = await supabaseAdmin
           .from('profiles')
           .update({
             tier: 'explorer',
-            subscription_status: 'cancelled',
+            subscription_status: 'past_due',
           })
           .eq('stripe_customer_id', customerId)
 
         if (error) {
-          console.error('Error downgrading profile on subscription deleted:', error)
-          return new Response(JSON.stringify({ error: 'Database Update Failed' }), {
-            status: 500,
-            headers: { 'Content-Type': 'application/json' },
-          })
+          console.error('Error marking profile past_due:', error)
+          return jsonResponse({ error: 'Database Update Failed' }, 500)
         }
-        
-        console.log(`Successfully downgraded customer ${customerId} to explorer.`)
-      } else {
-        console.error('Missing customerId in subscription deleted event.')
       }
     }
 
-    // Return a 200 response for all successfully handled and unhandled events
-    return new Response(JSON.stringify({ received: true }), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' },
-    })
-
-  } catch (error: any) {
+    return jsonResponse({ received: true }, 200)
+  } catch (error: unknown) {
     console.error('Webhook handler failed:', error)
-    return new Response(JSON.stringify({ error: 'Internal Server Error' }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' },
-    })
+    return jsonResponse({ error: 'Internal Server Error' }, 500)
   }
 }

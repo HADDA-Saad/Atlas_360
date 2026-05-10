@@ -62,10 +62,32 @@ Follow these instructions to get a copy of the project up and running on your lo
    
    # Your Supabase public API key
    NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+
+   # Supabase service role key (server-only; used for Stripe webhooks and scripts)
+   SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
    
-   # Google Maps API Key (Ensure Maps Javascript API & Street View Static API are enabled)
+   # Public Google Maps browser key (Maps JavaScript API + Street View enabled)
    NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=your-maps-api-key
+
+   # Google Cloud Map ID for Advanced Markers
+   NEXT_PUBLIC_GOOGLE_MAP_ID=your-google-map-id
+
+   # Server-only Google Places key (Places API enabled)
+   PLACES_API_KEY=your-places-api-key
+
+   # App URL used for Stripe redirects
+   NEXT_PUBLIC_APP_URL=http://localhost:3000
+
+   # Stripe server keys
+   STRIPE_SECRET_KEY=sk_test_your-stripe-secret-key
+   STRIPE_WEBHOOK_SECRET=whsec_your-webhook-secret
+
+   # Optional Stripe recurring price IDs (dynamic MAD prices are used if omitted)
+   STRIPE_NOMAD_PRICE_ID=price_your-nomad-price-id
+   STRIPE_ELITE_PRICE_ID=price_your-elite-price-id
    ```
+
+   If `NEXT_PUBLIC_GOOGLE_MAP_ID` is missing, the app will show a local "Map unavailable" fallback instead of mounting Google Maps. This prevents Google's error modal from blocking the itinerary UI during development, but advanced markers require a real Map ID.
 
 4. **Initialize the Database**
    * Log into your Supabase Dashboard and open the **SQL Editor**.

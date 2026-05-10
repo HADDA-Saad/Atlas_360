@@ -23,7 +23,7 @@ export default async function SuccessPage({
     session = await stripe.checkout.sessions.retrieve(sessionId, {
       expand: ['subscription'],
     })
-  } catch (error) {
+  } catch {
     redirect('/explore')
   }
 
@@ -32,8 +32,11 @@ export default async function SuccessPage({
   
   let nextBillingDate = ''
   if (session.subscription && typeof session.subscription !== 'string') {
-    const date = new Date(session.subscription.current_period_end * 1000)
-    nextBillingDate = `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()}`
+    const subscription = session.subscription as Stripe.Subscription & { current_period_end?: number }
+    if (subscription.current_period_end) {
+      const date = new Date(subscription.current_period_end * 1000)
+      nextBillingDate = `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()}`
+    }
   }
 
   return (

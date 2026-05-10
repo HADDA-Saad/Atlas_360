@@ -19,10 +19,13 @@ export default function ItineraryCard({
   onClick,
   animationDelay = 0,
 }: ItineraryCardProps) {
+  const requiresTierFetch = itinerary.tier && itinerary.tier !== 'explorer'
   const [userTier, setUserTier] = useState<UserTier>('explorer')
-  const [isLoadingTier, setIsLoadingTier] = useState(true)
+  const [isLoadingTier, setIsLoadingTier] = useState(Boolean(requiresTierFetch))
 
   useEffect(() => {
+    if (!requiresTierFetch) return
+
     const fetchTier = async () => {
       const supabase = createClient()
       const { data: { user } } = await supabase.auth.getUser()
@@ -33,12 +36,8 @@ export default function ItineraryCard({
       setIsLoadingTier(false)
     }
 
-    if (itinerary.tier && itinerary.tier !== 'explorer') {
-      fetchTier()
-    } else {
-      setIsLoadingTier(false)
-    }
-  }, [itinerary.tier])
+    fetchTier()
+  }, [requiresTierFetch])
 
   const isLocked = !isLoadingTier && itinerary.tier && TIER_LEVELS[itinerary.tier] > TIER_LEVELS[userTier]
 

@@ -137,6 +137,8 @@ function StopItem({
     return <svg className={className} width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>;
   };
 
+  const transportToNext = location.transport_to_next || nextTransport;
+
   return (
     <div className="flex flex-col">
       {showDayDivider && location.day_number && (
@@ -246,12 +248,12 @@ function StopItem({
 
       {!isLast && (
         <div className="flex flex-col items-center justify-center my-1 min-h-[1.5rem]">
-          {location.transport_to_next ? (
+          {transportToNext ? (
             <div className="flex flex-col items-center">
               <div className="w-px h-2 border-l border-dashed border-[#8B7355]/30" />
               <div className="flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-wider text-[#8B7355]/70 my-1 bg-[#0F0D0A] px-2">
-                <span>{getTransportIcon(location.transport_to_next)}</span>
-                <span>{location.transport_to_next}</span>
+                <span>{getTransportIcon(transportToNext)}</span>
+                <span>{transportToNext}</span>
                 {location.transport_duration_minutes && (
                   <>
                     <span>·</span>
@@ -283,7 +285,6 @@ function SidebarContent({
   onTabChange,
   onPlacesLoaded,
 }: ItinerarySidebarProps) {
-  const [showContent, setShowContent] = useState(true)
   const [activeTab, setActiveTab] = useState<'stops' | 'places'>('stops')
   const [userTier, setUserTier] = useState<UserTier>('explorer')
   const [userEmail, setUserEmail] = useState('')
@@ -312,13 +313,6 @@ function SidebarContent({
     if (onTabChange) onTabChange(activeTab)
   }, [activeTab, onTabChange])
 
-  // Re-trigger animations on state change
-  useEffect(() => {
-    setShowContent(false)
-    setActiveTab('stops')
-    const timer = setTimeout(() => setShowContent(true), 50)
-    return () => clearTimeout(timer)
-  }, [selectedItinerary?.id])
   const [navOpen, setNavOpen] = useState(false)
 
   return (
@@ -476,7 +470,7 @@ function SidebarContent({
 
             {isLoadingLocations ? (
               <SidebarSkeleton />
-            ) : showContent ? (
+            ) : (
               activeTab === 'stops' ? (
                 <div className="relative">
                   <div className="flex flex-col gap-1 px-4 pb-6">
@@ -561,11 +555,11 @@ function SidebarContent({
                   </div>
                 )
               )
-            ) : null}
+            )}
           </>
         ) : itineraries.length === 0 ? (
           <EmptyState />
-        ) : showContent ? (
+        ) : (
           <div className="flex flex-col gap-3 px-5 pb-6">
             {itineraries.map((itinerary, i) => (
               <ItineraryCard
@@ -577,7 +571,7 @@ function SidebarContent({
               />
             ))}
           </div>
-        ) : null}
+        )}
       </div>
 
       {/* Floating nav drawer */}
@@ -628,12 +622,13 @@ function SidebarContent({
 /* ─── Main Sidebar Export ─── */
 export default function ItinerarySidebar(props: ItinerarySidebarProps) {
   const { selectedItinerary } = props
+  const sidebarContentKey = selectedItinerary?.id || 'itinerary-list'
 
   return (
     <>
       {/* Desktop sidebar */}
       <aside className="hidden md:flex flex-col w-[400px] flex-shrink-0 h-full relative bg-[#0F0D0A] border-r border-[#E8D5B7]/6">
-        <SidebarContent {...props} />
+        <SidebarContent key={sidebarContentKey} {...props} />
       </aside>
 
       {/* Mobile bottom sheet */}
@@ -699,7 +694,7 @@ export default function ItinerarySidebar(props: ItinerarySidebarProps) {
               <div className="w-10 h-1 rounded-full bg-[#E8D5B7]/15" />
             </div>
             <div className="h-[calc(75vh-40px)] overflow-hidden">
-              <SidebarContent {...props} />
+              <SidebarContent key={sidebarContentKey} {...props} />
             </div>
           </SheetContent>
         </Sheet>

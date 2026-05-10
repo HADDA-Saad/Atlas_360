@@ -9,9 +9,25 @@ const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
 
 const supabase = createClient(supabaseUrl, supabaseKey)
 
+function getErrorMessage(error: unknown) {
+  return error instanceof Error ? error.message : 'Unknown error'
+}
+
+function getStatusCode(error: unknown) {
+  return typeof error === 'object' && error !== null && 'statusCode' in error
+    ? (error as { statusCode?: number }).statusCode
+    : undefined
+}
+
+function getStorageError(error: unknown) {
+  return typeof error === 'object' && error !== null && 'error' in error
+    ? (error as { error?: string }).error
+    : undefined
+}
+
 async function runSetup() {
-  let skippedFiles: string[] = []
-  let unmatchedTitles: string[] = []
+  const skippedFiles: string[] = []
+  const unmatchedTitles: string[] = []
   let imagesUploaded = 0
   let rowsUpdated = 0
 
@@ -35,8 +51,8 @@ async function runSetup() {
     } else {
       console.log(`[STEP 1] cover_image_url column already exists — skipping`)
     }
-  } catch (err: any) {
-    console.log(`[STEP 1] ERROR:`, err.message)
+  } catch (err: unknown) {
+    console.log(`[STEP 1] ERROR:`, getErrorMessage(err))
     console.log(`[STEP 1] SKIP and continue.`)
   }
 
@@ -45,7 +61,7 @@ async function runSetup() {
   try {
     const { error } = await supabase.storage.createBucket('covers', { public: true })
     if (error) {
-      if (error.message.includes('already exists') || (error as any).error === 'Duplicate') {
+      if (error.message.includes('already exists') || getStorageError(error) === 'Duplicate') {
         console.log(`[STEP 2] covers bucket already exists — skipping`)
       } else {
         console.log(`[STEP 2] ERROR creating bucket:`, error.message)
@@ -54,8 +70,8 @@ async function runSetup() {
     } else {
       console.log(`[STEP 2] Created bucket successfully.`)
     }
-  } catch (err: any) {
-    console.log(`[STEP 2] ERROR:`, err.message)
+  } catch (err: unknown) {
+    console.log(`[STEP 2] ERROR:`, getErrorMessage(err))
     console.log(`[STEP 2] SKIP and continue.`)
   }
 
@@ -75,7 +91,7 @@ async function runSetup() {
       const { error } = await supabase.storage.from('covers').upload(filename, fileBuffer, { contentType: 'image/png', upsert: false })
       
       if (error) {
-        if ((error as any).statusCode === '409' || error.message.includes('already exists')) {
+        if (getStatusCode(error) === 409 || error.message.includes('already exists')) {
           console.log(`[STEP 3] ${filename} already exists — skipping`)
         } else {
           console.log(`[STEP 3] ERROR uploading ${filename}:`, error.message)
@@ -86,8 +102,8 @@ async function runSetup() {
         console.log(`[STEP 3] Uploaded ${filename} successfully. Public URL: ${publicUrl}`)
         imagesUploaded++
       }
-    } catch (err: any) {
-      console.log(`[STEP 3] ERROR processing ${filename}:`, err.message)
+    } catch (err: unknown) {
+      console.log(`[STEP 3] ERROR processing ${filename}:`, getErrorMessage(err))
       console.log(`[STEP 3] SKIP and continue.`)
     }
   }
@@ -129,8 +145,8 @@ async function runSetup() {
         }
       }
     }
-  } catch (err: any) {
-    console.log(`[STEP 4] ERROR:`, err.message)
+  } catch (err: unknown) {
+    console.log(`[STEP 4] ERROR:`, getErrorMessage(err))
     console.log(`[STEP 4] SKIP and continue.`)
   }
 

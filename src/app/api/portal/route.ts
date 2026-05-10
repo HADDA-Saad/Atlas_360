@@ -6,7 +6,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
   apiVersion: '2026-04-22.dahlia',
 })
 
-export async function POST(req: Request) {
+export async function POST() {
   try {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
@@ -36,7 +36,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ url: session.url })
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Stripe Portal Error:', error)
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
   }

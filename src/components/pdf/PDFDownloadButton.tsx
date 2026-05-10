@@ -1,6 +1,5 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
 import dynamic from 'next/dynamic'
 import ItineraryPDF, { type ItineraryPDFProps } from './ItineraryPDF'
 
@@ -17,14 +16,6 @@ interface PDFDownloadButtonProps {
 }
 
 export default function PDFDownloadButton({ stops, title, userEmail, tier }: PDFDownloadButtonProps) {
-  const [isClient, setIsClient] = useState(false)
-
-  useEffect(() => {
-    setIsClient(true)
-  }, [])
-
-  if (!isClient) return null
-
   const generatedDate = new Date().toLocaleDateString('en-GB')
   const filename = `atlas360-${title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}.pdf`
 

@@ -4,7 +4,9 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Map, AdvancedMarker, useMap } from '@vis.gl/react-google-maps'
 import MarkerPin from '@/components/MarkerPin'
 import PlaceMarker from '@/components/PlaceMarker'
-import type { Location, PlaceResult, PlaceType } from '@/types'
+import type { Location, PlaceResult } from '@/types'
+
+const googleMapId = process.env.NEXT_PUBLIC_GOOGLE_MAP_ID || undefined
 
 interface MapViewProps {
   locations: Location[]
@@ -131,7 +133,7 @@ export default function MapView({
 
       <Map
         id="atlas360-map"
-        mapId="DEMO_MAP_ID"
+        mapId={googleMapId}
         defaultCenter={{ lat: 31.7917, lng: -7.0926 }}
         defaultZoom={6}
         mapTypeId={mapTypeId}

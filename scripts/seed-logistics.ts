@@ -15,6 +15,18 @@ if (!supabaseUrl || !supabaseServiceKey) {
 
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
+interface LocationUpdateData {
+  day_number: number;
+  duration: string;
+  transport: string;
+  tips: string;
+  category: string;
+}
+
+function getErrorMessage(error: unknown) {
+  return error instanceof Error ? error.message : 'Unknown error';
+}
+
 async function main() {
   console.log('[STEP 0] Starting seed script...');
   let updatedLocationsCount = 0;
@@ -36,7 +48,7 @@ async function main() {
       const it = itineraries?.find((i) => i.id === loc.itinerary_id);
       if (!it) continue;
 
-      let updateData: any = {
+      let updateData: LocationUpdateData = {
         day_number: 1,
         duration: '60', // Note: duration_minutes is not in db schema, it's 'duration' text as per migration 004! Wait, prompt said duration_minutes! Let me check the migration 004.
         transport: 'Walking',
@@ -275,8 +287,8 @@ async function main() {
       }
     }
 
-  } catch (err: any) {
-    console.error('[FATAL ERROR]', err.message);
+  } catch (err: unknown) {
+    console.error('[FATAL ERROR]', getErrorMessage(err));
   } finally {
     console.log('\n[STEP 3] --- FINAL SUMMARY ---');
     console.log(`Itineraries Inserted: ${itinerariesInserted}`);

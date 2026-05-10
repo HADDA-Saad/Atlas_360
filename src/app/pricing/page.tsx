@@ -1,11 +1,9 @@
 'use client'
 
-import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 
 export default function PricingPage() {
   const router = useRouter()
-  const [isAnnual, setIsAnnual] = useState(false) // Ready for future annual toggle
 
   const handleSubscribe = async (tier: string) => {
     try {

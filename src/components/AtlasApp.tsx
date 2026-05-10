@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from 'react'
 import MapView from '@/components/MapView'
+import GoogleMapsProvider from '@/components/GoogleMapsProvider'
 import PanoramaModal from '@/components/PanoramaModal'
 import ItinerarySidebar from '@/components/ItinerarySidebar'
 import PlaceCard from '@/components/PlaceCard'
@@ -71,6 +72,11 @@ export default function AtlasApp({ itineraries }: AtlasAppProps) {
     setIsPlacePopoverOpen(true)
   }, [])
 
+  const handlePlacesLoaded = useCallback((h: PlaceResult[], r: PlaceResult[]) => {
+    setHotels(h)
+    setRestaurants(r)
+  }, [])
+
   return (
     <div className="h-screen w-screen overflow-hidden flex flex-col bg-[#0F0D0A]">
       {/* Main content: sidebar + map */}
@@ -86,7 +92,7 @@ export default function AtlasApp({ itineraries }: AtlasAppProps) {
           onBack={handleBack}
           isLoadingLocations={isLoadingLocations}
           onTabChange={setActiveTab}
-          onPlacesLoaded={(h, r) => { setHotels(h); setRestaurants(r) }}
+          onPlacesLoaded={handlePlacesLoaded}
         />
 
         {/* Map area */}
@@ -117,15 +123,17 @@ export default function AtlasApp({ itineraries }: AtlasAppProps) {
             </div>
           )}
 
-          <MapView
-            locations={locations}
-            onMarkerClick={handleMarkerClick}
-            selectedLocationId={selectedLocation?.id}
-            itineraryPath={locations.length > 0}
-            onPlaceMarkerClick={handlePlaceMarkerClick}
-            hotelPlaces={activeTab === 'places' ? hotels : []}
-            restaurantPlaces={activeTab === 'places' ? restaurants : []}
-          />
+          <GoogleMapsProvider>
+            <MapView
+              locations={locations}
+              onMarkerClick={handleMarkerClick}
+              selectedLocationId={selectedLocation?.id}
+              itineraryPath={locations.length > 0}
+              onPlaceMarkerClick={handlePlaceMarkerClick}
+              hotelPlaces={activeTab === 'places' ? hotels : []}
+              restaurantPlaces={activeTab === 'places' ? restaurants : []}
+            />
+          </GoogleMapsProvider>
         </div>
       </div>
 

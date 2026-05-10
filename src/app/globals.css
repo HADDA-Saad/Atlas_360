@@ -96,6 +96,10 @@
   --sidebar-border: rgba(232, 213, 183, 0.06);
   --sidebar-ring: #C1440E;
 
+  --font-outfit: "Outfit", "Aptos", "Segoe UI", Arial, sans-serif;
+  --font-cormorant: "Cormorant Garamond", Georgia, "Times New Roman", serif;
+  --font-sans: var(--font-outfit);
+  --font-geist-mono: "Cascadia Code", "Consolas", monospace;
   --font-heading: var(--font-outfit);
   --font-display: var(--font-cormorant);
 }

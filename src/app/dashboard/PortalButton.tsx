@@ -15,7 +15,7 @@ export default function PortalButton() {
       } else {
         alert(data.error || 'Failed to open portal')
       }
-    } catch (e) {
+    } catch {
       alert('Error opening portal')
     } finally {
       setLoading(false)

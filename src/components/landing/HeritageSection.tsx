@@ -1,7 +1,5 @@
 'use client'
 
-import Image from 'next/image'
-
 export default function HeritageSection() {
   return (
     <section className="bg-[#0F0D0A] py-24 md:py-32 border-b border-white/5">

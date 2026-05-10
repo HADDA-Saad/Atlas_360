@@ -3,6 +3,8 @@ import HeritageSection from '@/components/landing/HeritageSection'
 import CuratedJourneysSection from '@/components/landing/CuratedJourneysSection'
 import { createClient } from '@/lib/supabase/server'
 
+export const dynamic = 'force-dynamic'
+
 export default async function LandingPage() {
   let itineraries = []
   try {
