@@ -6,6 +6,7 @@ import { useRouter, usePathname } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import type { User } from '@supabase/supabase-js'
 import type { UserTier } from '@/types'
+import { ThemeToggle } from '@/components/ThemeToggle'
 
 export default function Navbar() {
   const router = useRouter()
@@ -71,10 +72,10 @@ export default function Navbar() {
         flex items-center justify-between
         px-6 md:px-8 h-16
         transition-all duration-500 ease-out
-        border-b border-white/5
+        border-b border-border/40
         ${scrolled || pathname === '/'
-          ? 'bg-[#0F0D0A]/90 backdrop-blur-xl shadow-lg shadow-black/20'
-          : 'bg-[#0F0D0A]/90 backdrop-blur-xl'
+          ? 'bg-background/90 backdrop-blur-xl shadow-sm'
+          : 'bg-background/90 backdrop-blur-xl'
         }
       `}
     >
@@ -82,11 +83,11 @@ export default function Navbar() {
       <Link href="/" className="flex items-center gap-3 group">
         {/* Compass icon */}
         <div className="relative w-9 h-9 flex items-center justify-center">
-          <div className="absolute inset-0 rounded-full border border-[#C1440E]/30 group-hover:border-[#C1440E]/50 transition-colors duration-300" />
-          <div className="absolute inset-1 rounded-full border border-[#C1440E]/10" />
+          <div className="absolute inset-0 rounded-full border border-primary/30 group-hover:border-primary/50 transition-colors duration-300" />
+          <div className="absolute inset-1 rounded-full border border-primary/10" />
           <svg
             viewBox="0 0 24 24"
-            className="w-4.5 h-4.5 text-[#C1440E]"
+            className="w-4.5 h-4.5 text-primary"
             fill="none"
             stroke="currentColor"
             strokeWidth={1.5}
@@ -111,11 +112,11 @@ export default function Navbar() {
           </svg>
         </div>
         <div className="flex flex-col">
-          <span className="font-[family-name:var(--font-cormorant)] text-xl font-semibold tracking-wide text-[#F0E6D8]">
+          <span className="font-[family-name:var(--font-cormorant)] text-xl font-semibold tracking-wide text-foreground">
             Atlas
-            <span className="text-[#C1440E] ml-1">360</span>
+            <span className="text-primary ml-1">360</span>
           </span>
-          <span className="text-[9px] uppercase tracking-widest text-[#8B7355] -mt-1 hidden sm:block">
+          <span className="text-[9px] uppercase tracking-widest text-muted-foreground -mt-1 hidden sm:block">
             Explore Morocco
           </span>
         </div>
@@ -124,33 +125,34 @@ export default function Navbar() {
       {/* Center Links */}
       <div className="hidden md:flex items-center gap-8 absolute left-1/2 -translate-x-1/2">
         {pathname !== '/' && (
-          <Link href="/" className="text-[11px] font-medium tracking-[0.2em] text-[#F0E6D3]/70 hover:text-[#C1440E] transition-all duration-200">HOME</Link>
+          <Link href="/" className="text-[11px] font-medium tracking-[0.2em] text-foreground/70 hover:text-primary transition-all duration-200">HOME</Link>
         )}
-        <Link href="/explore" className="text-[11px] font-medium tracking-[0.2em] text-[#F0E6D3]/70 hover:text-[#C1440E] transition-all duration-200">ITINERARIES</Link>
-        <Link href="/pricing" className="text-[11px] font-medium tracking-[0.2em] text-[#F0E6D3]/70 hover:text-[#C1440E] transition-all duration-200">PRICING</Link>
-        <Link href="/destinations" className="text-[11px] font-medium tracking-[0.2em] text-[#F0E6D3]/70 hover:text-[#C1440E] transition-all duration-200">DESTINATIONS</Link>
-        <Link href="/about" className="text-[11px] font-medium tracking-[0.2em] text-[#F0E6D3]/70 hover:text-[#C1440E] transition-all duration-200">ABOUT</Link>
+        <Link href="/explore" className="text-[11px] font-medium tracking-[0.2em] text-foreground/70 hover:text-primary transition-all duration-200">ITINERARIES</Link>
+        <Link href="/pricing" className="text-[11px] font-medium tracking-[0.2em] text-foreground/70 hover:text-primary transition-all duration-200">PRICING</Link>
+        <Link href="/destinations" className="text-[11px] font-medium tracking-[0.2em] text-foreground/70 hover:text-primary transition-all duration-200">DESTINATIONS</Link>
+        <Link href="/about" className="text-[11px] font-medium tracking-[0.2em] text-foreground/70 hover:text-primary transition-all duration-200">ABOUT</Link>
       </div>
 
-      {/* Right side — Auth */}
+      {/* Right side — Auth & Theme */}
       <div className="flex items-center gap-2">
+        <ThemeToggle />
         {pathname !== '/explore' && (
           user ? (
             /* Logged in state */
             <div className="flex items-center gap-3">
               {/* User avatar/email */}
               <div className="hidden sm:flex items-center gap-2.5">
-                <div className="w-7 h-7 rounded-full bg-[#C1440E]/15 border border-[#C1440E]/20 flex items-center justify-center">
-                  <span className="text-[11px] font-semibold text-[#C1440E] uppercase">
+                <div className="w-7 h-7 rounded-full bg-primary/15 border border-primary/20 flex items-center justify-center">
+                  <span className="text-[11px] font-semibold text-primary uppercase">
                     {user.email?.charAt(0) ?? 'U'}
                   </span>
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-[13px] text-[#BFA882] max-w-[160px] truncate leading-tight">
+                  <span className="text-[13px] text-muted-foreground max-w-[160px] truncate leading-tight">
                     {user.email}
                   </span>
                   {tier && (
-                    <span className="text-[10px] font-semibold text-[#C1440E] uppercase tracking-widest mt-0.5">
+                    <span className="text-[10px] font-semibold text-primary uppercase tracking-widest mt-0.5">
                       {tier}
                     </span>
                   )}
@@ -159,7 +161,7 @@ export default function Navbar() {
 
               <Link
                 href="/dashboard"
-                className="hidden md:block text-[11px] font-semibold tracking-[0.2em] text-[#F0E6D8]/80 hover:text-[#C1440E] transition-colors mx-2"
+                className="hidden md:block text-[11px] font-semibold tracking-[0.2em] text-foreground/80 hover:text-primary transition-colors mx-2"
               >
                 MY ACCOUNT
               </Link>
@@ -170,10 +172,10 @@ export default function Navbar() {
                 disabled={isLoggingOut}
                 className="
                   px-4 py-2 text-sm font-medium
-                  text-[#8B7355] hover:text-[#E8D5B7]
+                  text-muted-foreground hover:text-foreground
                   transition-colors duration-300
-                  rounded-lg hover:bg-white/5
-                  border border-[#E8D5B7]/8
+                  rounded-lg hover:bg-muted/50
+                  border border-border
                   disabled:opacity-50
                 "
               >
@@ -187,9 +189,9 @@ export default function Navbar() {
                 href="/auth/login"
                 className="
                   px-4 py-2 text-sm font-medium
-                  text-[#BFA882] hover:text-[#E8D5B7]
+                  text-muted-foreground hover:text-foreground
                   transition-colors duration-300
-                  rounded-lg hover:bg-white/5
+                  rounded-lg hover:bg-muted/50
                 "
               >
                 Login
@@ -198,12 +200,12 @@ export default function Navbar() {
                 href="/auth/signup"
                 className="
                   px-4 py-2 text-sm font-medium
-                  text-[#FFF8F0] bg-[#C1440E]
+                  text-primary-foreground bg-primary
                   rounded-lg
-                  hover:bg-[#D4622E]
+                  hover:bg-primary/90
                   transition-all duration-300
-                  shadow-md shadow-[#C1440E]/20
-                  hover:shadow-lg hover:shadow-[#C1440E]/30
+                  shadow-md shadow-primary/20
+                  hover:shadow-lg hover:shadow-primary/30
                 "
               >
                 Sign Up

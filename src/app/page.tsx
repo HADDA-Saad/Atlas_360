@@ -24,7 +24,7 @@ export default async function LandingPage() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#0F0D0A] overflow-x-hidden">
+    <div className="flex flex-col min-h-screen bg-background overflow-x-hidden">
       <HeroSection />
       <HeritageSection />
       <CuratedJourneysSection itineraries={itineraries} />

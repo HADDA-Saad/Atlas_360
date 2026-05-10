@@ -94,31 +94,31 @@ export default function PanoramaModal({ location, isOpen, onClose }: PanoramaMod
     >
       {/* Backdrop overlay */}
       <div 
-        className="absolute inset-0 bg-black/80 backdrop-blur-md transition-opacity" 
+        className="absolute inset-0 bg-background/80 backdrop-blur-md transition-opacity" 
         onClick={onClose} 
       />
 
       {/* Modal Dialog */}
       <div
         className={`
-          relative z-10 w-full max-w-5xl bg-[#0F0D0A] border border-[#E8D5B7]/10 rounded-2xl overflow-hidden shadow-2xl flex flex-col
+          relative z-10 w-full max-w-5xl bg-background border border-border rounded-2xl overflow-hidden shadow-2xl flex flex-col
           transition-all duration-400 ease-out
           ${isOpen ? 'translate-y-0 scale-100 opacity-100' : 'translate-y-8 scale-95 opacity-0'}
         `}
       >
         {/* Header */}
-        <div className="flex items-start justify-between px-6 pt-5 pb-4 border-b border-[#E8D5B7]/5">
+        <div className="flex items-start justify-between px-6 pt-5 pb-4 border-b border-border">
           <div>
-            <h2 className="font-[family-name:var(--font-cormorant)] text-2xl font-semibold text-[#F0E6D8] tracking-wide m-0">
+            <h2 className="font-[family-name:var(--font-cormorant)] text-2xl font-semibold text-foreground tracking-wide m-0">
               {location?.name ?? 'Street View'}
             </h2>
-            <p className="text-[13px] text-[#8B7355] mt-1 m-0">
+            <p className="text-[13px] text-muted-foreground mt-1 m-0">
               360° Street View — drag to look around
             </p>
           </div>
           <button
             onClick={onClose}
-            className="p-2 text-[#8B7355] hover:text-[#E8D5B7] hover:bg-white/5 rounded-full transition-colors"
+            className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-full transition-colors"
           >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -135,35 +135,35 @@ export default function PanoramaModal({ location, isOpen, onClose }: PanoramaMod
           {/* Loading Overlay */}
           <div
             className={`
-              absolute inset-0 flex items-center justify-center bg-[#0F0D0A]/90 z-10
+              absolute inset-0 flex items-center justify-center bg-background/90 z-10
               transition-opacity duration-300 pointer-events-none
               ${isLoading ? 'opacity-100' : 'opacity-0'}
             `}
           >
             <div className="flex flex-col items-center gap-4">
               <div className="relative w-12 h-12">
-                <div className="absolute inset-0 rounded-full border-2 border-[#C1440E]/20" />
+                <div className="absolute inset-0 rounded-full border-2 border-primary/20" />
                 <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-[#C1440E] animate-spin" />
               </div>
-              <p className="text-[13px] uppercase tracking-[0.2em] text-[#8B7355]">Loading panorama...</p>
+              <p className="text-[13px] uppercase tracking-[0.2em] text-muted-foreground">Loading panorama...</p>
             </div>
           </div>
 
           {/* Error Overlay */}
           {error && (
-            <div className="absolute inset-0 flex items-center justify-center bg-[#0F0D0A]/95 z-20">
+            <div className="absolute inset-0 flex items-center justify-center bg-background/95 z-20">
               <div className="flex flex-col items-center gap-4 text-center px-8">
-                <div className="w-16 h-16 rounded-full bg-[#1A1610] border border-[#E8D5B7]/8 flex items-center justify-center">
-                  <svg className="w-8 h-8 text-[#8B7355]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <div className="w-16 h-16 rounded-full bg-card border border-border flex items-center justify-center">
+                  <svg className="w-8 h-8 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
                     <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
                   </svg>
                 </div>
                 <div>
-                  <p className="text-[#F0E6D8] font-medium text-lg mb-1">
+                  <p className="text-foreground font-medium text-lg mb-1">
                     No Street View Available
                   </p>
-                  <p className="text-[#8B7355] text-sm">
+                  <p className="text-muted-foreground text-sm">
                     {error} Try a nearby spot!
                   </p>
                 </div>

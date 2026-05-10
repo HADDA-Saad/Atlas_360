@@ -40,14 +40,14 @@ function StatePage({
   actionLabel?: string
 }) {
   return (
-    <div className="min-h-screen bg-[#0F0D0A] px-6 pt-32 text-center atlas-grain">
-      <h1 className="font-[family-name:var(--font-cormorant)] text-4xl font-semibold text-[#F0E6D8]">
+    <div className="min-h-screen bg-background px-6 pt-32 text-center atlas-grain">
+      <h1 className="font-[family-name:var(--font-cormorant)] text-4xl font-semibold text-foreground">
         {title}
       </h1>
-      <p className="mx-auto mt-4 max-w-md text-[#8B7355]">{body}</p>
+      <p className="mx-auto mt-4 max-w-md text-muted-foreground">{body}</p>
       <Link
         href={actionHref}
-        className="mt-8 inline-flex rounded-full bg-[#C1440E] px-7 py-3 text-[11px] font-semibold uppercase tracking-widest text-white transition-colors hover:bg-[#D4622E]"
+        className="mt-8 inline-flex rounded-full bg-primary px-7 py-3 text-[11px] font-semibold uppercase tracking-widest text-primary-foreground transition-colors hover:bg-primary/90"
       >
         {actionLabel}
       </Link>
@@ -183,36 +183,36 @@ export default async function ItineraryMagazinePage({
   const heroImage = coverImageUrl || stops.find((stop) => stop.locations.image_url)?.locations.image_url || '/Images/jame3.png'
 
   return (
-    <div className="min-h-screen bg-[#0F0D0A] text-[#F0E6D8] atlas-grain">
+    <div className="min-h-screen bg-background text-foreground atlas-grain">
       <section className="relative min-h-[86vh] overflow-hidden">
         <img
           src={heroImage}
           alt={title}
           className="absolute inset-0 h-full w-full object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0F0D0A] via-[#0F0D0A]/60 to-black/35" />
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-black/35" />
         <div className="relative z-10 mx-auto flex min-h-[86vh] max-w-7xl flex-col justify-end px-6 pb-16 pt-32 md:px-12">
           <div className="mb-6 flex flex-wrap items-center gap-3">
             {region && (
-              <span className="rounded-sm border border-white/15 bg-black/25 px-3 py-1 text-[10px] font-semibold uppercase tracking-widest text-[#F0E6D8] backdrop-blur">
+              <span className="rounded-sm border border-foreground/15 bg-background/25 px-3 py-1 text-[10px] font-semibold uppercase tracking-widest text-foreground backdrop-blur">
                 {region}
               </span>
             )}
             {tierLabel && (
-              <span className="rounded-sm border border-[#C1440E]/35 bg-[#C1440E]/15 px-3 py-1 text-[10px] font-semibold uppercase tracking-widest text-[#D4622E] backdrop-blur">
+              <span className="rounded-sm border border-primary/35 bg-primary/15 px-3 py-1 text-[10px] font-semibold uppercase tracking-widest text-[#D4622E] backdrop-blur">
                 {tierLabel}
               </span>
             )}
-            <span className="rounded-sm border border-white/15 bg-black/25 px-3 py-1 text-[10px] font-semibold uppercase tracking-widest text-[#BFA882] backdrop-blur">
+            <span className="rounded-sm border border-foreground/15 bg-background/25 px-3 py-1 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground backdrop-blur">
               {stops.length} stops
             </span>
           </div>
 
-          <h1 className="max-w-4xl font-[family-name:var(--font-cormorant)] text-5xl font-semibold leading-none text-white md:text-7xl">
+          <h1 className="max-w-4xl font-[family-name:var(--font-cormorant)] text-5xl font-semibold leading-none text-foreground md:text-7xl">
             {title}
           </h1>
           {description && (
-            <p className="mt-6 max-w-2xl text-lg leading-relaxed text-[#BFA882] md:text-xl">
+            <p className="mt-6 max-w-2xl text-lg leading-relaxed text-muted-foreground md:text-xl">
               {description}
             </p>
           )}
@@ -220,7 +220,7 @@ export default async function ItineraryMagazinePage({
           <div className="mt-8 flex flex-wrap gap-3">
             <Link
               href={`/itinerary/${id}`}
-              className="inline-flex rounded-full border border-white/15 bg-black/25 px-6 py-3 text-[11px] font-semibold uppercase tracking-widest text-[#F0E6D8] backdrop-blur transition-colors hover:border-[#C1440E]/60 hover:text-white"
+              className="inline-flex rounded-full border border-foreground/15 bg-background/25 px-6 py-3 text-[11px] font-semibold uppercase tracking-widest text-foreground backdrop-blur transition-colors hover:border-primary/60 hover:text-foreground"
             >
               Open Map View
             </Link>
@@ -262,10 +262,10 @@ export default async function ItineraryMagazinePage({
           {dayNumbers.map((dayNumber) => (
             <section key={dayNumber}>
               <div className="mb-8 flex items-center gap-4">
-                <span className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#C1440E]">
+                <span className="text-[11px] font-semibold uppercase tracking-[0.28em] text-primary">
                   Day {dayNumber}
                 </span>
-                <div className="h-px flex-1 bg-gradient-to-r from-[#C1440E]/30 to-transparent" />
+                <div className="h-px flex-1 bg-gradient-to-r from-primary/30 to-transparent" />
               </div>
 
               <div className="space-y-10">
@@ -275,52 +275,52 @@ export default async function ItineraryMagazinePage({
                   const image = location.image_url || '/Images/riad.png'
 
                   return (
-                    <article key={location.id} className="grid gap-6 border-b border-[#E8D5B7]/8 pb-10 md:grid-cols-[260px_1fr]">
-                      <div className="overflow-hidden rounded-lg border border-white/5 bg-[#1A1814]">
+                    <article key={location.id} className="grid gap-6 border-b border-border pb-10 md:grid-cols-[260px_1fr]">
+                      <div className="overflow-hidden rounded-lg border border-border bg-card">
                         <img src={image} alt={location.name} className="aspect-[4/3] h-full w-full object-cover" />
                       </div>
 
                       <div>
                         <div className="flex flex-wrap items-center gap-3">
-                          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#C1440E] text-sm font-semibold text-white">
+                          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-sm font-semibold text-foreground">
                             {index + 1}
                           </span>
                           {location.category && (
-                            <span className="text-[10px] font-semibold uppercase tracking-widest text-[#8B7355]">
+                            <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
                               {location.category}
                             </span>
                           )}
                           {duration && (
-                            <span className="rounded-sm bg-[#8B7355]/15 px-2 py-1 text-[10px] font-medium uppercase tracking-wider text-[#BFA882]">
+                            <span className="rounded-sm bg-muted-foreground/15 px-2 py-1 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
                               {duration}
                             </span>
                           )}
                           {location.best_time && (
-                            <span className="rounded-sm bg-[#1A1814] px-2 py-1 text-[10px] font-medium uppercase tracking-wider text-[#BFA882]">
+                            <span className="rounded-sm bg-card px-2 py-1 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
                               {location.best_time}
                             </span>
                           )}
                         </div>
 
-                        <h2 className="mt-4 font-[family-name:var(--font-cormorant)] text-4xl font-semibold text-white">
+                        <h2 className="mt-4 font-[family-name:var(--font-cormorant)] text-4xl font-semibold text-foreground">
                           {location.name}
                         </h2>
-                        <p className="mt-4 text-base leading-relaxed text-[#BFA882]">
+                        <p className="mt-4 text-base leading-relaxed text-muted-foreground">
                           {stop.custom_notes || location.description}
                         </p>
 
                         {(location.tips || location.transport_to_next) && (
                           <div className="mt-5 grid gap-3 md:grid-cols-2">
                             {location.tips && (
-                              <div className="rounded-lg border border-[#E8D5B7]/8 bg-[#1A1814]/60 p-4">
-                                <p className="text-[10px] font-semibold uppercase tracking-widest text-[#C1440E]">Tip</p>
-                                <p className="mt-2 text-sm leading-relaxed text-[#8B7355]">{location.tips}</p>
+                              <div className="rounded-lg border border-border bg-card/60 p-4">
+                                <p className="text-[10px] font-semibold uppercase tracking-widest text-primary">Tip</p>
+                                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{location.tips}</p>
                               </div>
                             )}
                             {location.transport_to_next && (
-                              <div className="rounded-lg border border-[#E8D5B7]/8 bg-[#1A1814]/60 p-4">
-                                <p className="text-[10px] font-semibold uppercase tracking-widest text-[#C1440E]">Next transfer</p>
-                                <p className="mt-2 text-sm leading-relaxed text-[#8B7355]">
+                              <div className="rounded-lg border border-border bg-card/60 p-4">
+                                <p className="text-[10px] font-semibold uppercase tracking-widest text-primary">Next transfer</p>
+                                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
                                   {location.transport_to_next}
                                   {location.transport_duration_minutes ? ` · ${formatDuration(location.transport_duration_minutes)}` : ''}
                                 </p>

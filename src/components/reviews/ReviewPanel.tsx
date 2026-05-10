@@ -39,7 +39,7 @@ function RatingStars({
     <div className="flex items-center gap-1">
       {[1, 2, 3, 4, 5].map((star) => {
         const isActive = star <= value
-        const className = isActive ? 'fill-[#C1440E] text-[#C1440E]' : 'text-[#8B7355]/40'
+        const className = isActive ? 'fill-[#C1440E] text-primary' : 'text-muted-foreground/40'
 
         if (!interactive) {
           return <Star key={star} size={starSize} className={className} />
@@ -50,7 +50,7 @@ function RatingStars({
             key={star}
             type="button"
             onClick={() => onChange?.(star)}
-            className="rounded-sm p-0.5 text-[#8B7355] transition-colors hover:text-[#C1440E]"
+            className="rounded-sm p-0.5 text-muted-foreground transition-colors hover:text-primary"
             aria-label={`${star} star${star === 1 ? '' : 's'}`}
           >
             <Star size={starSize + 2} className={className} />
@@ -189,60 +189,60 @@ export default function ReviewPanel({
   const visibleReviews: Review[] = compact ? response.reviews.slice(0, 2) : response.reviews.slice(0, 4)
 
   return (
-    <section className={`${compact ? 'mt-6' : 'mt-8'} border border-[#E8D5B7]/10 bg-[#1A1814]/55 rounded-xl p-4`}>
+    <section className={`${compact ? 'mt-6' : 'mt-8'} border border-border bg-card/55 rounded-xl p-4`}>
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-[#C1440E]">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-primary">
             Reviews
           </p>
-          <h3 className="mt-1 font-[family-name:var(--font-cormorant)] text-xl font-semibold text-[#F0E6D8]">
+          <h3 className="mt-1 font-[family-name:var(--font-cormorant)] text-xl font-semibold text-foreground">
             {title}
           </h3>
         </div>
 
         <div className="text-right">
-          <div className="flex items-center justify-end gap-2 text-[#F0E6D8]">
+          <div className="flex items-center justify-end gap-2 text-foreground">
             <span className="font-[family-name:var(--font-cormorant)] text-2xl">
               {response.averageRating ?? '-'}
             </span>
             <RatingStars value={Math.round(response.averageRating || 0)} />
           </div>
-          <p className="text-[11px] uppercase tracking-widest text-[#8B7355]">
+          <p className="text-[11px] uppercase tracking-widest text-muted-foreground">
             {response.reviewCount} {response.reviewCount === 1 ? 'review' : 'reviews'}
           </p>
         </div>
       </div>
 
       {isLoading ? (
-        <p className="mt-4 text-sm text-[#8B7355]">Loading feedback...</p>
+        <p className="mt-4 text-sm text-muted-foreground">Loading feedback...</p>
       ) : (
         <>
           {visibleReviews.length > 0 ? (
             <div className="mt-4 space-y-3">
               {visibleReviews.map((review) => (
-                <article key={review.id} className="border-t border-[#E8D5B7]/6 pt-3">
+                <article key={review.id} className="border-t border-border pt-3">
                   <div className="flex items-center justify-between gap-3">
                     <RatingStars value={review.rating} />
-                    <span className="text-[10px] uppercase tracking-widest text-[#8B7355]/70">
+                    <span className="text-[10px] uppercase tracking-widest text-muted-foreground/70">
                       {review.is_own ? 'Your review' : formatDate(review.created_at)}
                     </span>
                   </div>
-                  <p className="mt-2 text-[13px] leading-relaxed text-[#BFA882]">
+                  <p className="mt-2 text-[13px] leading-relaxed text-muted-foreground">
                     {review.body}
                   </p>
                 </article>
               ))}
             </div>
           ) : (
-            <p className="mt-4 text-sm text-[#8B7355]">
+            <p className="mt-4 text-sm text-muted-foreground">
               No traveler feedback yet.
             </p>
           )}
 
           {isLoggedIn ? (
-            <form onSubmit={handleSubmit} className="mt-5 border-t border-[#E8D5B7]/6 pt-4">
+            <form onSubmit={handleSubmit} className="mt-5 border-t border-border pt-4">
               <div className="flex items-center justify-between gap-3">
-                <span className="text-[11px] uppercase tracking-widest text-[#8B7355]">
+                <span className="text-[11px] uppercase tracking-widest text-muted-foreground">
                   {ownReview ? 'Update your rating' : 'Add your rating'}
                 </span>
                 <RatingStars value={rating} interactive onChange={setRating} size="md" />
@@ -252,7 +252,7 @@ export default function ReviewPanel({
                 value={body}
                 onChange={(event) => setBody(event.target.value)}
                 placeholder="Share what stood out..."
-                className="mt-3 min-h-[82px] w-full resize-none rounded-lg border border-[#E8D5B7]/10 bg-[#0F0D0A] p-3 text-sm text-[#F0E6D8] outline-none transition-colors placeholder:text-[#8B7355]/50 focus:border-[#C1440E]/50"
+                className="mt-3 min-h-[82px] w-full resize-none rounded-lg border border-border bg-background p-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground/50 focus:border-primary/50"
               />
 
               {error && (
@@ -274,17 +274,17 @@ export default function ReviewPanel({
                 <button
                   type="submit"
                   disabled={isSubmitting || body.trim().length < 3}
-                  className="rounded-lg bg-[#C1440E] px-4 py-2 text-[11px] font-semibold uppercase tracking-widest text-white transition-colors hover:bg-[#D4622E] disabled:cursor-not-allowed disabled:opacity-50"
+                  className="rounded-lg bg-primary px-4 py-2 text-[11px] font-semibold uppercase tracking-widest text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {isSubmitting ? 'Saving...' : ownReview ? 'Update' : 'Publish'}
                 </button>
               </div>
             </form>
           ) : (
-            <div className="mt-5 border-t border-[#E8D5B7]/6 pt-4">
+            <div className="mt-5 border-t border-border pt-4">
               <Link
                 href="/auth/login"
-                className="text-[11px] font-semibold uppercase tracking-widest text-[#C1440E] transition-colors hover:text-[#D4622E]"
+                className="text-[11px] font-semibold uppercase tracking-widest text-primary transition-colors hover:text-[#D4622E]"
               >
                 Login to leave feedback
               </Link>

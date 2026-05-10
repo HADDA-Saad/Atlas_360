@@ -63,6 +63,48 @@
 }
 
 :root {
+  --background: #FFFDF9;
+  --foreground: #1A1610;
+  --card: #FFFFFF;
+  --card-foreground: #1A1610;
+  --popover: #FFFFFF;
+  --popover-foreground: #1A1610;
+  --primary: #C1440E;
+  --primary-foreground: #FFF8F0;
+  --secondary: #F3EBE1;
+  --secondary-foreground: #2D2720;
+  --muted: #F3EBE1;
+  --muted-foreground: #6B5E4F;
+  --accent: #E8D5B7;
+  --accent-foreground: #1A1610;
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: rgba(26, 22, 16, 0.12);
+  --input: rgba(26, 22, 16, 0.18);
+  --ring: #C1440E;
+  --chart-1: #C1440E;
+  --chart-2: #D4A574;
+  --chart-3: #E8D5B7;
+  --chart-4: #8B7355;
+  --chart-5: #231F18;
+  --radius: 0.625rem;
+  --sidebar: #FFFDF9;
+  --sidebar-foreground: #1A1610;
+  --sidebar-primary: #C1440E;
+  --sidebar-primary-foreground: #FFF8F0;
+  --sidebar-accent: #F3EBE1;
+  --sidebar-accent-foreground: #2D2720;
+  --sidebar-border: rgba(26, 22, 16, 0.1);
+  --sidebar-ring: #C1440E;
+
+  --font-outfit: "Outfit", "Aptos", "Segoe UI", Arial, sans-serif;
+  --font-cormorant: "Cormorant Garamond", Georgia, "Times New Roman", serif;
+  --font-sans: var(--font-outfit);
+  --font-geist-mono: "Cascadia Code", "Consolas", monospace;
+  --font-heading: var(--font-outfit);
+  --font-display: var(--font-cormorant);
+}
+
+.dark {
   --background: #0F0D0A;
   --foreground: #F0E6D8;
   --card: #1A1610;
@@ -86,7 +128,6 @@
   --chart-3: #E8D5B7;
   --chart-4: #8B7355;
   --chart-5: #231F18;
-  --radius: 0.625rem;
   --sidebar: #141210;
   --sidebar-foreground: #F0E6D8;
   --sidebar-primary: #C1440E;
@@ -95,16 +136,9 @@
   --sidebar-accent-foreground: #E8D5B7;
   --sidebar-border: rgba(232, 213, 183, 0.06);
   --sidebar-ring: #C1440E;
-
-  --font-outfit: "Outfit", "Aptos", "Segoe UI", Arial, sans-serif;
-  --font-cormorant: "Cormorant Garamond", Georgia, "Times New Roman", serif;
-  --font-sans: var(--font-outfit);
-  --font-geist-mono: "Cascadia Code", "Consolas", monospace;
-  --font-heading: var(--font-outfit);
-  --font-display: var(--font-cormorant);
 }
 
-/* No separate .dark block needed — the app is permanently dark */
+/* The app now supports both light and dark modes */
 
 @layer base {
   * {
@@ -217,11 +251,19 @@
 }
 
 .atlas-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(232, 213, 183, 0.12);
+  background: rgba(26, 22, 16, 0.1);
   border-radius: 4px;
 }
 
 .atlas-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(26, 22, 16, 0.18);
+}
+
+.dark .atlas-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(232, 213, 183, 0.12);
+}
+
+.dark .atlas-scrollbar::-webkit-scrollbar-thumb:hover {
   background: rgba(232, 213, 183, 0.2);
 }
 
@@ -229,10 +271,20 @@
 .atlas-shimmer {
   background: linear-gradient(
     90deg,
+    rgba(26, 22, 16, 0.04) 25%,
+    rgba(26, 22, 16, 0.08) 50%,
+    rgba(26, 22, 16, 0.04) 75%
+  );
+  background-size: 200% 100%;
+  animation: atlas-shimmer 1.8s ease-in-out infinite;
+}
+
+.dark .atlas-shimmer {
+  background: linear-gradient(
+    90deg,
     rgba(232, 213, 183, 0.04) 25%,
     rgba(232, 213, 183, 0.08) 50%,
     rgba(232, 213, 183, 0.04) 75%
   );
   background-size: 200% 100%;
-  animation: atlas-shimmer 1.8s ease-in-out infinite;
 }

@@ -97,7 +97,7 @@ export default function PlacesTab({ lat, lng, onPlacesLoaded }: PlacesTabProps) 
 
   if (error) {
     return (
-      <div className="p-6 text-sm text-[#8B7355] text-center border border-red-900/30 bg-red-900/10 rounded-xl m-4">
+      <div className="p-6 text-sm text-muted-foreground text-center border border-red-900/30 bg-red-900/10 rounded-xl m-4">
         {errorMessage}
       </div>
     )
@@ -107,7 +107,7 @@ export default function PlacesTab({ lat, lng, onPlacesLoaded }: PlacesTabProps) 
     return (
       <div className="flex flex-col gap-6 p-4">
         <div>
-          <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#C1440E] mb-3 ml-1">Nearby Hotels</h3>
+          <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary mb-3 ml-1">Nearby Hotels</h3>
           <div className="flex flex-col gap-2">
             <PlaceCardSkeleton />
             <PlaceCardSkeleton />
@@ -115,7 +115,7 @@ export default function PlacesTab({ lat, lng, onPlacesLoaded }: PlacesTabProps) 
           </div>
         </div>
         <div>
-          <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#C1440E] mb-3 ml-1">Nearby Restaurants</h3>
+          <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary mb-3 ml-1">Nearby Restaurants</h3>
           <div className="flex flex-col gap-2">
             <PlaceCardSkeleton />
             <PlaceCardSkeleton />
@@ -129,7 +129,7 @@ export default function PlacesTab({ lat, lng, onPlacesLoaded }: PlacesTabProps) 
   return (
     <div className="flex flex-col gap-8 p-4 pb-8">
       <div>
-        <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#C1440E] mb-3 ml-1">Nearby Hotels</h3>
+        <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary mb-3 ml-1">Nearby Hotels</h3>
         {hotels.length > 0 ? (
           <div className="flex flex-col gap-2">
             {hotels.map((hotel) => (
@@ -137,12 +137,12 @@ export default function PlacesTab({ lat, lng, onPlacesLoaded }: PlacesTabProps) 
             ))}
           </div>
         ) : (
-          <p className="text-sm text-[#8B7355] italic ml-1">No results found</p>
+          <p className="text-sm text-muted-foreground italic ml-1">No results found</p>
         )}
       </div>
       
       <div>
-        <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#C1440E] mb-3 ml-1">Nearby Restaurants</h3>
+        <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary mb-3 ml-1">Nearby Restaurants</h3>
         {restaurants.length > 0 ? (
           <div className="flex flex-col gap-2">
             {restaurants.map((restaurant) => (
@@ -150,7 +150,7 @@ export default function PlacesTab({ lat, lng, onPlacesLoaded }: PlacesTabProps) 
             ))}
           </div>
         ) : (
-          <p className="text-sm text-[#8B7355] italic ml-1">No results found</p>
+          <p className="text-sm text-muted-foreground italic ml-1">No results found</p>
         )}
       </div>
     </div>

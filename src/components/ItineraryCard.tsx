@@ -53,17 +53,17 @@ export default function ItineraryCard({
           transition-all duration-200
           border-b
           ${isSelected
-            ? 'bg-[#1E1B16] border-[#C1440E]/35 shadow-lg shadow-[#C1440E]/5'
-            : 'bg-transparent border-white/5 hover:bg-[#1E1B16] hover:border-[#C1440E]/20'
+            ? 'bg-muted dark:bg-[#1E1B16] border-primary/35 shadow-lg shadow-primary/5'
+            : 'bg-transparent border-border hover:bg-muted dark:hover:bg-[#1E1B16] hover:border-primary/20'
           }
           ${isLocked ? 'opacity-70 grayscale-[0.3]' : ''}
         `}
       >
         {isLocked && (
-          <div className="absolute inset-0 bg-[#0F0D0A]/60 backdrop-blur-[2px] z-10 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-            <div className="bg-[#1A1610] border border-[#C1440E]/30 px-4 py-2 rounded-full shadow-lg flex items-center gap-2">
-              <svg className="w-4 h-4 text-[#C1440E]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
-              <span className="text-xs font-semibold text-[#F0E6D8] uppercase tracking-wider">Upgrade to {itinerary.tier}</span>
+          <div className="absolute inset-0 bg-background/60 backdrop-blur-[2px] z-10 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            <div className="bg-card border border-primary/30 px-4 py-2 rounded-full shadow-lg flex items-center gap-2">
+              <svg className="w-4 h-4 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+              <span className="text-xs font-semibold text-foreground uppercase tracking-wider">Upgrade to {itinerary.tier}</span>
             </div>
           </div>
         )}
@@ -74,8 +74,8 @@ export default function ItineraryCard({
             absolute left-0 top-3 bottom-3 w-[3px] rounded-full
             transition-all duration-500 ease-out
             ${isSelected
-              ? 'bg-[#C1440E] opacity-100 shadow-[0_0_8px_rgba(193,68,14,0.4)]'
-              : 'bg-[#C1440E]/0 opacity-0 group-hover:bg-[#C1440E]/40 group-hover:opacity-100'
+              ? 'bg-primary opacity-100 shadow-[0_0_8px_rgba(193,68,14,0.4)]'
+              : 'bg-primary/0 opacity-0 group-hover:bg-primary/40 group-hover:opacity-100'
             }
           `}
         />
@@ -89,14 +89,14 @@ export default function ItineraryCard({
                 px-2.5 py-0.5
                 text-[10px] font-medium uppercase tracking-widest
                 rounded-sm
-                bg-[#C1440E]/15 text-[#C1440E]
-                border border-[#C1440E]/20
+                bg-primary/15 text-primary
+                border border-primary/20
               ">
                 {itinerary.region}
               </span>
             )}
             {itinerary.duration_days && (
-              <span className="text-[#8B7355] text-xs tracking-wide">
+              <span className="text-muted-foreground text-xs tracking-wide">
                 {itinerary.duration_days} {itinerary.duration_days === 1 ? 'day' : 'days'}
               </span>
             )}
@@ -110,7 +110,7 @@ export default function ItineraryCard({
               tracking-wide
               mb-2
               transition-colors duration-300
-              ${isSelected ? 'text-[#F0E6D8]' : 'text-[#E8D5B7] group-hover:text-[#F0E6D8]'}
+              ${isSelected ? 'text-foreground' : 'text-secondary-foreground group-hover:text-foreground'}
             `}
           >
             {itinerary.title}
@@ -118,7 +118,7 @@ export default function ItineraryCard({
 
           {/* Description */}
           {itinerary.description && (
-            <p className="text-[13px] text-[#8B7355] leading-relaxed line-clamp-2 mb-3">
+            <p className="text-[13px] text-muted-foreground leading-relaxed line-clamp-2 mb-3">
               {itinerary.description}
             </p>
           )}
@@ -130,8 +130,8 @@ export default function ItineraryCard({
               text-[11px] font-medium uppercase tracking-widest
               transition-all duration-200
               ${isSelected
-                ? 'text-[#C1440E]'
-                : 'text-[#8B7355] group-hover:text-[#C1440E]'
+                ? 'text-primary'
+                : 'text-muted-foreground group-hover:text-primary'
               }
             `}
           >

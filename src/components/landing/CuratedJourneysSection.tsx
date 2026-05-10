@@ -5,22 +5,22 @@ import type { Itinerary } from '@/types'
 
 export default function CuratedJourneysSection({ itineraries }: { itineraries: Itinerary[] }) {
   return (
-    <section className="bg-[#12100C] py-24 md:py-32">
+    <section className="bg-secondary dark:bg-[#12100C] py-24 md:py-32">
       <div className="max-w-7xl mx-auto px-6 md:px-12">
         
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-16">
           <div className="flex flex-col gap-3">
-            <span className="text-[#C1440E] text-[10px] tracking-[0.3em] font-semibold uppercase">
+            <span className="text-primary text-[10px] tracking-[0.3em] font-semibold uppercase">
               Selected Experiences
             </span>
-            <h2 className="font-[family-name:var(--font-cormorant)] text-4xl md:text-5xl text-white font-semibold">
+            <h2 className="font-[family-name:var(--font-cormorant)] text-4xl md:text-5xl text-foreground font-semibold">
               Curated Journeys
             </h2>
           </div>
           <Link 
             href="/explore" 
-            className="text-[#F0E6D8] text-sm hover:text-[#C1440E] transition-colors flex items-center gap-2 group tracking-wide"
+            className="text-foreground text-sm hover:text-primary transition-colors flex items-center gap-2 group tracking-wide"
           >
             View All Experiences
             <svg 
@@ -39,7 +39,7 @@ export default function CuratedJourneysSection({ itineraries }: { itineraries: I
           {itineraries.map((itinerary) => (
             <div 
               key={itinerary.id} 
-              className="group flex flex-col bg-[#1A1814] border border-white/5 overflow-hidden hover:border-[#C1440E]/30 transition-colors duration-500"
+              className="group flex flex-col bg-card border border-border overflow-hidden hover:border-primary/30 transition-colors duration-500"
             >
               {/* Card Image */}
               <div className="relative aspect-[4/3] overflow-hidden">
@@ -49,8 +49,8 @@ export default function CuratedJourneysSection({ itineraries }: { itineraries: I
                   className="object-cover w-full h-full transform group-hover:scale-105 transition-transform duration-700"
                 />
                 {/* Duration Badge */}
-                <div className="absolute top-4 right-4 bg-[#0F0D0A]/80 backdrop-blur-md border border-white/10 px-3 py-1.5 rounded-sm">
-                  <span className="text-[#C1440E] text-[10px] font-bold tracking-widest uppercase">
+                <div className="absolute top-4 right-4 bg-background/80 backdrop-blur-md border border-border px-3 py-1.5 rounded-sm">
+                  <span className="text-primary text-[10px] font-bold tracking-widest uppercase">
                     {itinerary.duration_days ? itinerary.duration_days + ' DAYS' : '— DAYS'}
                   </span>
                 </div>
@@ -58,15 +58,15 @@ export default function CuratedJourneysSection({ itineraries }: { itineraries: I
 
               {/* Card Body */}
               <div className="p-6 md:p-8 flex flex-col flex-1">
-                <h3 className="font-[family-name:var(--font-cormorant)] text-2xl text-white mb-3">
+                <h3 className="font-[family-name:var(--font-cormorant)] text-2xl text-foreground mb-3">
                   {itinerary.title}
                 </h3>
-                <p className="text-[#8B7355] text-sm leading-relaxed mb-8 flex-1">
+                <p className="text-muted-foreground text-sm leading-relaxed mb-8 flex-1">
                   {itinerary.description ?? ''}
                 </p>
                 <Link 
                   href="/explore"
-                  className="w-full py-3 px-4 border border-[#8B7355]/30 text-[#F0E6D8] text-xs font-semibold tracking-widest uppercase text-center hover:bg-[#C1440E] hover:border-[#C1440E] transition-colors duration-300"
+                  className="w-full py-3 px-4 border border-border text-foreground text-xs font-semibold tracking-widest uppercase text-center hover:bg-primary hover:border-primary hover:text-primary-foreground transition-colors duration-300"
                 >
                   View Details
                 </Link>

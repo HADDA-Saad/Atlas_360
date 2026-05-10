@@ -8,17 +8,17 @@ const googleMapId = process.env.NEXT_PUBLIC_GOOGLE_MAP_ID
 
 function MapsUnavailable({ detail }: { detail: string }) {
   return (
-    <div className="flex h-full min-h-[320px] w-full items-center justify-center bg-[#0F0D0A] atlas-grain">
+    <div className="flex h-full min-h-[320px] w-full items-center justify-center bg-background atlas-grain">
       <div className="mx-6 max-w-sm text-center">
-        <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-full border border-[#C1440E]/25 bg-[#1A1610] text-[#C1440E] shadow-xl shadow-black/30">
+        <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-full border border-primary/25 bg-card text-primary shadow-xl shadow-black/10 dark:shadow-black/30">
           <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M9 6.75V15m6-6v8.25M15.75 4.5l-7.5 2.25-3-1.5v13.5l3 1.5 7.5-2.25 3 1.5V6l-3-1.5z" />
           </svg>
         </div>
-        <h2 className="font-[family-name:var(--font-cormorant)] text-3xl font-semibold text-[#F0E6D8]">
+        <h2 className="font-[family-name:var(--font-cormorant)] text-3xl font-semibold text-foreground">
           Map unavailable
         </h2>
-        <p className="mt-3 text-sm leading-relaxed text-[#8B7355]">
+        <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
           {detail}
         </p>
       </div>

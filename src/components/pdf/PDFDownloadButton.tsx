@@ -25,7 +25,7 @@ export default function PDFDownloadButton({ stops, title, userEmail, tier, cover
       <button 
         disabled
         title="Available for Nomad and Elite — upgrade at /pricing"
-        className="w-full border border-white/10 bg-transparent text-[#8B7355] text-xs tracking-widest uppercase px-4 py-2 opacity-50 cursor-not-allowed flex items-center justify-center gap-2 rounded-lg mt-4"
+        className="w-full border border-border bg-transparent text-muted-foreground text-xs tracking-widest uppercase px-4 py-2 opacity-50 cursor-not-allowed flex items-center justify-center gap-2 rounded-lg mt-4"
       >
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
           <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
@@ -42,7 +42,7 @@ export default function PDFDownloadButton({ stops, title, userEmail, tier, cover
       <PDFDownloadLink
         document={<ItineraryPDF title={title} coverImageUrl={coverImageUrl} stops={stops} userEmail={userEmail} generatedDate={generatedDate} />}
         fileName={filename}
-        className="w-full border border-white/10 bg-transparent text-[#8B7355] hover:text-white hover:border-white/30 transition-colors text-xs tracking-widest uppercase px-4 py-2 flex items-center justify-center gap-2 rounded-lg"
+        className="w-full border border-border bg-transparent text-muted-foreground hover:text-foreground hover:border-foreground/30 transition-colors text-xs tracking-widest uppercase px-4 py-2 flex items-center justify-center gap-2 rounded-lg"
       >
         {({ loading }) => (
           <>

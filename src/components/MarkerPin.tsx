@@ -16,14 +16,14 @@ export default function MarkerPin({ isSelected, label, index }: MarkerPinProps) 
           rounded-full border-2 border-white shadow-lg
           transition-all duration-300 ease-in-out
           ${isSelected
-            ? 'w-10 h-10 bg-[#C1440E] scale-110 shadow-xl'
+            ? 'w-10 h-10 bg-primary scale-110 shadow-xl'
             : 'w-7 h-7 bg-slate-500 hover:bg-slate-400 hover:scale-105'
           }
         `}
       >
         <span
           className={`
-            font-bold text-white
+            font-bold text-foreground
             ${isSelected ? 'text-sm' : 'text-xs'}
           `}
         >
@@ -50,7 +50,7 @@ export default function MarkerPin({ isSelected, label, index }: MarkerPinProps) 
       {!isSelected && (
         <div className="
           absolute bottom-full left-1/2 -translate-x-1/2 mb-2
-          px-2 py-1 rounded bg-gray-900 text-white text-xs whitespace-nowrap
+          px-2 py-1 rounded bg-gray-900 text-foreground text-xs whitespace-nowrap
           opacity-0 group-hover:opacity-100 transition-opacity duration-200
           pointer-events-none
         ">
@@ -62,7 +62,7 @@ export default function MarkerPin({ isSelected, label, index }: MarkerPinProps) 
       {isSelected && (
         <div className="
           absolute top-full left-1/2 -translate-x-1/2 mt-2
-          px-3 py-1.5 rounded-md bg-[#C1440E] text-white text-xs font-medium
+          px-3 py-1.5 rounded-md bg-primary text-foreground text-xs font-medium
           whitespace-nowrap shadow-lg
         ">
           {label}
