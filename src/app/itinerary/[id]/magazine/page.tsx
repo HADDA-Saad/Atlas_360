@@ -7,6 +7,7 @@ import type { Itinerary, Location, UserTier } from '@/types'
 export const dynamic = 'force-dynamic'
 
 const TIER_LEVELS: Record<UserTier, number> = { explorer: 0, nomad: 1, elite: 2 }
+const FALLBACK_IMAGES = ['/Images/jame3.png', '/Images/riad.png', '/Images/sea.png', '/Images/spices.png', '/Images/Zellige.png']
 
 interface PublicStop {
   day_number: number
@@ -61,6 +62,10 @@ function formatDuration(mins: number | null) {
   const hrs = Math.floor(mins / 60)
   const rem = mins % 60
   return rem === 0 ? `${hrs} hr${hrs > 1 ? 's' : ''}` : `${hrs} hr ${rem} min`
+}
+
+function getFallbackImage(index: number) {
+  return FALLBACK_IMAGES[index % FALLBACK_IMAGES.length]
 }
 
 export default async function ItineraryMagazinePage({
@@ -180,18 +185,21 @@ export default async function ItineraryMagazinePage({
     return acc
   }, {})
   const dayNumbers = Object.keys(groupedByDay).map(Number).sort((a, b) => a - b)
-  const heroImage = coverImageUrl || stops.find((stop) => stop.locations.image_url)?.locations.image_url || '/Images/jame3.png'
+  const heroImage = coverImageUrl || stops.find((stop) => stop.locations.image_url)?.locations.image_url || getFallbackImage(0)
+  const stopCount = stops.length
+  const dayCount = dayNumbers.length
+  const photoCount = stops.filter((stop) => Boolean(stop.locations.image_url)).length
 
   return (
     <div className="min-h-screen bg-background text-foreground atlas-grain">
-      <section className="relative min-h-[86vh] overflow-hidden">
+      <section className="relative min-h-[82vh] overflow-hidden">
         <img
           src={heroImage}
           alt={title}
           className="absolute inset-0 h-full w-full object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-black/35" />
-        <div className="relative z-10 mx-auto flex min-h-[86vh] max-w-7xl flex-col justify-end px-6 pb-16 pt-32 md:px-12">
+        <div className="relative z-10 mx-auto flex min-h-[82vh] max-w-7xl flex-col justify-end px-6 pb-12 pt-32 md:px-12">
           <div className="mb-6 flex flex-wrap items-center gap-3">
             {region && (
               <span className="rounded-sm border border-foreground/15 bg-background/25 px-3 py-1 text-[10px] font-semibold uppercase tracking-widest text-foreground backdrop-blur">
@@ -208,6 +216,9 @@ export default async function ItineraryMagazinePage({
             </span>
           </div>
 
+          <p className="mb-4 text-[10px] font-semibold uppercase tracking-[0.35em] text-primary">
+            Atlas 360 Travel Book
+          </p>
           <h1 className="max-w-4xl font-[family-name:var(--font-cormorant)] text-5xl font-semibold leading-none text-foreground md:text-7xl">
             {title}
           </h1>
@@ -217,33 +228,49 @@ export default async function ItineraryMagazinePage({
             </p>
           )}
 
-          <div className="mt-8 flex flex-wrap gap-3">
-            <Link
-              href={`/itinerary/${id}`}
-              className="inline-flex rounded-full border border-foreground/15 bg-background/25 px-6 py-3 text-[11px] font-semibold uppercase tracking-widest text-foreground backdrop-blur transition-colors hover:border-primary/60 hover:text-foreground"
-            >
-              Open Map View
-            </Link>
-            <div className="min-w-[220px]">
-              <PDFDownloadButton
-                stops={stops.map((stop, index) => ({
-                  name: stop.locations.name,
-                  description: stop.custom_notes || stop.locations.description || '',
-                  category: stop.locations.category || '',
-                  day_number: stop.day_number,
-                  order_index: index,
-                  duration_minutes: stop.locations.duration_minutes ?? null,
-                  transport_to_next: stop.locations.transport_to_next ?? null,
-                  transport_duration_minutes: stop.locations.transport_duration_minutes ?? null,
-                  best_time: stop.locations.best_time ?? null,
-                  tips: stop.locations.tips ?? null,
-                  image_url: stop.locations.image_url ?? null,
-                }))}
-                title={title}
-                userEmail={viewerEmail}
-                tier={viewerTier}
-                coverImageUrl={heroImage}
-              />
+          <div className="mt-8 grid gap-5 lg:grid-cols-[1fr_340px] lg:items-end">
+            <div className="grid max-w-xl grid-cols-3 overflow-hidden rounded-lg border border-foreground/15 bg-background/30 backdrop-blur">
+              <div className="px-4 py-3">
+                <span className="block font-[family-name:var(--font-cormorant)] text-3xl font-semibold text-foreground">{dayCount}</span>
+                <span className="text-[9px] font-semibold uppercase tracking-widest text-muted-foreground">Days</span>
+              </div>
+              <div className="border-x border-foreground/15 px-4 py-3">
+                <span className="block font-[family-name:var(--font-cormorant)] text-3xl font-semibold text-foreground">{stopCount}</span>
+                <span className="text-[9px] font-semibold uppercase tracking-widest text-muted-foreground">Stops</span>
+              </div>
+              <div className="px-4 py-3">
+                <span className="block font-[family-name:var(--font-cormorant)] text-3xl font-semibold text-foreground">{photoCount}</span>
+                <span className="text-[9px] font-semibold uppercase tracking-widest text-muted-foreground">Photos</span>
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-3 lg:justify-end">
+              <Link
+                href={`/itinerary/${id}`}
+                className="inline-flex rounded-full border border-foreground/15 bg-background/25 px-6 py-3 text-[11px] font-semibold uppercase tracking-widest text-foreground backdrop-blur transition-colors hover:border-primary/60 hover:text-foreground"
+              >
+                Open Map View
+              </Link>
+              <div className="min-w-[220px]">
+                <PDFDownloadButton
+                  stops={stops.map((stop, index) => ({
+                    name: stop.locations.name,
+                    description: stop.custom_notes || stop.locations.description || '',
+                    category: stop.locations.category || '',
+                    day_number: stop.day_number,
+                    order_index: index,
+                    duration_minutes: stop.locations.duration_minutes ?? null,
+                    transport_to_next: stop.locations.transport_to_next ?? null,
+                    transport_duration_minutes: stop.locations.transport_duration_minutes ?? null,
+                    best_time: stop.locations.best_time ?? null,
+                    tips: stop.locations.tips ?? null,
+                    image_url: stop.locations.image_url || getFallbackImage(index),
+                  }))}
+                  title={title}
+                  userEmail={viewerEmail}
+                  tier={viewerTier}
+                  coverImageUrl={heroImage}
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -272,10 +299,11 @@ export default async function ItineraryMagazinePage({
                 {groupedByDay[dayNumber].map((stop, index) => {
                   const location = stop.locations
                   const duration = formatDuration(location.duration_minutes)
-                  const image = location.image_url || '/Images/riad.png'
+                  const globalIndex = stops.findIndex((candidate) => candidate.locations.id === location.id)
+                  const image = location.image_url || getFallbackImage(globalIndex >= 0 ? globalIndex : index)
 
                   return (
-                    <article key={location.id} className="grid gap-6 border-b border-border pb-10 md:grid-cols-[260px_1fr]">
+                    <article key={location.id} className="grid gap-6 border-b border-border pb-10 md:grid-cols-[300px_1fr]">
                       <div className="overflow-hidden rounded-lg border border-border bg-card">
                         <img src={image} alt={location.name} className="aspect-[4/3] h-full w-full object-cover" />
                       </div>
@@ -306,7 +334,7 @@ export default async function ItineraryMagazinePage({
                           {location.name}
                         </h2>
                         <p className="mt-4 text-base leading-relaxed text-muted-foreground">
-                          {stop.custom_notes || location.description}
+                          {stop.custom_notes || location.description || 'This stop is part of the route and is ready for richer editorial notes.'}
                         </p>
 
                         {(location.tips || location.transport_to_next) && (

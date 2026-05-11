@@ -67,6 +67,37 @@ const styles = StyleSheet.create({
     fontSize: 9,
     textAlign: 'center',
   },
+  introGrid: {
+    flexDirection: 'row',
+    marginTop: 30,
+    marginBottom: 20,
+  },
+  introStat: {
+    flex: 1,
+    border: '1pt solid #333',
+    padding: 14,
+    marginRight: 8,
+  },
+  introStatValue: {
+    color: '#FFFFFF',
+    fontFamily: 'Cormorant',
+    fontSize: 28,
+    marginBottom: 4,
+  },
+  introStatLabel: {
+    color: '#8B7355',
+    fontFamily: 'Outfit',
+    fontSize: 8,
+    textTransform: 'uppercase',
+    letterSpacing: 1.5,
+  },
+  introNote: {
+    color: '#8B7355',
+    fontFamily: 'Outfit',
+    fontSize: 10,
+    lineHeight: 1.5,
+    marginTop: 10,
+  },
   magazineLabel: {
     color: '#C1440E',
     fontFamily: 'Outfit',
@@ -203,6 +234,12 @@ const styles = StyleSheet.create({
   }
 })
 
+const PDF_FALLBACK_IMAGES = ['/Images/jame3.png', '/Images/riad.png', '/Images/sea.png', '/Images/spices.png', '/Images/Zellige.png']
+
+function getPdfFallbackImage(index: number) {
+  return PDF_FALLBACK_IMAGES[index % PDF_FALLBACK_IMAGES.length]
+}
+
 export interface ItineraryPDFProps {
   title: string
   coverImageUrl?: string | null
@@ -250,6 +287,7 @@ export default function ItineraryPDF({ title, coverImageUrl, stops, userEmail, g
   return (
     <Document>
       <Page size="A4" style={styles.page}>
+        {/* eslint-disable-next-line jsx-a11y/alt-text */}
         {coverImageUrl && <Image src={coverImageUrl} style={styles.coverImage} />}
         {coverImageUrl && <View style={styles.coverShade} />}
         <Text style={styles.logoText}>ATLAS 360</Text>
@@ -263,6 +301,31 @@ export default function ItineraryPDF({ title, coverImageUrl, stops, userEmail, g
         </View>
       </Page>
 
+      <Page size="A4" style={styles.page}>
+        <View style={styles.dayHeaderContainer}>
+          <Text style={styles.magazineLabel}>Journey Overview</Text>
+          <Text style={styles.dayHeader}>{title}</Text>
+          <View style={styles.dayHeaderRule} />
+        </View>
+        <View style={styles.introGrid}>
+          <View style={styles.introStat}>
+            <Text style={styles.introStatValue}>{totalDays}</Text>
+            <Text style={styles.introStatLabel}>Days</Text>
+          </View>
+          <View style={styles.introStat}>
+            <Text style={styles.introStatValue}>{totalStops}</Text>
+            <Text style={styles.introStatLabel}>Stops</Text>
+          </View>
+          <View style={styles.introStat}>
+            <Text style={styles.introStatValue}>{stops.filter((stop) => stop.image_url).length}</Text>
+            <Text style={styles.introStatLabel}>Photos</Text>
+          </View>
+        </View>
+        <Text style={styles.introNote}>
+          This travel book gathers the route, stop descriptions, timing notes, transfer cues, and available photography into one offline-friendly reference.
+        </Text>
+      </Page>
+
       {dayNumbers.map(dayNum => {
         const dayStops = daysMap[dayNum]
         return (
@@ -274,6 +337,7 @@ export default function ItineraryPDF({ title, coverImageUrl, stops, userEmail, g
 
             {dayStops.map((stop, i) => {
               const isLast = i === dayStops.length - 1
+              const stopImage = stop.image_url || getPdfFallbackImage(i)
               return (
                 <View key={i} style={styles.stopBlock}>
                   <View style={styles.stopContent}>
@@ -296,7 +360,8 @@ export default function ItineraryPDF({ title, coverImageUrl, stops, userEmail, g
                         {stop.description ? (stop.description.length > 180 ? stop.description.substring(0, 180) + '...' : stop.description) : ''}
                       </Text>
 
-                      {stop.image_url && <Image src={stop.image_url} style={styles.stopImage} />}
+                      {/* eslint-disable-next-line jsx-a11y/alt-text */}
+                      {stopImage && <Image src={stopImage} style={styles.stopImage} />}
                       
                       {stop.tips && (
                         <Text style={styles.tipsText}>→ Tip: {stop.tips}</Text>

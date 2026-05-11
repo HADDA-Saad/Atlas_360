@@ -6,7 +6,9 @@ import {
   BookOpen,
   Camera,
   ConciergeBell,
+  HeartHandshake,
   Hotel,
+  MessageSquareText,
   Map,
   Route,
   ShoppingBag,
@@ -14,8 +16,8 @@ import {
 
 const SERVICES = [
   {
-    title: 'Curated Moroccan routes',
-    description: 'Hand-built journeys organized by region, duration, tier, and travel rhythm.',
+    title: 'Curated routes',
+    description: 'Hand-built Moroccan journeys organized by region, duration, access tier, and travel rhythm.',
     status: 'Live',
     icon: Route,
     tone: 'text-primary',
@@ -29,14 +31,14 @@ const SERVICES = [
   },
   {
     title: '360 previews',
-    description: 'Street View panoramas for available stops before the traveler commits.',
+    description: 'Street View panoramas for available stops, with graceful fallback states when coverage is missing.',
     status: 'Live',
     icon: Camera,
     tone: 'text-emerald-300',
   },
   {
-    title: 'Travel magazine export',
-    description: 'Downloadable itinerary books with days, stops, photos, tips, and logistics.',
+    title: 'Travel books',
+    description: 'Magazine-style itinerary pages and downloadable books with days, stops, photos, tips, and logistics.',
     status: 'Live',
     icon: BookOpen,
     tone: 'text-amber-300',
@@ -49,7 +51,14 @@ const SERVICES = [
     tone: 'text-rose-300',
   },
   {
-    title: 'Custom itinerary builder',
+    title: 'Traveler feedback',
+    description: 'Text reviews and star ratings help future travelers understand each journey and stop.',
+    status: 'Live',
+    icon: MessageSquareText,
+    tone: 'text-indigo-300',
+  },
+  {
+    title: 'Custom builder',
     description: 'Elite travelers can compose, save, export, and share their own journeys.',
     status: 'Elite',
     icon: Binoculars,
@@ -57,14 +66,21 @@ const SERVICES = [
   },
   {
     title: 'Booking bridge',
-    description: 'Assisted hotel, restaurant, and local experience coordination for future partner flows.',
-    status: 'Assisted',
+    description: 'A planned assisted flow for hotel, restaurant, and local experience coordination.',
+    status: 'Next',
     icon: ConciergeBell,
     tone: 'text-teal-300',
   },
   {
+    title: 'Planning support',
+    description: 'A human collaboration layer for logistics, special requests, and higher-touch travel planning.',
+    status: 'Next',
+    icon: HeartHandshake,
+    tone: 'text-orange-300',
+  },
+  {
     title: 'Moroccan products',
-    description: 'A future shop for travel-ready goods and local products connected to the journey.',
+    description: 'A future shop for travel-ready goods, local products, and premium digital travel packs.',
     status: 'Soon',
     icon: ShoppingBag,
     tone: 'text-lime-300',
@@ -72,28 +88,49 @@ const SERVICES = [
 ]
 
 export default function ServicesSection() {
+  const liveCount = SERVICES.filter((service) => service.status === 'Live').length
+
   return (
     <section className="bg-secondary border-y border-border py-20 md:py-28">
       <div className="mx-auto max-w-7xl px-6 md:px-12">
         <div className="mb-12 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
-          <div className="max-w-2xl">
+          <div className="max-w-3xl">
             <span className="text-[10px] font-semibold uppercase tracking-[0.3em] text-primary">
               What Atlas 360 Provides
             </span>
             <h2 className="mt-4 font-[family-name:var(--font-cormorant)] text-4xl font-semibold leading-tight tracking-tight text-foreground md:text-5xl">
-              Everything around the route, not just the map.
+              A travel companion built around the whole journey.
             </h2>
+            <p className="mt-5 max-w-2xl text-sm leading-relaxed text-muted-foreground md:text-base">
+              Atlas 360 combines route discovery, immersive previews, printable travel books, nearby recommendations, and the first layer of assisted planning for Morocco.
+            </p>
           </div>
-          <Link
-            href="/pricing"
-            className="relative inline-flex items-center justify-center border border-primary/40 px-6 py-3 text-[11px] font-semibold uppercase tracking-widest text-foreground transition-colors md:self-end overflow-hidden group/btn hover:border-primary hover:text-primary-foreground"
-          >
-            <span className="relative z-10">Compare Plans</span>
-            <div className="absolute inset-0 bg-primary translate-y-[101%] group-hover/btn:translate-y-0 transition-transform duration-300 ease-out" />
-          </Link>
+          <div className="flex flex-col gap-3 md:items-end">
+            <div className="grid grid-cols-3 overflow-hidden rounded-lg border border-border bg-background">
+              <div className="px-4 py-3 text-center">
+                <span className="block font-[family-name:var(--font-cormorant)] text-2xl font-semibold text-foreground">{liveCount}</span>
+                <span className="text-[9px] font-semibold uppercase tracking-widest text-muted-foreground">Live</span>
+              </div>
+              <div className="border-x border-border px-4 py-3 text-center">
+                <span className="block font-[family-name:var(--font-cormorant)] text-2xl font-semibold text-foreground">2</span>
+                <span className="text-[9px] font-semibold uppercase tracking-widest text-muted-foreground">Next</span>
+              </div>
+              <div className="px-4 py-3 text-center">
+                <span className="block font-[family-name:var(--font-cormorant)] text-2xl font-semibold text-foreground">1</span>
+                <span className="text-[9px] font-semibold uppercase tracking-widest text-muted-foreground">Soon</span>
+              </div>
+            </div>
+            <Link
+              href="/pricing"
+              className="relative inline-flex items-center justify-center border border-primary/40 px-6 py-3 text-[11px] font-semibold uppercase tracking-widest text-foreground transition-colors md:self-end overflow-hidden group/btn hover:border-primary hover:text-primary-foreground"
+            >
+              <span className="relative z-10">Compare Plans</span>
+              <div className="absolute inset-0 bg-primary translate-y-[101%] group-hover/btn:translate-y-0 transition-transform duration-300 ease-out" />
+            </Link>
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 gap-px overflow-hidden rounded-lg border border-border bg-foreground/5 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-px overflow-hidden rounded-lg border border-border bg-foreground/5 md:grid-cols-2 lg:grid-cols-5">
           {SERVICES.map((service) => {
             const Icon = service.icon
             return (

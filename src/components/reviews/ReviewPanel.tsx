@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react'
 import Link from 'next/link'
-import { Star, Trash2 } from 'lucide-react'
+import { ImageIcon, MessageSquareText, Star, Trash2, UserCircle } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import type { Review, ReviewsResponse, ReviewTargetType } from '@/types'
 
@@ -187,45 +187,73 @@ export default function ReviewPanel({
   }
 
   const visibleReviews: Review[] = compact ? response.reviews.slice(0, 2) : response.reviews.slice(0, 4)
+  const panelClass = compact
+    ? 'mt-6 rounded-xl border border-border bg-card/55 p-4'
+    : 'mt-8 rounded-2xl border border-border bg-card/70 p-5 shadow-sm'
+  const headingClass = compact
+    ? 'mt-1 font-[family-name:var(--font-cormorant)] text-xl font-semibold text-foreground'
+    : 'mt-1 font-[family-name:var(--font-cormorant)] text-2xl font-semibold text-foreground'
+  const reviewLabel = response.reviewCount === 1 ? 'review' : 'reviews'
 
   return (
-    <section className={`${compact ? 'mt-6' : 'mt-8'} border border-border bg-card/55 rounded-xl p-4`}>
-      <div className="flex items-start justify-between gap-4">
+    <section className={panelClass}>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-primary">
-            Reviews
-          </p>
-          <h3 className="mt-1 font-[family-name:var(--font-cormorant)] text-xl font-semibold text-foreground">
+          <div className="flex items-center gap-2 text-primary">
+            <MessageSquareText size={14} strokeWidth={1.7} />
+            <p className="text-[10px] font-semibold uppercase tracking-[0.25em]">
+              Traveler feedback
+            </p>
+          </div>
+          <h3 className={headingClass}>
             {title}
           </h3>
+          {!compact && (
+            <p className="mt-2 max-w-xl text-sm leading-relaxed text-muted-foreground">
+              Reviews help travelers compare routes, judge stop quality, and spot details that are hard to capture on a map.
+            </p>
+          )}
         </div>
 
-        <div className="text-right">
-          <div className="flex items-center justify-end gap-2 text-foreground">
-            <span className="font-[family-name:var(--font-cormorant)] text-2xl">
+        <div className="rounded-xl border border-border bg-background/60 px-4 py-3 sm:text-right">
+          <div className="flex items-center gap-2 text-foreground sm:justify-end">
+            <span className="font-[family-name:var(--font-cormorant)] text-3xl leading-none">
               {response.averageRating ?? '-'}
             </span>
             <RatingStars value={Math.round(response.averageRating || 0)} />
           </div>
           <p className="text-[11px] uppercase tracking-widest text-muted-foreground">
-            {response.reviewCount} {response.reviewCount === 1 ? 'review' : 'reviews'}
+            {response.reviewCount} {reviewLabel}
           </p>
         </div>
       </div>
 
       {isLoading ? (
-        <p className="mt-4 text-sm text-muted-foreground">Loading feedback...</p>
+        <div className="mt-5 space-y-3">
+          <div className="h-16 rounded-xl bg-muted/60 animate-pulse" />
+          {!compact && <div className="h-16 rounded-xl bg-muted/40 animate-pulse" />}
+        </div>
       ) : (
         <>
           {visibleReviews.length > 0 ? (
-            <div className="mt-4 space-y-3">
+            <div className="mt-5 grid gap-3">
               {visibleReviews.map((review) => (
-                <article key={review.id} className="border-t border-border pt-3">
-                  <div className="flex items-center justify-between gap-3">
-                    <RatingStars value={review.rating} />
-                    <span className="text-[10px] uppercase tracking-widest text-muted-foreground/70">
-                      {review.is_own ? 'Your review' : formatDate(review.created_at)}
-                    </span>
+                <article key={review.id} className="rounded-xl border border-border bg-background/55 p-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                      <UserCircle size={28} className="text-muted-foreground/70" strokeWidth={1.4} />
+                      <div>
+                        <RatingStars value={review.rating} />
+                        <span className="mt-1 block text-[10px] uppercase tracking-widest text-muted-foreground/70">
+                          {review.is_own ? 'Your review' : formatDate(review.created_at)}
+                        </span>
+                      </div>
+                    </div>
+                    {review.is_own && (
+                      <span className="rounded-sm border border-primary/20 bg-primary/10 px-2 py-1 text-[9px] font-semibold uppercase tracking-widest text-primary">
+                        Yours
+                      </span>
+                    )}
                   </div>
                   <p className="mt-2 text-[13px] leading-relaxed text-muted-foreground">
                     {review.body}
@@ -234,9 +262,21 @@ export default function ReviewPanel({
               ))}
             </div>
           ) : (
-            <p className="mt-4 text-sm text-muted-foreground">
-              No traveler feedback yet.
-            </p>
+            <div className="mt-5 rounded-xl border border-dashed border-border bg-background/40 p-4">
+              <p className="text-sm font-medium text-foreground">No traveler feedback yet.</p>
+              <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+                Be the first to add practical notes, atmosphere, and expectations for this {targetType}.
+              </p>
+            </div>
+          )}
+
+          {!compact && (
+            <div className="mt-4 flex items-center gap-2 rounded-xl border border-dashed border-border bg-background/35 p-3 text-muted-foreground">
+              <ImageIcon size={15} strokeWidth={1.6} />
+              <p className="text-xs leading-relaxed">
+                Photo feedback is planned next; today the review system supports text and stars.
+              </p>
+            </div>
           )}
 
           {isLoggedIn ? (
@@ -251,7 +291,7 @@ export default function ReviewPanel({
               <textarea
                 value={body}
                 onChange={(event) => setBody(event.target.value)}
-                placeholder="Share what stood out..."
+                placeholder="Share what stood out, what helped, or what future travelers should know..."
                 className="mt-3 min-h-[82px] w-full resize-none rounded-lg border border-border bg-background p-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground/50 focus:border-primary/50"
               />
 
@@ -284,7 +324,7 @@ export default function ReviewPanel({
             <div className="mt-5 border-t border-border pt-4">
               <Link
                 href="/auth/login"
-                className="text-[11px] font-semibold uppercase tracking-widest text-primary transition-colors hover:text-[#D4622E]"
+                className="inline-flex rounded-full border border-primary/30 px-4 py-2 text-[11px] font-semibold uppercase tracking-widest text-primary transition-colors hover:border-primary hover:bg-primary/10"
               >
                 Login to leave feedback
               </Link>

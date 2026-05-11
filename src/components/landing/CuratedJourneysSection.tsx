@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import ReviewSummaryBadge from '@/components/reviews/ReviewSummaryBadge'
 import type { Itinerary } from '@/types'
 
 export default function CuratedJourneysSection({ itineraries }: { itineraries: Itinerary[] }) {
@@ -58,6 +59,11 @@ export default function CuratedJourneysSection({ itineraries }: { itineraries: I
 
               {/* Card Body */}
               <div className="p-6 md:p-8 flex flex-col flex-1">
+                <ReviewSummaryBadge
+                  targetType="itinerary"
+                  itineraryId={itinerary.id}
+                  className="mb-3"
+                />
                 <h3 className="font-[family-name:var(--font-cormorant)] text-2xl text-foreground mb-3 tracking-tight">
                   {itinerary.title}
                 </h3>

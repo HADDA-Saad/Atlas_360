@@ -43,11 +43,6 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
-  // Close mobile menu on route change
-  useEffect(() => {
-    setIsMobileMenuOpen(false)
-  }, [pathname])
-
   // Handle click outside for user dropdown
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
