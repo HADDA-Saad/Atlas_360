@@ -8,12 +8,12 @@ export default function Footer() {
   }
 
   return (
-    <footer className="bg-secondary dark:bg-[#151515] border-t border-border relative mt-auto">
+    <footer className="bg-secondary border-t border-border relative mt-auto">
       {/* Scroll to Top Button */}
       <div className="absolute left-1/2 -translate-x-1/2 -top-6">
         <button 
           onClick={scrollToTop}
-          className="w-12 h-12 rounded-full bg-secondary dark:bg-[#151515] border border-primary/30 flex items-center justify-center text-primary hover:bg-muted transition-colors hover:border-primary"
+          className="w-12 h-12 rounded-full bg-secondary border border-primary/30 flex items-center justify-center text-primary hover:bg-muted transition-colors hover:border-primary"
           aria-label="Scroll to top"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

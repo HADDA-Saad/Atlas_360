@@ -53,8 +53,8 @@ export default function ItineraryCard({
           transition-all duration-200
           border-b
           ${isSelected
-            ? 'bg-muted dark:bg-[#1E1B16] border-primary/35 shadow-lg shadow-primary/5'
-            : 'bg-transparent border-border hover:bg-muted dark:hover:bg-[#1E1B16] hover:border-primary/20'
+            ? 'bg-muted border-primary/35 shadow-lg shadow-primary/5'
+            : 'bg-transparent border-border hover:bg-muted hover:border-primary/20'
           }
           ${isLocked ? 'opacity-70 grayscale-[0.3]' : ''}
         `}
@@ -107,7 +107,7 @@ export default function ItineraryCard({
             className={`
               font-[family-name:var(--font-cormorant)]
               text-[1.35rem] font-semibold leading-snug
-              tracking-wide
+              tracking-tight
               mb-2
               transition-colors duration-300
               ${isSelected ? 'text-foreground' : 'text-secondary-foreground group-hover:text-foreground'}

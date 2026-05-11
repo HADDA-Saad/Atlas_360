@@ -35,7 +35,7 @@ export default function PricingPage() {
           ATLAS 360 — REVISED PRICING · MOROCCO MARKET
           <span className="w-8 h-px bg-muted-foreground/30" />
         </h4>
-        <h1 className="font-[family-name:var(--font-cormorant)] text-4xl sm:text-5xl font-semibold text-foreground leading-tight mb-4 tracking-wide">
+        <h1 className="font-[family-name:var(--font-cormorant)] text-4xl sm:text-5xl font-semibold text-foreground leading-tight mb-4 tracking-tight">
           Accessible tiers for Moroccan users
         </h1>
         <p className="text-[14px] text-muted-foreground">
@@ -52,7 +52,7 @@ export default function PricingPage() {
             <span className="inline-block px-3 py-1 bg-muted-foreground/10 border border-muted-foreground/20 text-muted-foreground text-[11px] font-bold uppercase tracking-widest rounded-full mb-6">
               Explorer
             </span>
-            <h2 className="text-2xl font-[family-name:var(--font-cormorant)] text-foreground font-semibold">Explorer</h2>
+            <h2 className="text-2xl font-[family-name:var(--font-cormorant)] text-foreground font-semibold tracking-tight">Explorer</h2>
             <p className="text-[13px] text-muted-foreground mt-1">Discover Morocco for free</p>
           </div>
           <div className="mb-8">
@@ -86,9 +86,10 @@ export default function PricingPage() {
           </div>
           <button 
             onClick={() => router.push('/explore')}
-            className="mt-8 w-full py-3.5 px-4 rounded-xl border border-border text-foreground text-[12px] font-bold uppercase tracking-widest hover:bg-muted transition-colors"
+            className="mt-8 relative w-full py-3.5 px-4 rounded-xl border border-border text-foreground text-[12px] font-bold uppercase tracking-widest overflow-hidden group/btn hover:border-primary hover:text-primary-foreground transition-colors"
           >
-            Use free tier
+            <span className="relative z-10">Use free tier</span>
+            <div className="absolute inset-0 bg-primary translate-y-[101%] group-hover/btn:translate-y-0 transition-transform duration-300 ease-out z-0" />
           </button>
         </div>
 
@@ -103,7 +104,7 @@ export default function PricingPage() {
             <span className="inline-block px-3 py-1 bg-primary/10 border border-primary/20 text-[#D4622E] text-[11px] font-bold uppercase tracking-widest rounded-full mb-6">
               Nomad
             </span>
-            <h2 className="text-2xl font-[family-name:var(--font-cormorant)] text-foreground font-semibold">Nomad</h2>
+            <h2 className="text-2xl font-[family-name:var(--font-cormorant)] text-foreground font-semibold tracking-tight">Nomad</h2>
             <p className="text-[13px] text-muted-foreground mt-1">The full Morocco experience</p>
           </div>
           <div className="mb-8">
@@ -137,9 +138,10 @@ export default function PricingPage() {
           </div>
           <button 
             onClick={() => handleSubscribe('nomad')}
-            className="mt-8 w-full py-3.5 px-4 rounded-xl bg-primary text-primary-foreground text-[12px] font-bold uppercase tracking-widest hover:bg-primary/90 transition-colors shadow-lg shadow-primary/20"
+            className="mt-8 relative w-full py-3.5 px-4 rounded-xl bg-primary text-primary-foreground text-[12px] font-bold uppercase tracking-widest shadow-lg shadow-primary/20 overflow-hidden group/btn"
           >
-            Subscribe to Nomad
+            <span className="relative z-10">Subscribe to Nomad</span>
+            <div className="absolute inset-0 bg-white/20 translate-y-[101%] group-hover/btn:translate-y-0 transition-transform duration-300 ease-out" />
           </button>
         </div>
 
@@ -149,7 +151,7 @@ export default function PricingPage() {
             <span className="inline-block px-3 py-1 bg-amber-500/10 border border-amber-500/20 text-amber-400 text-[11px] font-bold uppercase tracking-widest rounded-full mb-6">
               Elite
             </span>
-            <h2 className="text-2xl font-[family-name:var(--font-cormorant)] text-foreground font-semibold">Elite</h2>
+            <h2 className="text-2xl font-[family-name:var(--font-cormorant)] text-foreground font-semibold tracking-tight">Elite</h2>
             <p className="text-[13px] text-muted-foreground mt-1">Plan, build & share your trips</p>
           </div>
           <div className="mb-8">
@@ -183,9 +185,10 @@ export default function PricingPage() {
           </div>
           <button 
             onClick={() => handleSubscribe('elite')}
-            className="mt-8 w-full py-3.5 px-4 rounded-xl border-2 border-amber-500/20 text-amber-400 text-[12px] font-bold uppercase tracking-widest hover:bg-amber-500/10 hover:border-amber-500/40 transition-colors"
+            className="mt-8 relative w-full py-3.5 px-4 rounded-xl border-2 border-amber-500/20 text-amber-400 text-[12px] font-bold uppercase tracking-widest hover:text-amber-900 transition-colors overflow-hidden group/btn"
           >
-            Subscribe to Elite
+            <span className="relative z-10">Subscribe to Elite</span>
+            <div className="absolute inset-0 bg-amber-400 translate-y-[101%] group-hover/btn:translate-y-0 transition-transform duration-300 ease-out z-0" />
           </button>
         </div>
 

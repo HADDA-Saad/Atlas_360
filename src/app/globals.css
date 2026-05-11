@@ -2,7 +2,7 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
-@custom-variant dark (&:is(.dark *));
+@custom-variant dark (&:is(.dark, .dark *));
 
 @theme inline {
   --color-background: var(--background);
@@ -63,37 +63,37 @@
 }
 
 :root {
-  --background: #FFFDF9;
-  --foreground: #1A1610;
-  --card: #FFFFFF;
-  --card-foreground: #1A1610;
+  --background: #FBF9F6; /* Premium, subtle off-white/alabaster */
+  --foreground: #292521; /* Rich, dark charcoal with a hint of umber */
+  --card: #FFFFFF; /* Pure white for depth against background */
+  --card-foreground: #292521;
   --popover: #FFFFFF;
-  --popover-foreground: #1A1610;
-  --primary: #C1440E;
-  --primary-foreground: #FFF8F0;
-  --secondary: #F3EBE1;
-  --secondary-foreground: #2D2720;
-  --muted: #F3EBE1;
-  --muted-foreground: #6B5E4F;
-  --accent: #E8D5B7;
-  --accent-foreground: #1A1610;
+  --popover-foreground: #292521;
+  --primary: #C1440E; /* Brand Terracotta */
+  --primary-foreground: #FFFFFF;
+  --secondary: #F0EAE1; /* Elegant, soft stone/sand */
+  --secondary-foreground: #38312B;
+  --muted: #F0EAE1;
+  --muted-foreground: #78716A; /* Sophisticated taupe gray */
+  --accent: #EAE1D6; /* Warm highlight */
+  --accent-foreground: #292521;
   --destructive: oklch(0.577 0.245 27.325);
-  --border: rgba(26, 22, 16, 0.12);
-  --input: rgba(26, 22, 16, 0.18);
+  --border: rgba(41, 37, 33, 0.08); /* Very subtle, clean borders */
+  --input: rgba(41, 37, 33, 0.12);
   --ring: #C1440E;
   --chart-1: #C1440E;
   --chart-2: #D4A574;
   --chart-3: #E8D5B7;
   --chart-4: #8B7355;
-  --chart-5: #231F18;
+  --chart-5: #292521;
   --radius: 0.625rem;
-  --sidebar: #FFFDF9;
-  --sidebar-foreground: #1A1610;
+  --sidebar: #FBF9F6;
+  --sidebar-foreground: #292521;
   --sidebar-primary: #C1440E;
-  --sidebar-primary-foreground: #FFF8F0;
-  --sidebar-accent: #F3EBE1;
-  --sidebar-accent-foreground: #2D2720;
-  --sidebar-border: rgba(26, 22, 16, 0.1);
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #F0EAE1;
+  --sidebar-accent-foreground: #292521;
+  --sidebar-border: rgba(41, 37, 33, 0.08);
   --sidebar-ring: #C1440E;
 
   --font-outfit: "Outfit", "Aptos", "Segoe UI", Arial, sans-serif;
@@ -228,6 +228,20 @@
   }
   100% {
     background-position: 200% 0;
+  }
+}
+
+@keyframes slide-down {
+  0% {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(200%);
+    opacity: 0;
   }
 }
 

@@ -73,22 +73,23 @@ const SERVICES = [
 
 export default function ServicesSection() {
   return (
-    <section className="bg-secondary dark:bg-[#12100C] border-y border-border py-20 md:py-28">
+    <section className="bg-secondary border-y border-border py-20 md:py-28">
       <div className="mx-auto max-w-7xl px-6 md:px-12">
         <div className="mb-12 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
           <div className="max-w-2xl">
             <span className="text-[10px] font-semibold uppercase tracking-[0.3em] text-primary">
               What Atlas 360 Provides
             </span>
-            <h2 className="mt-4 font-[family-name:var(--font-cormorant)] text-4xl font-semibold leading-tight text-foreground md:text-5xl">
+            <h2 className="mt-4 font-[family-name:var(--font-cormorant)] text-4xl font-semibold leading-tight tracking-tight text-foreground md:text-5xl">
               Everything around the route, not just the map.
             </h2>
           </div>
           <Link
             href="/pricing"
-            className="inline-flex items-center justify-center border border-primary/40 px-6 py-3 text-[11px] font-semibold uppercase tracking-widest text-foreground transition-colors hover:border-primary hover:bg-primary/10 md:self-end"
+            className="relative inline-flex items-center justify-center border border-primary/40 px-6 py-3 text-[11px] font-semibold uppercase tracking-widest text-foreground transition-colors md:self-end overflow-hidden group/btn hover:border-primary hover:text-primary-foreground"
           >
-            Compare Plans
+            <span className="relative z-10">Compare Plans</span>
+            <div className="absolute inset-0 bg-primary translate-y-[101%] group-hover/btn:translate-y-0 transition-transform duration-300 ease-out" />
           </Link>
         </div>
 
@@ -108,7 +109,7 @@ export default function ServicesSection() {
                     {service.status}
                   </span>
                 </div>
-                <h3 className="font-[family-name:var(--font-cormorant)] text-2xl font-semibold text-foreground">
+                <h3 className="font-[family-name:var(--font-cormorant)] text-2xl font-semibold text-foreground tracking-tight">
                   {service.title}
                 </h3>
                 <p className="mt-3 text-sm leading-relaxed text-muted-foreground">

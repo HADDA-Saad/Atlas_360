@@ -50,7 +50,7 @@ export default async function DashboardPage() {
   return (
     <div className="min-h-screen bg-background flex flex-col items-center py-32 px-4 atlas-grain">
       <div className="w-full max-w-2xl bg-card border border-border rounded-3xl p-8 md:p-12 shadow-xl">
-        <h1 className="font-[family-name:var(--font-cormorant)] text-4xl font-semibold text-foreground mb-10">
+        <h1 className="font-[family-name:var(--font-cormorant)] text-4xl font-semibold text-foreground mb-10 tracking-tight">
           My Account
         </h1>
 
@@ -102,7 +102,7 @@ export default async function DashboardPage() {
                   {itineraries.map((itinerary) => (
                     <div key={itinerary.id} className="bg-background border border-border rounded-xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                       <div>
-                        <h3 className="font-[family-name:var(--font-cormorant)] text-xl font-semibold text-foreground mb-1">{itinerary.title}</h3>
+                        <h3 className="font-[family-name:var(--font-cormorant)] text-xl font-semibold text-foreground mb-1 tracking-tight">{itinerary.title}</h3>
                         <div className="flex items-center gap-3">
                           <span className={`text-[10px] uppercase tracking-widest font-semibold px-2 py-0.5 rounded-sm ${itinerary.is_public ? 'bg-blue-500/10 text-blue-400' : 'bg-gray-500/10 text-gray-400'}`}>
                             {itinerary.is_public ? 'Public' : 'Private'}

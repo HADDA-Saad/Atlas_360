@@ -188,6 +188,7 @@ export default function ComposerClient({ initialLocations }: { initialLocations:
   const [customNotes, setCustomNotes] = useState<Record<string, string>>({})
   const [isSaving, setIsSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [successMessage, setSuccessMessage] = useState<string | null>(null)
   const [savedItineraryId, setSavedItineraryId] = useState<string | null>(null)
   const [isPublic, setIsPublic] = useState(false)
   const [activeDayForAdd, setActiveDayForAdd] = useState(1)
@@ -216,6 +217,11 @@ export default function ComposerClient({ initialLocations }: { initialLocations:
   }, [filteredLocs])
 
   const allAddedIds = useMemo(() => new Set(Object.values(itemsByDay).flat()), [itemsByDay])
+
+  const showSuccess = (msg: string) => {
+    setSuccessMessage(msg)
+    setTimeout(() => setSuccessMessage(null), 3000)
+  }
 
   const handleAddStop = (loc: ComposerLocation) => {
     if (allAddedIds.has(loc.id)) return
@@ -256,6 +262,7 @@ export default function ComposerClient({ initialLocations }: { initialLocations:
     }
     setIsSaving(true)
     setError(null)
+    setSuccessMessage(null)
     
     try {
       const stops: Array<{
@@ -287,7 +294,7 @@ export default function ComposerClient({ initialLocations }: { initialLocations:
       
       setSavedItineraryId(data.id)
       setIsPublic(Boolean(data.is_public))
-      alert(savedItineraryId ? 'Itinerary updated successfully!' : 'Itinerary saved successfully!')
+      showSuccess(savedItineraryId ? 'Itinerary updated!' : 'Itinerary saved!')
     } catch (err: unknown) {
       setError(getErrorMessage(err))
     } finally {
@@ -318,7 +325,7 @@ export default function ComposerClient({ initialLocations }: { initialLocations:
     if (!savedItineraryId) return
     const url = `${window.location.origin}/itinerary/${savedItineraryId}`
     navigator.clipboard.writeText(url)
-    alert('Link copied to clipboard!')
+    showSuccess('Link copied to clipboard!')
   }
 
   // --- DND Handlers ---
@@ -431,7 +438,7 @@ export default function ComposerClient({ initialLocations }: { initialLocations:
         {/* Left Panel: Library */}
         <div className="w-[40%] flex flex-col border-r border-border bg-background">
         <div className="p-6 border-b border-border pb-4">
-          <h2 className="font-[family-name:var(--font-cormorant)] text-2xl font-semibold text-foreground mb-4">Location Library</h2>
+          <h2 className="font-[family-name:var(--font-cormorant)] text-2xl font-semibold text-foreground mb-4 tracking-tight">Location Library</h2>
           <div className="relative mb-5">
             <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
             <input
@@ -487,7 +494,7 @@ export default function ComposerClient({ initialLocations }: { initialLocations:
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="w-full bg-transparent border-none outline-none font-[family-name:var(--font-cormorant)] text-4xl font-semibold text-foreground placeholder:text-muted-foreground/30 focus:ring-0 p-0"
+            className="w-full bg-transparent border-none outline-none font-[family-name:var(--font-cormorant)] text-4xl font-semibold text-foreground tracking-tight placeholder:text-muted-foreground/30 focus:ring-0 p-0"
             placeholder="Name your itinerary..."
           />
           {savedItineraryId && (
@@ -554,6 +561,12 @@ export default function ComposerClient({ initialLocations }: { initialLocations:
             </span>
             {error && (
               <span className="text-[11px] text-red-400 font-medium border border-red-400/20 bg-red-400/10 px-3 py-1 rounded-full">Error: {error}</span>
+            )}
+            {successMessage && (
+              <span className="text-[11px] text-green-500 font-medium border border-green-500/20 bg-green-500/10 px-3 py-1 rounded-full flex items-center gap-1.5 animate-in fade-in slide-in-from-bottom-1">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+                {successMessage}
+              </span>
             )}
             
             {savedItineraryId && (

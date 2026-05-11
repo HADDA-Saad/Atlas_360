@@ -12,7 +12,7 @@ export default function HeritageSection() {
               <span className="text-primary text-[10px] tracking-[0.3em] font-semibold uppercase">
                 Our Heritage
               </span>
-              <h2 className="font-[family-name:var(--font-cormorant)] text-4xl md:text-5xl lg:text-6xl text-foreground font-semibold leading-tight">
+              <h2 className="font-[family-name:var(--font-cormorant)] text-4xl md:text-5xl lg:text-6xl text-foreground font-semibold leading-tight tracking-tight">
                 Tradition meets <br className="hidden md:block" /> contemporary luxury.
               </h2>
             </div>

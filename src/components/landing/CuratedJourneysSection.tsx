@@ -5,7 +5,7 @@ import type { Itinerary } from '@/types'
 
 export default function CuratedJourneysSection({ itineraries }: { itineraries: Itinerary[] }) {
   return (
-    <section className="bg-secondary dark:bg-[#12100C] py-24 md:py-32">
+    <section className="bg-secondary py-24 md:py-32">
       <div className="max-w-7xl mx-auto px-6 md:px-12">
         
         {/* Header */}
@@ -14,7 +14,7 @@ export default function CuratedJourneysSection({ itineraries }: { itineraries: I
             <span className="text-primary text-[10px] tracking-[0.3em] font-semibold uppercase">
               Selected Experiences
             </span>
-            <h2 className="font-[family-name:var(--font-cormorant)] text-4xl md:text-5xl text-foreground font-semibold">
+            <h2 className="font-[family-name:var(--font-cormorant)] text-4xl md:text-5xl text-foreground font-semibold tracking-tight">
               Curated Journeys
             </h2>
           </div>
@@ -39,7 +39,7 @@ export default function CuratedJourneysSection({ itineraries }: { itineraries: I
           {itineraries.map((itinerary) => (
             <div 
               key={itinerary.id} 
-              className="group flex flex-col bg-card border border-border overflow-hidden hover:border-primary/30 transition-colors duration-500"
+              className="group flex flex-col bg-card border border-border overflow-hidden hover:border-primary/30 hover:shadow-2xl hover:shadow-primary/5 hover:-translate-y-1.5 transition-all duration-500"
             >
               {/* Card Image */}
               <div className="relative aspect-[4/3] overflow-hidden">
@@ -58,7 +58,7 @@ export default function CuratedJourneysSection({ itineraries }: { itineraries: I
 
               {/* Card Body */}
               <div className="p-6 md:p-8 flex flex-col flex-1">
-                <h3 className="font-[family-name:var(--font-cormorant)] text-2xl text-foreground mb-3">
+                <h3 className="font-[family-name:var(--font-cormorant)] text-2xl text-foreground mb-3 tracking-tight">
                   {itinerary.title}
                 </h3>
                 <p className="text-muted-foreground text-sm leading-relaxed mb-8 flex-1">
@@ -66,9 +66,10 @@ export default function CuratedJourneysSection({ itineraries }: { itineraries: I
                 </p>
                 <Link 
                   href="/explore"
-                  className="w-full py-3 px-4 border border-border text-foreground text-xs font-semibold tracking-widest uppercase text-center hover:bg-primary hover:border-primary hover:text-primary-foreground transition-colors duration-300"
+                  className="relative w-full py-3 px-4 border border-border text-foreground text-xs font-semibold tracking-widest uppercase text-center overflow-hidden group/btn transition-colors duration-300 hover:border-primary hover:text-primary-foreground"
                 >
-                  View Details
+                  <span className="relative z-10">View Details</span>
+                  <div className="absolute inset-0 bg-primary translate-y-[101%] group-hover/btn:translate-y-0 transition-transform duration-300 ease-out" />
                 </Link>
               </div>
             </div>

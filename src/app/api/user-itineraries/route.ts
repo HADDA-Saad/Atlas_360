@@ -77,7 +77,7 @@ export async function POST(request: Request) {
 
     if (error) {
       console.error('Error creating itinerary:', error)
-      return NextResponse.json({ error: 'Failed to create itinerary' }, { status: 500 })
+      return NextResponse.json({ error: error.message || 'Failed to create itinerary' }, { status: 500 })
     }
 
     return NextResponse.json(itinerary)
