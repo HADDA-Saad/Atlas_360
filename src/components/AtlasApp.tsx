@@ -22,7 +22,7 @@ export default function AtlasApp({ itineraries }: AtlasAppProps) {
   const [isLoadingLocations, setIsLoadingLocations] = useState(false)
   const [selectedPlace, setSelectedPlace] = useState<PlaceResult | null>(null)
   const [isPlacePopoverOpen, setIsPlacePopoverOpen] = useState(false)
-  const [activeTab, setActiveTab] = useState<'stops' | 'places'>('stops')
+  const [activeTab, setActiveTab] = useState<'stops' | 'places' | 'magazine'>('stops')
   const [hotels, setHotels] = useState<PlaceResult[]>([])
   const [restaurants, setRestaurants] = useState<PlaceResult[]>([])
 
@@ -97,6 +97,7 @@ export default function AtlasApp({ itineraries }: AtlasAppProps) {
             activeTab={activeTab}
             onTabChange={setActiveTab}
             onPlacesLoaded={handlePlacesLoaded}
+            reviewItineraryId={selectedItinerary?.id ?? null}
           />
 
           {/* Map area */}

@@ -28,9 +28,10 @@ interface ItinerarySidebarProps {
   onLocationSelect: (location: Location) => void
   onBack: () => void
   isLoadingLocations: boolean
-  activeTab?: 'stops' | 'places'
-  onTabChange?: (tab: 'stops' | 'places') => void
+  activeTab?: 'stops' | 'places' | 'magazine'
+  onTabChange?: (tab: 'stops' | 'places' | 'magazine') => void
   onPlacesLoaded?: (hotels: PlaceResult[], restaurants: PlaceResult[]) => void
+  reviewItineraryId?: string | null
 }
 
 /* ─── Loading Skeleton ─── */
@@ -275,6 +276,164 @@ function StopItem({
   )
 }
 
+const FALLBACK_IMAGES = ['/Images/jame3.png', '/Images/riad.png', '/Images/sea.png', '/Images/spices.png', '/Images/Zellige.png']
+function getFallbackImage(index: number) { return FALLBACK_IMAGES[index % FALLBACK_IMAGES.length] }
+
+function formatDurationMag(mins: number | null) {
+  if (!mins) return null
+  if (mins < 60) return `${mins} min`
+  const hrs = Math.floor(mins / 60)
+  const rem = mins % 60
+  return rem === 0 ? `${hrs} hr${hrs > 1 ? 's' : ''}` : `${hrs} hr ${rem} min`
+}
+
+/* ─── Magazine Tab Panel ─── */
+function MagazinePanel({
+  locations,
+  itinerary,
+  reviewItineraryId,
+}: {
+  locations: Location[]
+  itinerary: Itinerary
+  reviewItineraryId?: string | null
+}) {
+  const groupedByDay = locations.reduce<Record<number, { location: Location; globalIndex: number }[]>>(
+    (acc, loc, globalIdx) => {
+      const day = loc.day_number ?? 1
+      if (!acc[day]) acc[day] = []
+      acc[day].push({ location: loc, globalIndex: globalIdx })
+      return acc
+    },
+    {},
+  )
+  const dayNumbers = Object.keys(groupedByDay).map(Number).sort((a, b) => a - b)
+
+  if (locations.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center flex-1 px-8 py-16 text-center">
+        <p className="text-sm text-muted-foreground">No stops to display.</p>
+      </div>
+    )
+  }
+
+  return (
+    <div className="flex flex-col gap-0 pb-6">
+      {/* Header strip */}
+      <div className="px-5 pt-4 pb-5 border-b border-border">
+        <p className="text-[9px] font-semibold uppercase tracking-[0.35em] text-primary mb-1">Atlas 360 Travel Book</p>
+        <h3 className="font-[family-name:var(--font-cormorant)] text-2xl font-semibold text-foreground leading-tight">
+          {itinerary.title}
+        </h3>
+        {itinerary.description && (
+          <p className="mt-1.5 text-[12px] text-muted-foreground leading-relaxed line-clamp-3">{itinerary.description}</p>
+        )}
+        {/* Stats row */}
+        <div className="mt-3 grid grid-cols-3 overflow-hidden rounded-lg border border-border/60">
+          <div className="px-3 py-2">
+            <span className="block font-[family-name:var(--font-cormorant)] text-xl font-semibold text-foreground">{dayNumbers.length}</span>
+            <span className="text-[9px] font-semibold uppercase tracking-widest text-muted-foreground">Days</span>
+          </div>
+          <div className="border-x border-border/60 px-3 py-2">
+            <span className="block font-[family-name:var(--font-cormorant)] text-xl font-semibold text-foreground">{locations.length}</span>
+            <span className="text-[9px] font-semibold uppercase tracking-widest text-muted-foreground">Stops</span>
+          </div>
+          <div className="px-3 py-2">
+            <span className="block font-[family-name:var(--font-cormorant)] text-xl font-semibold text-foreground">{locations.filter(l => Boolean(l.image_url)).length}</span>
+            <span className="text-[9px] font-semibold uppercase tracking-widest text-muted-foreground">Photos</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Days */}
+      <div className="px-5 pt-5 space-y-10">
+        {dayNumbers.map((dayNum) => (
+          <section key={dayNum}>
+            {/* Day heading */}
+            <div className="flex items-center gap-3 mb-5">
+              <span className="text-[10px] font-semibold uppercase tracking-[0.28em] text-primary whitespace-nowrap">Day {dayNum}</span>
+              <div className="h-px flex-1 bg-gradient-to-r from-primary/30 to-transparent" />
+            </div>
+
+            <div className="space-y-7">
+              {groupedByDay[dayNum].map(({ location, globalIndex }) => {
+                const duration = formatDurationMag(location.duration_minutes)
+                const image = location.image_url || getFallbackImage(globalIndex)
+
+                return (
+                  <article key={location.id} className="flex flex-col gap-3 border-b border-border pb-7 last:border-0">
+                    {/* Image */}
+                    <div className="overflow-hidden rounded-lg border border-border/60 bg-card aspect-[16/9]">
+                      <img src={image} alt={location.name} className="h-full w-full object-cover" />
+                    </div>
+
+                    {/* Meta chips */}
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-[11px] font-semibold text-primary-foreground flex-shrink-0">
+                        {globalIndex + 1}
+                      </span>
+                      {location.category && (
+                        <span className="text-[9px] font-semibold uppercase tracking-widest text-muted-foreground">{location.category}</span>
+                      )}
+                      {duration && (
+                        <span className="rounded-sm bg-muted-foreground/10 px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-wider text-muted-foreground">{duration}</span>
+                      )}
+                      {location.best_time && (
+                        <span className="rounded-sm bg-card border border-border px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-wider text-muted-foreground">{location.best_time}</span>
+                      )}
+                    </div>
+
+                    {/* Name + description */}
+                    <div>
+                      <h4 className="font-[family-name:var(--font-cormorant)] text-[1.4rem] font-semibold text-foreground leading-tight">
+                        {location.name}
+                      </h4>
+                      {location.description && (
+                        <p className="mt-2 text-[12px] leading-relaxed text-muted-foreground">{location.description}</p>
+                      )}
+                    </div>
+
+                    {/* Tips + transfer cards */}
+                    {(location.tips || location.transport_to_next) && (
+                      <div className="grid gap-2 grid-cols-1">
+                        {location.tips && (
+                          <div className="rounded-lg border border-border bg-card/60 p-3">
+                            <p className="text-[9px] font-semibold uppercase tracking-widest text-primary">Tip</p>
+                            <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">{location.tips}</p>
+                          </div>
+                        )}
+                        {location.transport_to_next && (
+                          <div className="rounded-lg border border-border bg-card/60 p-3">
+                            <p className="text-[9px] font-semibold uppercase tracking-widest text-primary">Next transfer</p>
+                            <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">
+                              {location.transport_to_next}
+                              {location.transport_duration_minutes ? ` · ${formatDurationMag(location.transport_duration_minutes)}` : ''}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </article>
+                )
+              })}
+            </div>
+          </section>
+        ))}
+
+        {/* Review panel for curated itineraries */}
+        {reviewItineraryId && (
+          <div className="pt-2">
+            <ReviewPanel
+              targetType="itinerary"
+              itineraryId={reviewItineraryId}
+              title="Journey feedback"
+            />
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
 /* ─── Sidebar Content ─── */
 function SidebarContent({
   itineraries,
@@ -288,6 +447,7 @@ function SidebarContent({
   activeTab = 'stops',
   onTabChange,
   onPlacesLoaded,
+  reviewItineraryId,
 }: ItinerarySidebarProps) {
   const [userTier, setUserTier] = useState<UserTier>('explorer')
   const [userEmail, setUserEmail] = useState('')
@@ -405,9 +565,9 @@ function SidebarContent({
               )}
               <Link
                 href={`/itinerary/${selectedItinerary.id}/magazine`}
-                className="mt-4 inline-flex text-[10px] font-semibold uppercase tracking-widest text-primary hover:text-[#D4622E] transition-colors"
+                className="mt-4 inline-flex text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60 hover:text-primary transition-colors"
               >
-                Open Magazine View
+                ↗ Full-page magazine
               </Link>
             </div>
 
@@ -457,10 +617,10 @@ function SidebarContent({
         {selectedItinerary ? (
           <>
             {/* Tabs */}
-            <div className="flex items-center gap-2 px-4 mb-4">
+            <div className="flex items-center gap-1.5 px-4 mb-4">
               <button
                 onClick={() => onTabChange?.('stops')}
-                className={`flex-1 py-2 text-[11px] font-semibold uppercase tracking-widest rounded-xl transition-all duration-300 ${activeTab === 'stops'
+                className={`flex-1 py-2 text-[10px] font-semibold uppercase tracking-widest rounded-xl transition-all duration-300 ${activeTab === 'stops'
                     ? 'bg-primary text-primary-foreground shadow-md shadow-primary/20 border border-primary'
                     : 'bg-card text-muted-foreground border border-border hover:text-muted-foreground hover:bg-muted'
                   }`}
@@ -469,112 +629,124 @@ function SidebarContent({
               </button>
               <button
                 onClick={() => onTabChange?.('places')}
-                className={`flex-1 py-2 text-[11px] font-semibold uppercase tracking-widest rounded-xl transition-all duration-300 ${activeTab === 'places'
+                className={`flex-1 py-2 text-[10px] font-semibold uppercase tracking-widest rounded-xl transition-all duration-300 ${activeTab === 'places'
                     ? 'bg-primary text-primary-foreground shadow-md shadow-primary/20 border border-primary'
                     : 'bg-card text-muted-foreground border border-border hover:text-muted-foreground hover:bg-muted'
                   }`}
               >
                 Places
               </button>
+              <button
+                onClick={() => onTabChange?.('magazine')}
+                className={`flex-1 py-2 text-[10px] font-semibold uppercase tracking-widest rounded-xl transition-all duration-300 ${activeTab === 'magazine'
+                    ? 'bg-primary text-primary-foreground shadow-md shadow-primary/20 border border-primary'
+                    : 'bg-card text-muted-foreground border border-border hover:text-muted-foreground hover:bg-muted'
+                  }`}
+              >
+                Magazine
+              </button>
             </div>
 
             {isLoadingLocations ? (
               <SidebarSkeleton />
-            ) : (
-              activeTab === 'stops' ? (
-                <div className="relative">
-                  <div className="flex flex-col gap-1 px-4 pb-6">
-                    {locations.map((location, i) => {
-                      const prevLoc = locations[i - 1];
-                      const nextLoc = locations[i + 1];
-                      const showDayDivider = !prevLoc || prevLoc.day_number !== location.day_number;
-                      const nextTransport = nextLoc ? nextLoc.transport : null;
-                      
-                      const isLocked = userTier === 'explorer' && (location.day_number || 1) > 1;
+            ) : activeTab === 'magazine' ? (
+              <MagazinePanel
+                locations={locations}
+                itinerary={selectedItinerary}
+                reviewItineraryId={reviewItineraryId}
+              />
+            ) : activeTab === 'stops' ? (
+              <div className="relative">
+                <div className="flex flex-col gap-1 px-4 pb-6">
+                  {locations.map((location, i) => {
+                    const prevLoc = locations[i - 1];
+                    const nextLoc = locations[i + 1];
+                    const showDayDivider = !prevLoc || prevLoc.day_number !== location.day_number;
+                    const nextTransport = nextLoc ? nextLoc.transport : null;
+                    const isLocked = userTier === 'explorer' && (location.day_number || 1) > 1;
 
-                      return (
-                        <div key={location.id} className={isLocked ? 'opacity-30 blur-[2px] pointer-events-none select-none transition-all duration-500' : ''}>
-                          <StopItem
-                            location={location}
-                            isSelected={selectedLocationId === location.id}
-                            onSelect={() => onLocationSelect(location)}
-                            animationDelay={i * 60}
-                            showDayDivider={showDayDivider}
-                            nextTransport={nextTransport}
-                            isLast={!nextLoc}
-                          />
-                        </div>
-                      );
-                    })}
-                  </div>
-
-                  {/* PDF Download Button */}
-                  <div className="px-4 pb-2">
-                    <PDFDownloadButton
-                      stops={locations.map((l, i) => ({
-                        name: l.name,
-                        description: l.description || '',
-                        category: l.category || '',
-                        day_number: l.day_number || 1,
-                        order_index: i,
-                        duration_minutes: l.duration_minutes ?? null,
-                        transport_to_next: l.transport_to_next ?? null,
-                        transport_duration_minutes: l.transport_duration_minutes ?? null,
-                        best_time: l.best_time ?? null,
-                        tips: l.tips ?? null,
-                        image_url: l.image_url ?? null,
-                      }))}
-                      title={selectedItinerary.title}
-                      userEmail={userEmail}
-                      tier={userTier}
-                      coverImageUrl={selectedItinerary.cover_image_url}
-                    />
-
-                    <ReviewPanel
-                      targetType="itinerary"
-                      itineraryId={selectedItinerary.id}
-                      title="Journey feedback"
-                    />
-                  </div>
-                  
-                  {/* Lock Overlay + CTA */}
-                  {userTier === 'explorer' && locations.some(l => (l.day_number || 1) > 1) && (
-                    <div className="absolute inset-x-0 bottom-0 top-[20%] flex flex-col items-center justify-center z-10 bg-gradient-to-t from-background via-background/90 to-transparent pointer-events-auto pb-10">
-                      <div className="w-12 h-12 rounded-full bg-card border border-border flex items-center justify-center mb-4 shadow-xl">
-                        <svg className="w-5 h-5 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
-                        </svg>
+                    return (
+                      <div key={location.id} className={isLocked ? 'opacity-30 blur-[2px] pointer-events-none select-none transition-all duration-500' : ''}>
+                        <StopItem
+                          location={location}
+                          isSelected={selectedLocationId === location.id}
+                          onSelect={() => onLocationSelect(location)}
+                          animationDelay={i * 60}
+                          showDayDivider={showDayDivider}
+                          nextTransport={nextTransport}
+                          isLast={!nextLoc}
+                        />
                       </div>
-                      <h4 className="font-[family-name:var(--font-cormorant)] text-xl font-semibold text-foreground mb-2">
-                        Unlock full itinerary
-                      </h4>
-                      <p className="text-[12px] text-muted-foreground mb-5 max-w-[200px] text-center">
-                        Subscribe to see all days, interactive maps, and detailed logistics.
-                      </p>
-                      <button
-                        onClick={() => router.push('/pricing')}
-                        className="px-6 py-2.5 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground text-[11px] font-semibold uppercase tracking-widest transition-colors shadow-lg shadow-primary/20"
-                      >
-                        Unlock — 99 MAD/mo
-                      </button>
-                    </div>
-                  )}
+                    );
+                  })}
                 </div>
-              ) : (
-                locations.length > 0 ? (() => {
-                  const targetLoc = locations.find(l => l.id === selectedLocationId) || locations[0];
-                  return (
-                    <PlacesTab
-                      lat={targetLoc.lat}
-                      lng={targetLoc.lng}
-                      onPlacesLoaded={onPlacesLoaded}
-                    />
-                  );
-                })() : (
-                  <div className="p-4 text-sm text-muted-foreground">
-                    Places loading... (PlacesTab coming in Week 4)
+
+                {/* PDF Download Button */}
+                <div className="px-4 pb-2">
+                  <PDFDownloadButton
+                    stops={locations.map((l, i) => ({
+                      name: l.name,
+                      description: l.description || '',
+                      category: l.category || '',
+                      day_number: l.day_number || 1,
+                      order_index: i,
+                      duration_minutes: l.duration_minutes ?? null,
+                      transport_to_next: l.transport_to_next ?? null,
+                      transport_duration_minutes: l.transport_duration_minutes ?? null,
+                      best_time: l.best_time ?? null,
+                      tips: l.tips ?? null,
+                      image_url: l.image_url ?? null,
+                    }))}
+                    title={selectedItinerary.title}
+                    userEmail={userEmail}
+                    tier={userTier}
+                    coverImageUrl={selectedItinerary.cover_image_url}
+                  />
+
+                  <ReviewPanel
+                    targetType="itinerary"
+                    itineraryId={selectedItinerary.id}
+                    title="Journey feedback"
+                  />
+                </div>
+
+                {/* Lock Overlay + CTA */}
+                {userTier === 'explorer' && locations.some(l => (l.day_number || 1) > 1) && (
+                  <div className="absolute inset-x-0 bottom-0 top-[20%] flex flex-col items-center justify-center z-10 bg-gradient-to-t from-background via-background/90 to-transparent pointer-events-auto pb-10">
+                    <div className="w-12 h-12 rounded-full bg-card border border-border flex items-center justify-center mb-4 shadow-xl">
+                      <svg className="w-5 h-5 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+                      </svg>
+                    </div>
+                    <h4 className="font-[family-name:var(--font-cormorant)] text-xl font-semibold text-foreground mb-2">
+                      Unlock full itinerary
+                    </h4>
+                    <p className="text-[12px] text-muted-foreground mb-5 max-w-[200px] text-center">
+                      Subscribe to see all days, interactive maps, and detailed logistics.
+                    </p>
+                    <button
+                      onClick={() => router.push('/pricing')}
+                      className="px-6 py-2.5 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground text-[11px] font-semibold uppercase tracking-widest transition-colors shadow-lg shadow-primary/20"
+                    >
+                      Unlock — 99 MAD/mo
+                    </button>
                   </div>
-                )
+                )}
+              </div>
+            ) : (
+              locations.length > 0 ? (() => {
+                const targetLoc = locations.find(l => l.id === selectedLocationId) || locations[0];
+                return (
+                  <PlacesTab
+                    lat={targetLoc.lat}
+                    lng={targetLoc.lng}
+                    onPlacesLoaded={onPlacesLoaded}
+                  />
+                );
+              })() : (
+                <div className="p-4 text-sm text-muted-foreground">
+                  Places loading...
+                </div>
               )
             )}
           </>

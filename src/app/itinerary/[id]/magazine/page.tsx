@@ -124,6 +124,7 @@ export default async function ItineraryMagazinePage({
 
     title = customItinerary.title
     description = customItinerary.description
+    reviewItineraryId = customItinerary.id
     stops = customItinerary.user_itinerary_stops || []
     coverImageUrl = stops[0]?.locations.image_url || null
   } else {

@@ -118,13 +118,18 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 
   const { data: customData } = await supabase
     .from('user_itineraries')
-    .select('title, user_itinerary_stops ( locations ( description, image_url ) )')
+    .select('title, is_public, user_itinerary_stops ( locations ( description, image_url ) )')
     .eq('id', id)
     .maybeSingle()
 
-  const customItinerary = customData as MetadataItinerary | null
+  const customItinerary = customData as (MetadataItinerary & { is_public?: boolean }) | null
 
   if (customItinerary) {
+    // Don't expose private itinerary titles in SEO / OG tags
+    if (!customItinerary.is_public) {
+      return { title: 'Private Itinerary | Atlas 360' }
+    }
+
     const firstStop = customItinerary.user_itinerary_stops?.[0]?.locations
     const desc = firstStop?.description?.substring(0, 150) || 'Explore a custom Moroccan itinerary on Atlas 360.'
     const image = firstStop?.image_url || undefined
