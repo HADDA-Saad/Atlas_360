@@ -184,12 +184,12 @@ async function main() {
         tier: 'elite',
         region: 'Morocco',
         locations: [
-          { name: 'Chefchaouen Medina', lat: 35.1688, lng: -5.2636, transport: 'Walking', duration: '90', day_number: 1, tips: 'Every alley is a photo opportunity.', category: 'landmark' },
-          { name: 'Ras el-Maa Waterfall', lat: 35.1750, lng: -5.2550, transport: 'Walking', duration: '60', day_number: 2, tips: 'Locals gather here to wash clothes and cool off.', category: 'nature' },
-          { name: 'Fes el-Bali', lat: 34.0647, lng: -4.9731, transport: 'Bus', duration: '90', day_number: 3, tips: 'Hire a guide to navigate the 9000 streets.', category: 'heritage' },
-          { name: 'Al-Qarawiyyin University', lat: 34.0644, lng: -4.9739, transport: 'Walking', duration: '60', day_number: 4, tips: 'Oldest continuously operating university.', category: 'heritage' },
-          { name: 'Chouara Tannery', lat: 34.0658, lng: -4.9697, transport: 'Walking', duration: '60', day_number: 4, tips: 'Take the offered mint sprig for the smell.', category: 'landmark' },
-          { name: 'Meknès Medina', lat: 33.8953, lng: -5.5547, transport: 'Walking', duration: '90', day_number: 5, tips: 'More laid back than Fes.', category: 'heritage' },
+          { name: 'Chefchaouen Medina', lat: 35.1689, lng: -5.2654, transport: 'Walking', duration: '90', day_number: 1, tips: 'Every alley is a photo opportunity.', category: 'landmark' },
+          { name: 'Ras el-Maa Waterfall', lat: 35.1715, lng: -5.2575, transport: 'Walking', duration: '60', day_number: 2, tips: 'Locals gather here to wash clothes and cool off.', category: 'nature' },
+          { name: 'Fes el-Bali', lat: 34.0617, lng: -4.9839, transport: 'Bus', duration: '90', day_number: 3, tips: 'Hire a guide to navigate the 9000 streets.', category: 'heritage' },
+          { name: 'Al-Qarawiyyin University', lat: 34.0587, lng: -4.9707, transport: 'Walking', duration: '60', day_number: 4, tips: 'Oldest continuously operating university.', category: 'heritage' },
+          { name: 'Chouara Tannery', lat: 34.0659, lng: -4.9709, transport: 'Walking', duration: '60', day_number: 4, tips: 'Take the offered mint sprig for the smell.', category: 'landmark' },
+          { name: 'Meknès Medina', lat: 33.8927, lng: -5.5651, transport: 'Walking', duration: '90', day_number: 5, tips: 'More laid back than Fes.', category: 'heritage' },
         ]
       }
     ];

@@ -46,6 +46,8 @@ export interface PlaceResult {
   price_level: number | null
   lat: number
   lng: number
+  phone?: string
+  international_phone_number?: string
 }
 
 export type PlaceType = 'lodging' | 'restaurant'

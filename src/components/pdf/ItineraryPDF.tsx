@@ -148,10 +148,11 @@ const styles = StyleSheet.create({
   },
   stopImage: {
     width: '100%',
-    height: 92,
+    height: 80,
+    maxHeight: 80,
     objectFit: 'cover',
-    marginTop: 8,
-    marginBottom: 8,
+    marginTop: 6,
+    marginBottom: 6,
   },
   stopNameRow: {
     flexDirection: 'row',
@@ -329,8 +330,8 @@ export default function ItineraryPDF({ title, coverImageUrl, stops, userEmail, g
       {dayNumbers.map(dayNum => {
         const dayStops = daysMap[dayNum]
         return (
-          <Page key={dayNum} size="A4" style={styles.page}>
-            <View style={styles.dayHeaderContainer}>
+          <Page key={dayNum} size="A4" style={styles.page} wrap>
+            <View style={styles.dayHeaderContainer} fixed>
               <Text style={styles.dayHeader}>DAY {dayNum}</Text>
               <View style={styles.dayHeaderRule} />
             </View>
@@ -339,7 +340,7 @@ export default function ItineraryPDF({ title, coverImageUrl, stops, userEmail, g
               const isLast = i === dayStops.length - 1
               const stopImage = stop.image_url || getPdfFallbackImage(i)
               return (
-                <View key={i} style={styles.stopBlock}>
+                <View key={i} style={styles.stopBlock} minPresenceAhead={60}>
                   <View style={styles.stopContent}>
                     <View style={styles.stopCircle}>
                       <Text style={styles.stopNumber}>{i + 1}</Text>
@@ -357,11 +358,15 @@ export default function ItineraryPDF({ title, coverImageUrl, stops, userEmail, g
                       </View>
                       
                       <Text style={styles.descriptionText}>
-                        {stop.description ? (stop.description.length > 180 ? stop.description.substring(0, 180) + '...' : stop.description) : ''}
+                        {stop.description ? (stop.description.length > 150 ? stop.description.substring(0, 150) + '...' : stop.description) : ''}
                       </Text>
 
                       {/* eslint-disable-next-line jsx-a11y/alt-text */}
-                      {stopImage && <Image src={stopImage} style={styles.stopImage} />}
+                      {stopImage && (
+                        <View wrap={false}>
+                          <Image src={stopImage} style={styles.stopImage} />
+                        </View>
+                      )}
                       
                       {stop.tips && (
                         <Text style={styles.tipsText}>→ Tip: {stop.tips}</Text>

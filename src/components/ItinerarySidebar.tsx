@@ -9,6 +9,7 @@ import PDFDownloadButton from '@/components/pdf/PDFDownloadButton'
 import ReviewPanel from '@/components/reviews/ReviewPanel'
 import ItineraryCard from '@/components/ItineraryCard'
 import PlacesTab from '@/components/PlacesTab'
+import WeatherWidget from '@/components/WeatherWidget'
 import {
   Sheet,
   SheetContent,
@@ -27,6 +28,7 @@ interface ItinerarySidebarProps {
   onLocationSelect: (location: Location) => void
   onBack: () => void
   isLoadingLocations: boolean
+  activeTab?: 'stops' | 'places'
   onTabChange?: (tab: 'stops' | 'places') => void
   onPlacesLoaded?: (hotels: PlaceResult[], restaurants: PlaceResult[]) => void
 }
@@ -283,10 +285,10 @@ function SidebarContent({
   onLocationSelect,
   onBack,
   isLoadingLocations,
+  activeTab = 'stops',
   onTabChange,
   onPlacesLoaded,
 }: ItinerarySidebarProps) {
-  const [activeTab, setActiveTab] = useState<'stops' | 'places'>('stops')
   const [userTier, setUserTier] = useState<UserTier>('explorer')
   const [userEmail, setUserEmail] = useState('')
   const router = useRouter()
@@ -309,10 +311,6 @@ function SidebarContent({
     }
     fetchUserTier()
   }, [])
-
-  useEffect(() => {
-    if (onTabChange) onTabChange(activeTab)
-  }, [activeTab, onTabChange])
 
   const [navOpen, setNavOpen] = useState(false)
 
@@ -374,7 +372,7 @@ function SidebarContent({
 
             {/* Selected itinerary header */}
             <div className="mb-2">
-              <div className="flex items-center gap-2 mb-2">
+              <div className="flex flex-wrap items-center gap-2 mb-2">
                 {selectedItinerary.region && (
                   <span className="
                     px-2.5 py-0.5
@@ -387,10 +385,15 @@ function SidebarContent({
                   </span>
                 )}
                 {selectedItinerary.duration_days && (
-                  <span className="text-[11px] text-muted-foreground">
+                  <span className="text-[11px] text-muted-foreground mr-auto">
                     {selectedItinerary.duration_days} {selectedItinerary.duration_days === 1 ? 'day' : 'days'}
                   </span>
                 )}
+                
+                <WeatherWidget city={
+                  ['Marrakech', 'Casablanca', 'Fes', 'Rabat', 'Tangier', 'Essaouira', 'Chefchaouen', 'Ouarzazate', 'Agadir', 'Zagora', 'Merzouga']
+                    .find(c => selectedItinerary.title.toLowerCase().includes(c.toLowerCase())) || 'Marrakech'
+                } />
               </div>
               <h2 className="font-[family-name:var(--font-cormorant)] text-2xl font-semibold text-foreground tracking-wide leading-tight">
                 {selectedItinerary.title}
@@ -456,7 +459,7 @@ function SidebarContent({
             {/* Tabs */}
             <div className="flex items-center gap-2 px-4 mb-4">
               <button
-                onClick={() => setActiveTab('stops')}
+                onClick={() => onTabChange?.('stops')}
                 className={`flex-1 py-2 text-[11px] font-semibold uppercase tracking-widest rounded-xl transition-all duration-300 ${activeTab === 'stops'
                     ? 'bg-primary text-primary-foreground shadow-md shadow-primary/20 border border-primary'
                     : 'bg-card text-muted-foreground border border-border hover:text-muted-foreground hover:bg-muted'
@@ -465,7 +468,7 @@ function SidebarContent({
                 Stops
               </button>
               <button
-                onClick={() => setActiveTab('places')}
+                onClick={() => onTabChange?.('places')}
                 className={`flex-1 py-2 text-[11px] font-semibold uppercase tracking-widest rounded-xl transition-all duration-300 ${activeTab === 'places'
                     ? 'bg-primary text-primary-foreground shadow-md shadow-primary/20 border border-primary'
                     : 'bg-card text-muted-foreground border border-border hover:text-muted-foreground hover:bg-muted'
@@ -558,13 +561,16 @@ function SidebarContent({
                   )}
                 </div>
               ) : (
-                locations.length > 0 ? (
-                  <PlacesTab
-                    lat={locations[0].lat}
-                    lng={locations[0].lng}
-                    onPlacesLoaded={onPlacesLoaded}
-                  />
-                ) : (
+                locations.length > 0 ? (() => {
+                  const targetLoc = locations.find(l => l.id === selectedLocationId) || locations[0];
+                  return (
+                    <PlacesTab
+                      lat={targetLoc.lat}
+                      lng={targetLoc.lng}
+                      onPlacesLoaded={onPlacesLoaded}
+                    />
+                  );
+                })() : (
                   <div className="p-4 text-sm text-muted-foreground">
                     Places loading... (PlacesTab coming in Week 4)
                   </div>

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useCallback } from 'react'
 import { useMapsLibrary } from '@vis.gl/react-google-maps'
 import type { Location } from '@/types'
 
@@ -15,70 +15,112 @@ export default function PanoramaModal({ location, isOpen, onClose }: PanoramaMod
   const panoramaInstanceRef = useRef<google.maps.StreetViewPanorama | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  // Controls whether the panorama container is actually mounted in the DOM
+  const [showContent, setShowContent] = useState(false)
 
   const streetViewLib = useMapsLibrary('streetView')
 
-  // We will initialize the panorama when it's open and location is present.
-  // Clean it up when closed.
-
-  // React to location or isOpen changes
-  useEffect(() => {
-    if (!isOpen || !location || !streetViewLib || !panoramaRef.current) {
-      if (!isOpen && panoramaInstanceRef.current) {
+  // Destroy panorama completely
+  const destroyPanorama = useCallback(() => {
+    if (panoramaInstanceRef.current) {
+      try {
         google.maps.event.clearInstanceListeners(panoramaInstanceRef.current)
-        panoramaInstanceRef.current = null
-      }
+      } catch { /* already cleaned up */ }
+      panoramaInstanceRef.current = null
+    }
+  }, [])
+
+  // When modal opens: delay-mount the content so the CSS transition completes first
+  // When modal closes: destroy immediately, then unmount content
+  useEffect(() => {
+    if (isOpen) {
+      // Mount the container after a tick so the modal wrapper is visible first
+      const t = setTimeout(() => setShowContent(true), 50)
+      return () => clearTimeout(t)
+    } else {
+      destroyPanorama()
+      setShowContent(false)
+      setError(null)
       setIsLoading(false)
-      return
     }
+  }, [isOpen, destroyPanorama])
 
-    setIsLoading(true)
-    setError(null)
+  // When content is mounted AND we have location + library → create panorama
+  useEffect(() => {
+    if (!showContent || !isOpen || !location || !streetViewLib) return
+    // Wait for the container ref to be available (next frame after mount)
+    const initTimer = requestAnimationFrame(() => {
+      const container = panoramaRef.current
+      if (!container) return
 
-    // Recreate panorama instance each time it opens to prevent black screen issues
-    // caused by resizing or CSS visibility transitions.
-    if (!panoramaInstanceRef.current) {
-      panoramaInstanceRef.current = new streetViewLib.StreetViewPanorama(panoramaRef.current, {
-        pov: { heading: 0, pitch: 0 },
-        motionTracking: false,
-        addressControl: false,
-        fullscreenControl: true,
-        linksControl: true,
-        panControl: true,
-        zoomControl: true,
-        enableCloseButton: false,
-        visible: true
-      })
-    }
+      setIsLoading(true)
+      setError(null)
+      destroyPanorama()
 
-    const position = { lat: location.lat, lng: location.lng }
-    const svs = new streetViewLib.StreetViewService()
-    
-    svs.getPanorama({ location: position, radius: 50 }, (data, status) => {
-      if (status === google.maps.StreetViewStatus.OK && data && data.location && data.location.pano) {
-        panoramaInstanceRef.current!.setPano(data.location.pano)
-        panoramaInstanceRef.current!.setPov({ heading: 0, pitch: 0 })
-        // Delaying resize just in case the CSS transition is still animating
-        setTimeout(() => {
-          if (panoramaInstanceRef.current) {
-            google.maps.event.trigger(panoramaInstanceRef.current, 'resize')
+      // Wait for the modal's CSS transition to fully finish (400ms transition)
+      // so the container has its final size before Google Maps measures it
+      const createTimer = setTimeout(() => {
+        if (!panoramaRef.current) return
+
+        const pano = new streetViewLib.StreetViewPanorama(panoramaRef.current, {
+          pov: { heading: 0, pitch: 0 },
+          motionTracking: false,
+          addressControl: false,
+          fullscreenControl: true,
+          linksControl: true,
+          panControl: true,
+          zoomControl: true,
+          enableCloseButton: false,
+          visible: false, // Start hidden — only show after tiles are ready
+        })
+        panoramaInstanceRef.current = pano
+
+        const position = { lat: location.lat, lng: location.lng }
+        const svs = new streetViewLib.StreetViewService()
+
+        svs.getPanorama({ location: position, radius: 50 }, (data, status) => {
+          if (
+            status === google.maps.StreetViewStatus.OK &&
+            data?.location?.pano
+          ) {
+            pano.setPano(data.location.pano)
+            pano.setPov({ heading: 0, pitch: 0 })
+            pano.setVisible(true)
+
+            // Fire multiple resize events to guarantee tile rendering.
+            // The first fires immediately, the second after a short delay
+            // to catch any remaining layout shifts.
+            google.maps.event.trigger(pano, 'resize')
+            setTimeout(() => {
+              if (panoramaInstanceRef.current) {
+                google.maps.event.trigger(panoramaInstanceRef.current, 'resize')
+              }
+            }, 300)
+
+            setError(null)
+          } else {
+            setError('No 360° imagery available exactly here.')
           }
-        }, 100)
-        setError(null)
-      } else {
-        setError('No 360° imagery available exactly here.')
-        if (panoramaInstanceRef.current) {
-          panoramaInstanceRef.current.setVisible(false)
-        }
-      }
-      setIsLoading(false)
+          setIsLoading(false)
+        })
+      }, 450) // Wait for CSS transition to finish (400ms) + small buffer
+
+      return () => clearTimeout(createTimer)
     })
-  }, [location, isOpen, streetViewLib])
+
+    return () => cancelAnimationFrame(initTimer)
+  }, [showContent, isOpen, location, streetViewLib, destroyPanorama])
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => destroyPanorama()
+  }, [destroyPanorama])
 
   // Handle escape key to close
   useEffect(() => {
+    if (!isOpen) return
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isOpen) onClose()
+      if (e.key === 'Escape') onClose()
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
@@ -128,16 +170,26 @@ export default function PanoramaModal({ location, isOpen, onClose }: PanoramaMod
         </div>
 
         {/* Content Body */}
-        <div className="relative w-full h-[65vh] sm:h-[75vh]">
-          {/* This is the persistent Street View container */}
-          <div ref={panoramaRef} className="w-full h-full" />
+        <div className="relative w-full h-[65vh] sm:h-[75vh] bg-[#1a1a1a]">
+          {/* 
+            The panorama container is only mounted when showContent is true.
+            This ensures Google Maps creates the panorama AFTER the modal is 
+            visible and the container has its actual dimensions.
+          */}
+          {showContent && (
+            <div
+              ref={panoramaRef}
+              className="absolute inset-0 w-full h-full"
+              style={{ minHeight: '300px' }}
+            />
+          )}
 
           {/* Loading Overlay */}
           <div
             className={`
               absolute inset-0 flex items-center justify-center bg-background/90 z-10
               transition-opacity duration-300 pointer-events-none
-              ${isLoading ? 'opacity-100' : 'opacity-0'}
+              ${isLoading || !showContent ? 'opacity-100' : 'opacity-0'}
             `}
           >
             <div className="flex flex-col items-center gap-4">
