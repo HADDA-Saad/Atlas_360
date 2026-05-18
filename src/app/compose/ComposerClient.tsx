@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useMemo } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useMemo, useEffect } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import {
   DndContext,
   DragOverlay,
@@ -193,6 +193,52 @@ export default function ComposerClient({ initialLocations }: { initialLocations:
   const [isPublic, setIsPublic] = useState(false)
   const [activeDayForAdd, setActiveDayForAdd] = useState(1)
   
+  const searchParams = useSearchParams()
+  const fromId = searchParams.get('from')
+
+  useEffect(() => {
+    if (!fromId) return
+    const fetchForked = async () => {
+      try {
+        const res = await fetch(`/api/user-itineraries/${fromId}`)
+        if (!res.ok) return
+        const data = await res.json()
+        if (data) {
+          setTitle(data.title)
+          const newItemsByDay: Record<number, string[]> = {}
+          const newCustomNotes: Record<string, string> = {}
+          let maxDay = 1
+          
+          if (data.user_itinerary_stops) {
+            data.user_itinerary_stops.forEach((stop: any) => {
+              const day = stop.day_number || 1
+              if (day > maxDay) maxDay = day
+              if (!newItemsByDay[day]) newItemsByDay[day] = []
+              newItemsByDay[day].push(stop.location_id)
+              if (stop.custom_notes) {
+                newCustomNotes[stop.location_id] = stop.custom_notes
+              }
+            })
+          }
+          
+          const newDays = Array.from({ length: maxDay }, (_, i) => i + 1)
+          newDays.forEach(d => {
+            if (!newItemsByDay[d]) newItemsByDay[d] = []
+          })
+          
+          setDays(newDays)
+          setItemsByDay(newItemsByDay)
+          setCustomNotes(newCustomNotes)
+          setSavedItineraryId(data.id)
+          setIsPublic(Boolean(data.is_public))
+        }
+      } catch (err) {
+        console.error('Failed to fetch forked itinerary', err)
+      }
+    }
+    fetchForked()
+  }, [fromId])
+
   // DND state
   const [activeId, setActiveId] = useState<string | null>(null)
 

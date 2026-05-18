@@ -25,9 +25,14 @@ export default function DeleteItineraryButton({ id, title }: { id: string, title
     <button 
       onClick={handleDelete}
       disabled={isDeleting}
-      className="text-[10px] uppercase tracking-widest font-semibold text-red-400 hover:text-red-300 px-3 py-1.5 border border-red-500/20 rounded-md bg-red-500/5 transition-colors disabled:opacity-50"
+      title="Delete itinerary"
+      className="p-2 text-muted-foreground hover:text-red-500 hover:bg-red-500/10 rounded-full transition-colors disabled:opacity-50"
     >
-      {isDeleting ? 'Deleting...' : 'Delete'}
+      {isDeleting ? (
+        <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a9 9 0 11-6.219-8.56"/></svg>
+      ) : (
+        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+      )}
     </button>
   )
 }

@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase/client'
 import type { UserTier } from '@/types'
 import PDFDownloadButton from '@/components/pdf/PDFDownloadButton'
 import ReviewPanel from '@/components/reviews/ReviewPanel'
+import ForkItineraryButton from '@/components/ForkItineraryButton'
 import ItineraryCard from '@/components/ItineraryCard'
 import PlacesTab from '@/components/PlacesTab'
 import WeatherWidget from '@/components/WeatherWidget'
@@ -451,7 +452,15 @@ function SidebarContent({
 }: ItinerarySidebarProps) {
   const [userTier, setUserTier] = useState<UserTier>('explorer')
   const [userEmail, setUserEmail] = useState('')
+  const [navOpen, setNavOpen] = useState(false)
   const router = useRouter()
+
+  // Filtering & Sorting State
+  const [search, setSearch] = useState('')
+  const [regionFilter, setRegionFilter] = useState('All')
+  const [durationFilter, setDurationFilter] = useState('Any duration')
+  const [sort, setSort] = useState('Default')
+  const [ratings, setRatings] = useState<Record<string, number>>({})
 
   useEffect(() => {
     const supabase = createClient()
@@ -469,10 +478,42 @@ function SidebarContent({
         }
       }
     }
+    
+    async function fetchRatings() {
+      try {
+        const res = await fetch('/api/itineraries/ratings')
+        if (res.ok) {
+          const data = await res.json()
+          const ratingsMap = data.reduce((acc: any, curr: any) => ({ ...acc, [curr.itinerary_id]: curr.average }), {})
+          setRatings(ratingsMap)
+        }
+      } catch (err) {
+        console.error('Failed to fetch ratings', err)
+      }
+    }
+
     fetchUserTier()
+    fetchRatings()
   }, [])
 
-  const [navOpen, setNavOpen] = useState(false)
+  const filteredItineraries = itineraries.filter(it => {
+    if (search && !it.title.toLowerCase().includes(search.toLowerCase()) && !(it.description || '').toLowerCase().includes(search.toLowerCase())) return false;
+    if (regionFilter !== 'All' && it.region !== regionFilter && (!it.region && !it.title.toLowerCase().includes(regionFilter.toLowerCase()))) return false;
+    if (durationFilter !== 'Any duration') {
+      const days = it.duration_days || 0;
+      if (durationFilter === '1 day' && days !== 1) return false;
+      if (durationFilter === '2–3 days' && (days < 2 || days > 3)) return false;
+      if (durationFilter === '4–5 days' && (days < 4 || days > 5)) return false;
+      if (durationFilter === '6+ days' && days < 6) return false;
+    }
+    return true;
+  }).sort((a, b) => {
+    if (sort === 'Best reviewed') return (ratings[b.id] || 0) - (ratings[a.id] || 0)
+    if (sort === 'Shortest first') return (a.duration_days || 0) - (b.duration_days || 0)
+    if (sort === 'Longest first') return (b.duration_days || 0) - (a.duration_days || 0)
+    if (sort === 'Newest') return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    return 0 // Default
+  })
 
   return (
     <div className="flex flex-col h-full atlas-grain">
@@ -563,12 +604,20 @@ function SidebarContent({
                   {selectedItinerary.description}
                 </p>
               )}
-              <Link
-                href={`/itinerary/${selectedItinerary.id}/magazine`}
-                className="mt-4 inline-flex text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60 hover:text-primary transition-colors"
-              >
-                ↗ Full-page magazine
-              </Link>
+              <div className="mt-4 flex items-center justify-between">
+                <Link
+                  href={`/itinerary/${selectedItinerary.id}/magazine`}
+                  className="inline-flex text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60 hover:text-primary transition-colors"
+                >
+                  ↗ Full-page magazine
+                </Link>
+                {userTier === 'elite' && (
+                  <ForkItineraryButton
+                    itineraryId={selectedItinerary.id}
+                    itineraryTitle={selectedItinerary.title}
+                  />
+                )}
+              </div>
             </div>
 
             {/* Divider */}
@@ -607,6 +656,62 @@ function SidebarContent({
               <div className="h-px flex-1 bg-gradient-to-r from-border to-transparent" />
               <div className="w-1 h-1 rounded-full bg-primary/40" />
               <div className="h-px flex-1 bg-gradient-to-l from-border to-transparent" />
+            </div>
+
+            {/* Filters UI */}
+            <div className="mt-6 flex flex-col gap-3">
+              <div className="relative w-full">
+                <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                <input
+                  type="text"
+                  placeholder="Search destinations..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="bg-card border border-border rounded-xl pl-9 pr-4 py-2.5 text-sm w-full focus:border-primary/50 outline-none"
+                />
+              </div>
+
+              <div className="flex flex-wrap gap-2">
+                <select
+                  value={durationFilter}
+                  onChange={(e) => setDurationFilter(e.target.value)}
+                  className="bg-card border border-border rounded-xl px-4 pr-8 py-2 text-[11px] uppercase tracking-widest font-semibold appearance-none cursor-pointer focus:border-primary/50 outline-none flex-1 min-w-[120px]"
+                  style={{ backgroundImage: `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center', backgroundSize: '16px' }}
+                >
+                  <option>Any duration</option>
+                  <option>1 day</option>
+                  <option>2–3 days</option>
+                  <option>4–5 days</option>
+                  <option>6+ days</option>
+                </select>
+
+                <select
+                  value={sort}
+                  onChange={(e) => setSort(e.target.value)}
+                  className="bg-card border border-border rounded-xl px-4 pr-8 py-2 text-[11px] uppercase tracking-widest font-semibold appearance-none cursor-pointer focus:border-primary/50 outline-none flex-1 min-w-[120px]"
+                  style={{ backgroundImage: `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center', backgroundSize: '16px' }}
+                >
+                  <option>Default</option>
+                  <option>Best reviewed</option>
+                  <option>Shortest first</option>
+                  <option>Longest first</option>
+                  <option>Newest</option>
+                </select>
+              </div>
+
+              <div className="flex flex-wrap gap-1.5 mt-1">
+                {['All', ...Array.from(new Set(itineraries.map(it => it.region || 'Unknown').filter(r => r !== 'Unknown'))).sort()].map(r => (
+                  <button
+                    key={r}
+                    onClick={() => setRegionFilter(r)}
+                    className={`px-3 py-1 text-[10px] font-semibold uppercase tracking-widest rounded-full transition-colors ${regionFilter === r ? 'bg-primary text-primary-foreground' : 'border border-border text-muted-foreground hover:border-primary'}`}
+                  >
+                    {r}
+                  </button>
+                ))}
+              </div>
             </div>
           </>
         )}
@@ -750,11 +855,21 @@ function SidebarContent({
               )
             )}
           </>
-        ) : itineraries.length === 0 ? (
-          <EmptyState />
+        ) : filteredItineraries.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-20 text-center px-6">
+            <svg className="w-10 h-10 text-muted-foreground/30 mb-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1">
+              <circle cx="12" cy="12" r="10" />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4m0 4h.01" />
+            </svg>
+            <h3 className="font-[family-name:var(--font-cormorant)] text-xl font-semibold text-foreground mb-2">No itineraries match your filters</h3>
+            <button onClick={() => { setSearch(''); setRegionFilter('All'); setDurationFilter('Any duration'); setSort('Default'); }} className="text-[11px] uppercase tracking-widest font-semibold text-primary hover:text-primary/80 transition-colors mt-2">
+              Clear filters
+            </button>
+          </div>
         ) : (
           <div className="flex flex-col gap-3 px-5 pb-6">
-            {itineraries.map((itinerary, i) => (
+            <div className="text-[11px] text-muted-foreground mb-1 -mt-2">{filteredItineraries.length} {filteredItineraries.length === 1 ? 'itinerary' : 'itineraries'} found</div>
+            {filteredItineraries.map((itinerary, i) => (
               <ItineraryCard
                 key={itinerary.id}
                 itinerary={itinerary}

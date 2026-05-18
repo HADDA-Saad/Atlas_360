@@ -29,6 +29,8 @@ export interface Location {
   transport_to_next: string | null
   transport_duration_minutes: number | null
   best_time: string | null
+  rich_description?: string | null
+  photo_urls?: string[] | null
   created_at: string
 }
 

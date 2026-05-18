@@ -20,12 +20,12 @@ export default function HeroSection() {
       <div 
         className="absolute -inset-[5%] bg-cover bg-center bg-no-repeat z-0 will-change-transform"
         style={{ 
-          backgroundImage: 'url("/Images/sunset backfground.png")',
+          backgroundImage: 'url("/Images/sahara-hero.jpg")',
           transform: `translateY(${scrollY * 0.4}px)`,
         }}
       >
         {/* Gradient Overlay for text readability */}
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent"></div>
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/70 to-background/20"></div>
         <div className="absolute inset-0 bg-background/10 dark:bg-background/20"></div>
       </div>
 

@@ -3,6 +3,7 @@ import Link from 'next/link'
 import MapView from '@/components/MapView'
 import GoogleMapsProvider from '@/components/GoogleMapsProvider'
 import PDFDownloadButton from '@/components/pdf/PDFDownloadButton'
+import ForkItineraryButton from '@/components/ForkItineraryButton'
 import ReviewPanel from '@/components/reviews/ReviewPanel'
 import type { Itinerary, Location, UserTier } from '@/types'
 import type { Metadata } from 'next'
@@ -308,6 +309,12 @@ export default async function PublicItineraryPage({
                 <Link href="/compose" className="text-[10px] uppercase tracking-widest text-primary hover:text-primary/80 border border-primary/30 px-3 py-1.5 rounded-full transition-colors">
                   Open Composer
                 </Link>
+              )}
+              {viewerTier === 'elite' && !customItinerary && (
+                <ForkItineraryButton
+                  itineraryId={id}
+                  itineraryTitle={title}
+                />
               )}
             </div>
           </div>

@@ -80,6 +80,7 @@ export default function ReviewPanel({
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [showAll, setShowAll] = useState(false)
 
   const targetQuery = useMemo(() => {
     const params = new URLSearchParams({ target_type: targetType })
@@ -186,7 +187,7 @@ export default function ReviewPanel({
     }
   }
 
-  const visibleReviews: Review[] = compact ? response.reviews.slice(0, 2) : response.reviews.slice(0, 4)
+  const visibleReviews: Review[] = compact ? response.reviews.slice(0, 2) : (showAll ? response.reviews : response.reviews.slice(0, 3))
   const panelClass = compact
     ? 'mt-6 rounded-xl border border-border bg-card/55 p-4'
     : 'mt-8 rounded-2xl border border-border bg-card/70 p-5 shadow-sm'
@@ -237,11 +238,20 @@ export default function ReviewPanel({
         <>
           {visibleReviews.length > 0 ? (
             <div className="mt-5 grid gap-3">
-              {visibleReviews.map((review) => (
+              {visibleReviews.map((review) => {
+                const userIdStr = review.user_id || '00'
+                const initials = userIdStr.substring(0, 2).toUpperCase()
+                const colorIndex = parseInt(userIdStr.charAt(0), 16) % 4
+                const bgColors = ['bg-primary', 'bg-amber-500', 'bg-teal-500', 'bg-muted-foreground']
+                const bgColor = isNaN(colorIndex) ? 'bg-primary' : bgColors[colorIndex]
+
+                return (
                 <article key={review.id} className="rounded-xl border border-border bg-background/55 p-4">
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-center gap-3">
-                      <UserCircle size={28} className="text-muted-foreground/70" strokeWidth={1.4} />
+                      <div className={`flex items-center justify-center w-8 h-8 rounded-full text-[12px] font-bold text-white ${bgColor}`}>
+                        {initials}
+                      </div>
                       <div>
                         <RatingStars value={review.rating} />
                         <span className="mt-1 block text-[10px] uppercase tracking-widest text-muted-foreground/70">
@@ -259,7 +269,17 @@ export default function ReviewPanel({
                     {review.body}
                   </p>
                 </article>
-              ))}
+                )
+              })}
+              {!compact && response.reviews.length > 3 && !showAll && (
+                <button
+                  type="button"
+                  onClick={() => setShowAll(true)}
+                  className="mt-2 text-sm font-medium text-primary hover:underline text-center py-2"
+                >
+                  Show all {response.reviews.length} reviews
+                </button>
+              )}
             </div>
           ) : (
             <div className="mt-5 rounded-xl border border-dashed border-border bg-background/40 p-4">
@@ -271,19 +291,18 @@ export default function ReviewPanel({
           )}
 
           {!compact && (
-            <div className="mt-4 flex items-center gap-2 rounded-xl border border-dashed border-border bg-background/35 p-3 text-muted-foreground">
-              <ImageIcon size={15} strokeWidth={1.6} />
-              <p className="text-xs leading-relaxed">
-                Photo feedback is planned next; today the review system supports text and stars.
-              </p>
+            <div className="mt-4 flex justify-end">
+              <span title="Photo reviews are coming soon" className="text-[11px] text-muted-foreground/50 flex items-center gap-1">
+                <ImageIcon size={12}/> Photo reviews coming soon
+              </span>
             </div>
           )}
 
           {isLoggedIn ? (
             <form onSubmit={handleSubmit} className="mt-5 border-t border-border pt-4">
-              <div className="flex items-center justify-between gap-3">
-                <span className="text-[11px] uppercase tracking-widest text-muted-foreground">
-                  {ownReview ? 'Update your rating' : 'Add your rating'}
+              <div className="flex flex-col gap-2 mb-3">
+                <span className="text-[10px] uppercase tracking-widest text-muted-foreground">
+                  Your rating
                 </span>
                 <RatingStars value={rating} interactive onChange={setRating} size="md" />
               </div>
@@ -291,26 +310,28 @@ export default function ReviewPanel({
               <textarea
                 value={body}
                 onChange={(event) => setBody(event.target.value)}
-                placeholder="Share what stood out, what helped, or what future travelers should know..."
-                className="mt-3 min-h-[82px] w-full resize-none rounded-lg border border-border bg-background p-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground/50 focus:border-primary/50"
+                placeholder="What stood out? What should future travelers know?"
+                className="min-h-[82px] w-full resize-none rounded-lg border border-border bg-background p-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground/50 focus:border-primary/50"
               />
 
               {error && (
                 <p className="mt-2 text-xs text-red-400">{error}</p>
               )}
 
-              <div className="mt-3 flex items-center justify-end gap-2">
-                {ownReview && (
-                  <button
-                    type="button"
-                    onClick={handleDelete}
-                    disabled={isSubmitting}
-                    className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-red-400/20 text-red-300 transition-colors hover:bg-red-400/10 disabled:opacity-50"
-                    aria-label="Delete review"
-                  >
-                    <Trash2 size={15} />
-                  </button>
-                )}
+              <div className="mt-3 flex items-center justify-between">
+                <div>
+                  {ownReview && (
+                    <button
+                      type="button"
+                      onClick={handleDelete}
+                      disabled={isSubmitting}
+                      className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-red-400/20 text-red-300 transition-colors hover:bg-red-400/10 disabled:opacity-50"
+                      aria-label="Delete review"
+                    >
+                      <Trash2 size={15} />
+                    </button>
+                  )}
+                </div>
                 <button
                   type="submit"
                   disabled={isSubmitting || body.trim().length < 3}

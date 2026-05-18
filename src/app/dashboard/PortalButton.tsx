@@ -26,7 +26,7 @@ export default function PortalButton() {
     <button
       onClick={handlePortal}
       disabled={loading}
-      className="inline-block px-6 py-2.5 rounded-lg bg-muted border border-border text-foreground text-[11px] font-bold uppercase tracking-widest hover:bg-[#2A251E] transition-colors disabled:opacity-50"
+      className="block w-full text-center px-6 py-2.5 rounded-lg bg-card border border-border text-foreground text-[11px] font-bold uppercase tracking-widest hover:bg-muted transition-colors disabled:opacity-50"
     >
       {loading ? 'Opening...' : 'Manage subscription'}
     </button>

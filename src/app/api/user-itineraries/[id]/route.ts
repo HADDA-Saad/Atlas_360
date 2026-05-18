@@ -40,6 +40,46 @@ function isStopInput(stop: unknown): stop is StopInput {
   )
 }
 
+export async function GET(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params
+    const supabase = await createClient()
+
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const { data: itinerary, error } = await supabase
+      .from('user_itineraries')
+      .select(`
+        *,
+        user_itinerary_stops (
+          day_number,
+          order_index,
+          custom_notes,
+          location_id
+        )
+      `)
+      .eq('id', id)
+      .eq('user_id', user.id)
+      .single()
+
+    if (error) {
+      console.error('Error fetching itinerary:', error)
+      return NextResponse.json({ error: 'Failed to fetch itinerary' }, { status: 500 })
+    }
+
+    return NextResponse.json(itinerary)
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'An unexpected error occurred'
+    return NextResponse.json({ error: message }, { status: 500 })
+  }
+}
+
 export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> }

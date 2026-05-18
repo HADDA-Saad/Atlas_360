@@ -21,6 +21,7 @@ const NAV_LINKS = [
   { name: 'ITINERARIES', href: '/explore' },
   { name: 'PRICING', href: '/pricing' },
   { name: 'DESTINATIONS', href: '/destinations' },
+  { name: 'HELP', href: '/help' },
   { name: 'ABOUT', href: '/about' },
 ]
 

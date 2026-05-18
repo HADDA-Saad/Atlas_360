@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import PortalButton from './PortalButton'
 import DeleteItineraryButton from './DeleteItineraryButton'
+import CustomItinerariesList from './CustomItinerariesList'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -48,91 +49,95 @@ export default async function DashboardPage() {
   const displayStatus = status === 'active' ? 'Active' : (status === 'cancelled' || status === 'canceled' ? 'Cancelled' : 'Free plan')
 
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center py-32 px-4 atlas-grain">
-      <div className="w-full max-w-2xl bg-card border border-border rounded-3xl p-8 md:p-12 shadow-xl">
-        <h1 className="font-[family-name:var(--font-cormorant)] text-4xl font-semibold text-foreground mb-10 tracking-tight">
-          My Account
-        </h1>
+    <div className="min-h-screen bg-background flex flex-col atlas-grain">
+      {/* Hero Banner */}
+      <div className="w-full h-[180px] bg-[#111] relative border-b border-border flex items-end">
+        <div className="absolute inset-0 atlas-grain opacity-50"></div>
+        <div className="w-full max-w-[1100px] mx-auto px-6 md:px-12 pb-8 relative z-10 flex items-center gap-4">
+          <h1 className="font-[family-name:var(--font-cormorant)] text-4xl md:text-5xl font-semibold text-foreground tracking-tight">
+            Welcome back, {user.email?.split('@')[0]}
+          </h1>
+          {tier === 'elite' && (
+            <span className="px-3 py-1 bg-amber-500/10 border border-amber-500/20 text-amber-400 text-[10px] uppercase tracking-widest font-bold rounded-full mb-1">
+              Elite Explorer
+            </span>
+          )}
+        </div>
+      </div>
 
-        <div className="space-y-8">
-          <div className="pb-8 border-b border-border">
-            <p className="text-[11px] uppercase tracking-widest text-muted-foreground mb-2">Email address</p>
-            <p className="text-foreground font-medium text-lg">{user.email}</p>
-          </div>
-
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
-            <div>
-              <p className="text-[11px] uppercase tracking-widest text-muted-foreground mb-3">Current Plan</p>
-              <div className="flex items-center gap-3">
-                <span className={`px-3 py-1 text-[11px] font-bold uppercase tracking-widest rounded-full border ${getTierColor(tier)}`}>
-                  {tier}
-                </span>
-                <span className={`px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest rounded-full border ${getStatusColor(status)}`}>
-                  {displayStatus}
-                </span>
-              </div>
+      {/* Main Content Area */}
+      <div className="w-full max-w-[1100px] mx-auto px-6 md:px-12 py-10 flex flex-col md:flex-row gap-8 lg:gap-12">
+        
+        {/* Left Sidebar */}
+        <div className="w-full md:w-[280px] flex-shrink-0 flex flex-col gap-8">
+          {/* Profile Card */}
+          <div className="bg-card border border-border rounded-2xl p-6 flex flex-col items-center text-center">
+            <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center mb-4">
+              <span className="font-[family-name:var(--font-cormorant)] text-3xl font-semibold text-primary-foreground">
+                {user.email?.charAt(0).toUpperCase()}
+              </span>
+            </div>
+            <p className="text-foreground font-medium text-sm mb-4 truncate w-full">{user.email}</p>
+            
+            <div className="flex items-center gap-2 mb-6">
+              <span className={`px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded-full border ${getTierColor(tier)}`}>
+                {tier}
+              </span>
+              <span className={`px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded-full border ${getStatusColor(status)}`}>
+                {displayStatus}
+              </span>
             </div>
 
-            <div className="mt-2 sm:mt-0">
+            <div className="w-full">
               {status === 'active' ? (
                 <PortalButton />
               ) : (
                 <Link 
                   href="/pricing"
-                  className="inline-block px-6 py-2.5 rounded-lg bg-primary text-primary-foreground text-[11px] font-bold uppercase tracking-widest hover:bg-primary/90 transition-colors shadow-lg shadow-primary/20"
+                  className="block w-full text-center px-6 py-2.5 rounded-lg bg-primary text-primary-foreground text-[11px] font-bold uppercase tracking-widest hover:bg-primary/90 transition-colors shadow-sm"
                 >
                   Upgrade plan
                 </Link>
               )}
             </div>
           </div>
-          
-          {/* Custom Itineraries Section */}
-          {tier === 'elite' && (
-            <div className="pt-8 border-t border-border">
-              <div className="flex items-center justify-between mb-6">
-                <p className="text-[11px] uppercase tracking-widest text-muted-foreground">My Custom Itineraries</p>
-                <Link href="/compose" className="text-[10px] uppercase tracking-widest text-primary hover:text-primary/80 font-semibold border border-primary/30 px-3 py-1.5 rounded-md transition-colors">
-                  + Create New
-                </Link>
-              </div>
-              
-              {itineraries && itineraries.length > 0 ? (
-                <div className="space-y-4">
-                  {itineraries.map((itinerary) => (
-                    <div key={itinerary.id} className="bg-background border border-border rounded-xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                      <div>
-                        <h3 className="font-[family-name:var(--font-cormorant)] text-xl font-semibold text-foreground mb-1 tracking-tight">{itinerary.title}</h3>
-                        <div className="flex items-center gap-3">
-                          <span className={`text-[10px] uppercase tracking-widest font-semibold px-2 py-0.5 rounded-sm ${itinerary.is_public ? 'bg-blue-500/10 text-blue-400' : 'bg-gray-500/10 text-gray-400'}`}>
-                            {itinerary.is_public ? 'Public' : 'Private'}
-                          </span>
-                          <span className="text-[11px] text-muted-foreground">
-                            Created {new Date(itinerary.created_at).toLocaleDateString()}
-                          </span>
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-center gap-3">
-                        <Link 
-                          href={`/itinerary/${itinerary.id}`}
-                          className="text-[10px] uppercase tracking-widest font-semibold text-foreground hover:text-primary px-3 py-1.5 border border-border rounded-md bg-foreground/5 transition-colors"
-                        >
-                          View
-                        </Link>
-                        <DeleteItineraryButton id={itinerary.id} title={itinerary.title} />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-8 bg-background rounded-xl border border-dashed border-border">
-                  <p className="text-[13px] text-muted-foreground mb-4">You haven&apos;t created any custom itineraries yet.</p>
-                </div>
-              )}
+
+          {/* Stats Grid */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="bg-card border border-border rounded-xl p-4 flex flex-col items-center text-center">
+              <span className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">Itineraries</span>
+              <span className="font-[family-name:var(--font-cormorant)] text-2xl font-semibold text-foreground">{itineraries?.length || 0}</span>
             </div>
-          )}
+            <div className="bg-card border border-border rounded-xl p-4 flex flex-col items-center text-center">
+              <span className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">Member since</span>
+              <span className="font-[family-name:var(--font-cormorant)] text-xl font-semibold text-foreground">
+                {new Date(user.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
+              </span>
+            </div>
+          </div>
         </div>
+
+        {tier === 'elite' ? (
+          <CustomItinerariesList itineraries={itineraries || []} />
+        ) : (
+          <div className="flex-1 flex flex-col">
+            <div className="flex items-center justify-between mb-8">
+              <h2 className="font-[family-name:var(--font-cormorant)] text-[28px] font-semibold text-foreground tracking-tight">
+                My Itineraries
+              </h2>
+            </div>
+            <div className="flex flex-col items-center justify-center py-20 text-center bg-card/50 border border-border rounded-2xl">
+              <svg className="w-12 h-12 text-amber-500/40 mb-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+              </svg>
+              <h3 className="font-[family-name:var(--font-cormorant)] text-2xl font-semibold text-foreground mb-2">Elite feature</h3>
+              <p className="text-sm text-muted-foreground mb-6 max-w-sm">Upgrade to the Elite Explorer plan to create and manage custom itineraries.</p>
+              <Link href="/pricing" className="text-[11px] uppercase tracking-widest font-semibold text-primary hover:text-primary/80 transition-colors">
+                Upgrade plan →
+              </Link>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )
