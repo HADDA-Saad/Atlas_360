@@ -20,6 +20,13 @@ import {
 } from '@/components/ui/sheet'
 import type { Itinerary, Location, PlaceResult } from '@/types'
 
+interface UserCustomItinerary {
+  id: string
+  title: string
+  is_public: boolean | null
+  created_at: string
+}
+
 interface ItinerarySidebarProps {
   itineraries: Itinerary[]
   selectedItinerary: Itinerary | null
@@ -33,6 +40,7 @@ interface ItinerarySidebarProps {
   onTabChange?: (tab: 'stops' | 'places' | 'magazine') => void
   onPlacesLoaded?: (hotels: PlaceResult[], restaurants: PlaceResult[]) => void
   reviewItineraryId?: string | null
+  onOpenMagazine?: () => void
 }
 
 /* ─── Loading Skeleton ─── */
@@ -449,10 +457,13 @@ function SidebarContent({
   onTabChange,
   onPlacesLoaded,
   reviewItineraryId,
+  onOpenMagazine,
 }: ItinerarySidebarProps) {
   const [userTier, setUserTier] = useState<UserTier>('explorer')
   const [userEmail, setUserEmail] = useState('')
   const [navOpen, setNavOpen] = useState(false)
+  const [myTrips, setMyTrips] = useState<UserCustomItinerary[]>([])
+  const [myTripsExpanded, setMyTripsExpanded] = useState(false)
   const router = useRouter()
 
   // Filtering & Sorting State
@@ -492,8 +503,25 @@ function SidebarContent({
       }
     }
 
+    async function fetchMyTrips() {
+      try {
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!user) return
+        const { data } = await supabase
+          .from('user_itineraries')
+          .select('id, title, is_public, created_at')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false })
+          .limit(10)
+        if (data) setMyTrips(data as UserCustomItinerary[])
+      } catch (err) {
+        console.error('Failed to fetch my trips', err)
+      }
+    }
+
     fetchUserTier()
     fetchRatings()
+    fetchMyTrips()
   }, [])
 
   const filteredItineraries = itineraries.filter(it => {
@@ -605,12 +633,15 @@ function SidebarContent({
                 </p>
               )}
               <div className="mt-4 flex items-center justify-between">
-                <Link
-                  href={`/itinerary/${selectedItinerary.id}/magazine`}
-                  className="inline-flex text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60 hover:text-primary transition-colors"
+                <button
+                  onClick={() => onOpenMagazine?.()}
+                  className="inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60 hover:text-primary transition-colors group"
                 >
-                  ↗ Full-page magazine
-                </Link>
+                  <svg className="w-3.5 h-3.5 transition-transform duration-200 group-hover:translate-x-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M4 19.5A2.5 2.5 0 016.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z" />
+                  </svg>
+                  Open Travel Book
+                </button>
                 {userTier === 'elite' && (
                   <ForkItineraryButton
                     itineraryId={selectedItinerary.id}
@@ -868,6 +899,85 @@ function SidebarContent({
           </div>
         ) : (
           <div className="flex flex-col gap-3 px-5 pb-6">
+            {/* My Trips Section */}
+            {myTrips.length > 0 && (
+              <div className="mb-4">
+                <button
+                  onClick={() => setMyTripsExpanded(!myTripsExpanded)}
+                  className="w-full flex items-center justify-between py-2 group"
+                >
+                  <div className="flex items-center gap-2">
+                    <svg className="w-4 h-4 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
+                      <circle cx="12" cy="7" r="4" />
+                    </svg>
+                    <span className="text-[11px] font-semibold uppercase tracking-widest text-foreground">
+                      My Trips
+                    </span>
+                    <span className="text-[9px] font-semibold uppercase tracking-widest text-muted-foreground bg-muted px-1.5 py-0.5 rounded-full">
+                      {myTrips.length}
+                    </span>
+                  </div>
+                  <svg
+                    className={`w-3.5 h-3.5 text-muted-foreground transition-transform duration-200 ${myTripsExpanded ? 'rotate-180' : ''}`}
+                    viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                  >
+                    <path d="M6 9l6 6 6-6" />
+                  </svg>
+                </button>
+
+                {myTripsExpanded && (
+                  <div className="flex flex-col gap-2 mt-2 pl-1">
+                    {myTrips.map((trip) => (
+                      <button
+                        key={trip.id}
+                        onClick={() => router.push(`/itinerary/${trip.id}`)}
+                        className="w-full flex items-center gap-3 p-3 rounded-xl border border-border bg-card hover:border-primary/30 hover:bg-primary/5 transition-all duration-200 text-left group"
+                      >
+                        <div className="w-8 h-8 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center flex-shrink-0">
+                          <svg className="w-3.5 h-3.5 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
+                            <circle cx="12" cy="10" r="3" />
+                          </svg>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h4 className="text-[13px] font-medium text-foreground truncate group-hover:text-primary transition-colors">
+                            {trip.title}
+                          </h4>
+                          <div className="flex items-center gap-2 mt-0.5">
+                            <span className={`text-[9px] font-semibold uppercase tracking-widest ${trip.is_public ? 'text-green-500' : 'text-muted-foreground/50'}`}>
+                              {trip.is_public ? 'Public' : 'Private'}
+                            </span>
+                            <span className="text-[9px] text-muted-foreground/40">·</span>
+                            <span className="text-[9px] text-muted-foreground/50">
+                              {new Date(trip.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                            </span>
+                          </div>
+                        </div>
+                        <svg className="w-4 h-4 text-muted-foreground/30 group-hover:text-primary/60 transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M9 18l6-6-6-6" />
+                        </svg>
+                      </button>
+                    ))}
+
+                    <Link
+                      href="/compose"
+                      className="w-full flex items-center justify-center gap-2 p-2.5 rounded-xl border-2 border-dashed border-border hover:border-primary/40 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground hover:text-primary transition-all duration-200"
+                    >
+                      + New itinerary
+                    </Link>
+                  </div>
+                )}
+
+                {/* Divider */}
+                <div className="mt-4 flex items-center gap-3">
+                  <div className="h-px flex-1 bg-gradient-to-r from-border to-transparent" />
+                  <span className="text-[9px] uppercase tracking-[0.2em] text-muted-foreground/40">Curated</span>
+                  <div className="h-px flex-1 bg-gradient-to-l from-border to-transparent" />
+                </div>
+              </div>
+            )}
+
             <div className="text-[11px] text-muted-foreground mb-1 -mt-2">{filteredItineraries.length} {filteredItineraries.length === 1 ? 'itinerary' : 'itineraries'} found</div>
             {filteredItineraries.map((itinerary, i) => (
               <ItineraryCard

@@ -6,6 +6,7 @@ import GoogleMapsProvider from '@/components/GoogleMapsProvider'
 import PanoramaModal from '@/components/PanoramaModal'
 import StopPopupModal from '@/components/StopPopupModal'
 import ItinerarySidebar from '@/components/ItinerarySidebar'
+import MagazineSlideOver from '@/components/MagazineSlideOver'
 import PlaceCard from '@/components/PlaceCard'
 import type { Itinerary, Location, PlaceResult } from '@/types'
 
@@ -25,6 +26,13 @@ export default function AtlasApp({ itineraries }: AtlasAppProps) {
   const [activeTab, setActiveTab] = useState<'stops' | 'places' | 'magazine'>('stops')
   const [hotels, setHotels] = useState<PlaceResult[]>([])
   const [restaurants, setRestaurants] = useState<PlaceResult[]>([])
+
+  // Slide-over panel state
+  const [isMagazineOpen, setIsMagazineOpen] = useState(false)
+
+  const handleOpenMagazine = useCallback(() => {
+    setIsMagazineOpen(true)
+  }, [])
 
   // Fetch locations when an itinerary is selected
   const handleItinerarySelect = useCallback(async (itinerary: Itinerary) => {
@@ -98,6 +106,7 @@ export default function AtlasApp({ itineraries }: AtlasAppProps) {
             onTabChange={setActiveTab}
             onPlacesLoaded={handlePlacesLoaded}
             reviewItineraryId={selectedItinerary?.id ?? null}
+            onOpenMagazine={handleOpenMagazine}
           />
 
           {/* Map area */}
@@ -184,6 +193,17 @@ export default function AtlasApp({ itineraries }: AtlasAppProps) {
         }}
         totalStops={locations.length}
       />
+
+      {/* Magazine Slide-Over */}
+      {selectedItinerary && (
+        <MagazineSlideOver
+          isOpen={isMagazineOpen}
+          onClose={() => setIsMagazineOpen(false)}
+          itinerary={selectedItinerary}
+          locations={locations}
+          reviewItineraryId={selectedItinerary.id}
+        />
+      )}
     </>
   )
 }
