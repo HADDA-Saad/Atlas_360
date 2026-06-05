@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Image from 'next/image'
 import AssistanceRequestForm from '@/components/assistance/AssistanceRequestForm'
 import type { PlaceResult, PlaceType } from '@/types'
 
@@ -38,9 +39,15 @@ export default function PlaceCard({ place, type }: PlaceCardProps) {
   return (
     <div className="group bg-card border border-border rounded-xl p-3 hover:border-primary/30 transition-colors duration-300">
       <div className="flex gap-4">
-        <div className="w-20 h-20 bg-muted rounded-lg overflow-hidden flex-shrink-0 border border-border flex items-center justify-center">
+        <div className="w-20 h-20 bg-muted rounded-lg overflow-hidden flex-shrink-0 border border-border flex items-center justify-center relative">
           {photoUrl ? (
-            <img src={photoUrl} alt={place.name} className="w-full h-full object-cover" />
+            <Image
+              src={photoUrl}
+              alt={place.name}
+              width={80}
+              height={80}
+              className="w-full h-full object-cover"
+            />
           ) : (
             <div className="text-muted-foreground/40 flex flex-col items-center">
               {type === 'lodging' ? (

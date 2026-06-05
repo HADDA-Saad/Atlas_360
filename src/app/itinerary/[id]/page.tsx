@@ -10,7 +10,7 @@ import type { Metadata } from 'next'
 
 export const dynamic = 'force-dynamic'
 
-const TIER_LEVELS: Record<UserTier, number> = { explorer: 0, nomad: 1, elite: 2 }
+const TIER_LEVELS: Record<UserTier, number> = { explorer: 0, trip_pass: 1, nomad: 1, elite: 2 }
 
 interface PublicStop {
   day_number: number
@@ -366,6 +366,7 @@ export default async function PublicItineraryPage({
               stops={stops.map((stop) => ({
                 name: stop.locations.name,
                 description: stop.locations.description || '',
+                rich_description: stop.locations.rich_description ?? null,
                 category: stop.locations.category || '',
                 day_number: stop.day_number,
                 order_index: stop.order_index,

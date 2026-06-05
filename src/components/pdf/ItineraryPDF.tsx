@@ -52,20 +52,56 @@ const styles = StyleSheet.create({
     fontFamily: 'Cormorant',
     fontSize: 42,
     textAlign: 'center',
-    marginBottom: 20,
+    marginBottom: 14,
     paddingHorizontal: 40,
   },
   coverRule: {
     width: 60,
     height: 1,
     backgroundColor: '#C1440E',
-    marginBottom: 20,
+    marginBottom: 14,
+  },
+  coverMeta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginBottom: 16,
+  },
+  coverMetaBadge: {
+    color: '#C1440E',
+    fontFamily: 'Outfit',
+    fontSize: 9,
+    letterSpacing: 2,
+    textTransform: 'uppercase',
+    border: '1pt solid #C1440E',
+    borderRadius: 4,
+    paddingVertical: 3,
+    paddingHorizontal: 8,
+  },
+  coverMetaText: {
+    color: '#8B7355',
+    fontFamily: 'Outfit',
+    fontSize: 9,
+    letterSpacing: 1.5,
+    textTransform: 'uppercase',
   },
   summaryText: {
     color: '#8B7355',
     fontFamily: 'Outfit',
     fontSize: 9,
     textAlign: 'center',
+  },
+  coverTagline: {
+    position: 'absolute',
+    bottom: 40,
+    left: 0,
+    right: 0,
+    color: '#8B7355',
+    fontFamily: 'Outfit',
+    fontSize: 8,
+    textAlign: 'center',
+    letterSpacing: 2,
+    textTransform: 'uppercase',
   },
   introGrid: {
     flexDirection: 'row',
@@ -172,6 +208,18 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     letterSpacing: 1,
   },
+  bestTimeBadge: {
+    color: '#C1440E',
+    fontFamily: 'Outfit',
+    fontSize: 7,
+    letterSpacing: 1,
+    textTransform: 'uppercase',
+    border: '1pt solid #C1440E',
+    borderRadius: 3,
+    paddingVertical: 2,
+    paddingHorizontal: 5,
+    marginLeft: 6,
+  },
   metaRow: {
     flexDirection: 'row',
     marginBottom: 6,
@@ -215,24 +263,53 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    paddingHorizontal: 40,
   },
   footerTextMain: {
     color: '#FFFFFF',
     fontFamily: 'Cormorant',
-    fontSize: 16,
-    marginBottom: 15,
+    fontSize: 18,
+    marginBottom: 12,
+    textAlign: 'center',
   },
   footerUrl: {
     color: '#C1440E',
     fontFamily: 'Outfit',
     fontSize: 12,
+    marginBottom: 24,
+  },
+  footerDivider: {
+    width: 40,
+    height: 1,
+    backgroundColor: '#333',
+    marginBottom: 24,
+  },
+  footerAbout: {
+    color: '#8B7355',
+    fontFamily: 'Outfit',
+    fontSize: 9,
+    lineHeight: 1.6,
+    textAlign: 'center',
+    marginBottom: 20,
+    maxWidth: 350,
+  },
+  footerFeatures: {
+    flexDirection: 'row',
+    gap: 24,
     marginBottom: 30,
+  },
+  footerFeature: {
+    color: '#8B7355',
+    fontFamily: 'Outfit',
+    fontSize: 8,
+    letterSpacing: 1.5,
+    textTransform: 'uppercase',
   },
   footerNote: {
     color: '#8B7355',
     fontFamily: 'Outfit',
     fontSize: 9,
-  }
+  },
 })
 
 const PDF_FALLBACK_IMAGES = ['/Images/jame3.png', '/Images/riad.png', '/Images/sea.png', '/Images/spices.png', '/Images/Zellige.png']
@@ -243,10 +320,13 @@ function getPdfFallbackImage(index: number) {
 
 export interface ItineraryPDFProps {
   title: string
+  region?: string | null
+  durationDays?: number | null
   coverImageUrl?: string | null
   stops: Array<{
     name: string
     description: string
+    rich_description?: string | null
     category: string
     day_number: number
     order_index: number
@@ -261,7 +341,7 @@ export interface ItineraryPDFProps {
   generatedDate: string
 }
 
-export default function ItineraryPDF({ title, coverImageUrl, stops, userEmail, generatedDate }: ItineraryPDFProps) {
+export default function ItineraryPDF({ title, region, durationDays, coverImageUrl, stops, userEmail, generatedDate }: ItineraryPDFProps) {
   const daysMap = stops.reduce((acc, stop) => {
     const day = stop.day_number || 1
     if (!acc[day]) acc[day] = []
@@ -287,6 +367,7 @@ export default function ItineraryPDF({ title, coverImageUrl, stops, userEmail, g
 
   return (
     <Document>
+      {/* ─── Cover Page ─── */}
       <Page size="A4" style={styles.page}>
         {/* eslint-disable-next-line jsx-a11y/alt-text */}
         {coverImageUrl && <Image src={coverImageUrl} style={styles.coverImage} />}
@@ -296,12 +377,27 @@ export default function ItineraryPDF({ title, coverImageUrl, stops, userEmail, g
           <Text style={styles.magazineLabel}>Travel Magazine</Text>
           <Text style={styles.title}>{title}</Text>
           <View style={styles.coverRule} />
+
+          {/* Region + Duration badges */}
+          <View style={styles.coverMeta}>
+            {region && <Text style={styles.coverMetaBadge}>{region}</Text>}
+            {durationDays && (
+              <Text style={styles.coverMetaText}>
+                {durationDays} {durationDays === 1 ? 'day' : 'days'}
+              </Text>
+            )}
+            <Text style={styles.coverMetaText}>·</Text>
+            <Text style={styles.coverMetaText}>{totalStops} stops</Text>
+          </View>
+
           <Text style={styles.summaryText}>
-            {totalStops} stops · {totalDays} days · Generated {generatedDate}
+            Generated {generatedDate}
           </Text>
         </View>
+        <Text style={styles.coverTagline}>Curated by Atlas 360 · atlas360.ma</Text>
       </Page>
 
+      {/* ─── Overview Page ─── */}
       <Page size="A4" style={styles.page}>
         <View style={styles.dayHeaderContainer}>
           <Text style={styles.magazineLabel}>Journey Overview</Text>
@@ -327,6 +423,7 @@ export default function ItineraryPDF({ title, coverImageUrl, stops, userEmail, g
         </Text>
       </Page>
 
+      {/* ─── Day Pages ─── */}
       {dayNumbers.map(dayNum => {
         const dayStops = daysMap[dayNum]
         return (
@@ -339,6 +436,9 @@ export default function ItineraryPDF({ title, coverImageUrl, stops, userEmail, g
             {dayStops.map((stop, i) => {
               const isLast = i === dayStops.length - 1
               const stopImage = stop.image_url || getPdfFallbackImage(i)
+              // Use rich_description if available, otherwise fall back to description (no truncation)
+              const displayDescription = stop.rich_description || stop.description || ''
+
               return (
                 <View key={i} style={styles.stopBlock} minPresenceAhead={60}>
                   <View style={styles.stopContent}>
@@ -350,15 +450,18 @@ export default function ItineraryPDF({ title, coverImageUrl, stops, userEmail, g
                       <View style={styles.stopNameRow}>
                         <Text style={styles.stopName}>{stop.name}</Text>
                         <Text style={styles.categoryLabel}>{stop.category || 'Location'}</Text>
+                        {stop.best_time && (
+                          <Text style={styles.bestTimeBadge}>{stop.best_time}</Text>
+                        )}
                       </View>
                       
                       <View style={styles.metaRow}>
-                        {stop.best_time && <Text style={styles.metaText}>Best time: {stop.best_time}</Text>}
                         {stop.duration_minutes && <Text style={styles.metaText}>Duration: {formatDuration(stop.duration_minutes)}</Text>}
                       </View>
                       
+                      {/* Full description — no truncation */}
                       <Text style={styles.descriptionText}>
-                        {stop.description ? (stop.description.length > 150 ? stop.description.substring(0, 150) + '...' : stop.description) : ''}
+                        {displayDescription}
                       </Text>
 
                       {/* eslint-disable-next-line jsx-a11y/alt-text */}
@@ -368,6 +471,7 @@ export default function ItineraryPDF({ title, coverImageUrl, stops, userEmail, g
                         </View>
                       )}
                       
+                      {/* Full tips */}
                       {stop.tips && (
                         <Text style={styles.tipsText}>→ Tip: {stop.tips}</Text>
                       )}
@@ -389,12 +493,28 @@ export default function ItineraryPDF({ title, coverImageUrl, stops, userEmail, g
         )
       })}
 
+      {/* ─── Footer Page ─── */}
       <Page size="A4" style={styles.page}>
         <View style={styles.footerContent}>
           <Text style={styles.footerTextMain}>
-            Hotels & restaurants near each stop are available in the Atlas 360 app
+            Your journey through Morocco starts here
           </Text>
           <Text style={styles.footerUrl}>atlas360.ma</Text>
+          
+          <View style={styles.footerDivider} />
+
+          <Text style={styles.footerAbout}>
+            Atlas 360 is the interactive Morocco itinerary platform for travelers who want curated routes, immersive 360° previews, practical logistics, and local planning confidence before they arrive.
+          </Text>
+
+          <View style={styles.footerFeatures}>
+            <Text style={styles.footerFeature}>Interactive Maps</Text>
+            <Text style={styles.footerFeature}>360° Previews</Text>
+            <Text style={styles.footerFeature}>Planning Help</Text>
+          </View>
+
+          <View style={styles.footerDivider} />
+
           <Text style={styles.footerNote}>
             Generated for {userEmail} on {generatedDate}
           </Text>

@@ -31,6 +31,7 @@ export default async function LandingPage() {
       <HeritageSection />
       <CuratedJourneysSection itineraries={itineraries} />
       <ServicesSection />
+      <PlanningSupportSection />
       <HelpCtaStrip />
     </div>
   )

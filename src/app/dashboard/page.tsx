@@ -4,6 +4,7 @@ import Link from 'next/link'
 import PortalButton from './PortalButton'
 import DeleteItineraryButton from './DeleteItineraryButton'
 import CustomItinerariesList from './CustomItinerariesList'
+import TravelerBookingsList from './TravelerBookingsList'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -24,15 +25,48 @@ export default async function DashboardPage() {
     .eq('id', user.id)
     .single()
 
+  // Check if user is a guide
+  const { data: guide } = await supabase
+    .from('guides')
+    .select('id, is_verified')
+    .eq('id', user.id)
+    .maybeSingle()
+
   const tier = profile?.tier || 'explorer'
   const status = profile?.subscription_status || 'none'
   
+  // Fetch guide bookings for this traveler
+  const { data: bookingsData } = await supabase
+    .from('guide_bookings')
+    .select('*, guides(whatsapp_number)')
+    .eq('traveler_id', user.id)
+    .order('created_at', { ascending: false })
+
+  const guideIds = (bookingsData || []).map(b => b.guide_id)
+  let guideProfiles: any[] = []
+  if (guideIds.length > 0) {
+    const { data: profilesData } = await supabase
+      .from('profiles')
+      .select('id, full_name')
+      .in('id', guideIds)
+    guideProfiles = profilesData || []
+  }
+
+  const travelerBookings = (bookingsData || []).map(b => {
+    const p = guideProfiles.find(prof => prof.id === b.guide_id)
+    return {
+      ...b,
+      guide_name: p ? p.full_name : 'Local Guide'
+    }
+  })
+
   // Fetch custom itineraries
   const { data: itineraries } = await supabase
     .from('user_itineraries')
     .select('id, title, is_public, created_at')
     .eq('user_id', user.id)
     .order('created_at', { ascending: false })
+
 
   const getTierColor = (t: string) => {
     if (t === 'nomad') return 'bg-primary/10 text-[#D4622E] border-primary/20'
@@ -88,7 +122,7 @@ export default async function DashboardPage() {
               </span>
             </div>
 
-            <div className="w-full">
+            <div className="w-full flex flex-col gap-2.5">
               {status === 'active' ? (
                 <PortalButton />
               ) : (
@@ -98,6 +132,20 @@ export default async function DashboardPage() {
                 >
                   Upgrade plan
                 </Link>
+              )}
+
+              {guide && (
+                <div className="border-t border-border pt-2.5 mt-1 w-full text-center">
+                  <Link 
+                    href="/dashboard/guide"
+                    className="block w-full px-6 py-2 rounded-lg border border-primary/45 text-primary text-[11px] font-bold uppercase tracking-widest hover:bg-primary/10 transition-colors"
+                  >
+                    Guide Dashboard
+                  </Link>
+                  {!guide.is_verified && (
+                    <span className="block text-[10px] text-amber-500/70 italic mt-2.5">Awaiting verification</span>
+                  )}
+                </div>
               )}
             </div>
           </div>
@@ -117,27 +165,31 @@ export default async function DashboardPage() {
           </div>
         </div>
 
-        {tier === 'elite' ? (
-          <CustomItinerariesList itineraries={itineraries || []} />
-        ) : (
-          <div className="flex-1 flex flex-col">
-            <div className="flex items-center justify-between mb-8">
-              <h2 className="font-[family-name:var(--font-cormorant)] text-[28px] font-semibold text-foreground tracking-tight">
-                My Itineraries
-              </h2>
+        <div className="flex-1 flex flex-col gap-10">
+          {tier === 'elite' ? (
+            <CustomItinerariesList itineraries={itineraries || []} />
+          ) : (
+            <div className="flex flex-col">
+              <div className="flex items-center justify-between mb-8">
+                <h2 className="font-[family-name:var(--font-cormorant)] text-[28px] font-semibold text-foreground tracking-tight">
+                  My Itineraries
+                </h2>
+              </div>
+              <div className="flex flex-col items-center justify-center py-20 text-center bg-card/50 border border-border rounded-2xl">
+                <svg className="w-12 h-12 text-amber-500/40 mb-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+                <h3 className="font-[family-name:var(--font-cormorant)] text-2xl font-semibold text-foreground mb-2">Elite feature</h3>
+                <p className="text-sm text-muted-foreground mb-6 max-w-sm">Upgrade to the Elite Explorer plan to create and manage custom itineraries.</p>
+                <Link href="/pricing" className="text-[11px] uppercase tracking-widest font-semibold text-primary hover:text-primary/80 transition-colors">
+                  Upgrade plan →
+                </Link>
+              </div>
             </div>
-            <div className="flex flex-col items-center justify-center py-20 text-center bg-card/50 border border-border rounded-2xl">
-              <svg className="w-12 h-12 text-amber-500/40 mb-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-              </svg>
-              <h3 className="font-[family-name:var(--font-cormorant)] text-2xl font-semibold text-foreground mb-2">Elite feature</h3>
-              <p className="text-sm text-muted-foreground mb-6 max-w-sm">Upgrade to the Elite Explorer plan to create and manage custom itineraries.</p>
-              <Link href="/pricing" className="text-[11px] uppercase tracking-widest font-semibold text-primary hover:text-primary/80 transition-colors">
-                Upgrade plan →
-              </Link>
-            </div>
-          </div>
-        )}
+          )}
+
+          <TravelerBookingsList bookings={travelerBookings} />
+        </div>
       </div>
     </div>
   )

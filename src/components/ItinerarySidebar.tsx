@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
 import type { UserTier } from '@/types'
 import PDFDownloadButton from '@/components/pdf/PDFDownloadButton'
@@ -11,6 +12,8 @@ import ForkItineraryButton from '@/components/ForkItineraryButton'
 import ItineraryCard from '@/components/ItineraryCard'
 import PlacesTab from '@/components/PlacesTab'
 import WeatherWidget from '@/components/WeatherWidget'
+import AssistanceRequestForm from '@/components/assistance/AssistanceRequestForm'
+import GuideMatchWidget from '@/components/assistance/GuideMatchWidget'
 import {
   Sheet,
   SheetContent,
@@ -286,7 +289,24 @@ function StopItem({
 }
 
 const FALLBACK_IMAGES = ['/Images/jame3.png', '/Images/riad.png', '/Images/sea.png', '/Images/spices.png', '/Images/Zellige.png']
-function getFallbackImage(index: number) { return FALLBACK_IMAGES[index % FALLBACK_IMAGES.length] }
+function getFallbackImage(index: number, category?: string | null) {
+  if (category) {
+    const cat = category.toLowerCase()
+    if (cat.includes('market') || cat.includes('food') || cat.includes('shopping') || cat.includes('spices')) {
+      return '/Images/spices.png'
+    }
+    if (cat.includes('riad') || cat.includes('lodging') || cat.includes('hotel') || cat.includes('stay')) {
+      return '/Images/riad.png'
+    }
+    if (cat.includes('nature') || cat.includes('peaks') || cat.includes('desert') || cat.includes('sea') || cat.includes('mountain') || cat.includes('canyon')) {
+      return '/Images/sea.png'
+    }
+    if (cat.includes('museum') || cat.includes('culture') || cat.includes('monument') || cat.includes('history') || cat.includes('kasbah')) {
+      return '/Images/Zellige.png'
+    }
+  }
+  return FALLBACK_IMAGES[index % FALLBACK_IMAGES.length]
+}
 
 function formatDurationMag(mins: number | null) {
   if (!mins) return null
@@ -366,13 +386,13 @@ function MagazinePanel({
             <div className="space-y-7">
               {groupedByDay[dayNum].map(({ location, globalIndex }) => {
                 const duration = formatDurationMag(location.duration_minutes)
-                const image = location.image_url || getFallbackImage(globalIndex)
+                const image = location.image_url || getFallbackImage(globalIndex, location.category)
 
                 return (
                   <article key={location.id} className="flex flex-col gap-3 border-b border-border pb-7 last:border-0">
                     {/* Image */}
-                    <div className="overflow-hidden rounded-lg border border-border/60 bg-card aspect-[16/9]">
-                      <img src={image} alt={location.name} className="h-full w-full object-cover" />
+                    <div className="overflow-hidden rounded-lg border border-border/60 bg-card aspect-[16/9] relative w-full">
+                      <Image src={image} alt={location.name} fill sizes="(max-width: 768px) 100vw, 400px" className="object-cover" />
                     </div>
 
                     {/* Meta chips */}
@@ -438,6 +458,18 @@ function MagazinePanel({
             />
           </div>
         )}
+
+        {/* Planning assistance CTA */}
+        <div className="pt-4">
+          <AssistanceRequestForm
+            requestType="planning"
+            title="Need help planning?"
+            description="Get personalized transport, timing, and booking advice from our team."
+            itineraryId={reviewItineraryId}
+            sourcePath={`/explore?itinerary=${reviewItineraryId || ''}`}
+            compact
+          />
+        </div>
       </div>
     </div>
   )
@@ -468,7 +500,6 @@ function SidebarContent({
 
   // Filtering & Sorting State
   const [search, setSearch] = useState('')
-  const [regionFilter, setRegionFilter] = useState('All')
   const [durationFilter, setDurationFilter] = useState('Any duration')
   const [sort, setSort] = useState('Default')
   const [ratings, setRatings] = useState<Record<string, number>>({})
@@ -526,7 +557,6 @@ function SidebarContent({
 
   const filteredItineraries = itineraries.filter(it => {
     if (search && !it.title.toLowerCase().includes(search.toLowerCase()) && !(it.description || '').toLowerCase().includes(search.toLowerCase())) return false;
-    if (regionFilter !== 'All' && it.region !== regionFilter && (!it.region && !it.title.toLowerCase().includes(regionFilter.toLowerCase()))) return false;
     if (durationFilter !== 'Any duration') {
       const days = it.duration_days || 0;
       if (durationFilter === '1 day' && days !== 1) return false;
@@ -651,6 +681,11 @@ function SidebarContent({
               </div>
             </div>
 
+            {/* Guide Match Widget */}
+            <div className="mt-4">
+              <GuideMatchWidget region={selectedItinerary.region} />
+            </div>
+
             {/* Divider */}
             <div className="mt-4 mb-1 flex items-center gap-3">
               <div className="h-px flex-1 bg-gradient-to-r from-[#C1440E]/20 to-transparent" />
@@ -730,18 +765,6 @@ function SidebarContent({
                   <option>Longest first</option>
                   <option>Newest</option>
                 </select>
-              </div>
-
-              <div className="flex flex-wrap gap-1.5 mt-1">
-                {['All', ...Array.from(new Set(itineraries.map(it => it.region || 'Unknown').filter(r => r !== 'Unknown'))).sort()].map(r => (
-                  <button
-                    key={r}
-                    onClick={() => setRegionFilter(r)}
-                    className={`px-3 py-1 text-[10px] font-semibold uppercase tracking-widest rounded-full transition-colors ${regionFilter === r ? 'bg-primary text-primary-foreground' : 'border border-border text-muted-foreground hover:border-primary'}`}
-                  >
-                    {r}
-                  </button>
-                ))}
               </div>
             </div>
           </>
@@ -823,6 +846,7 @@ function SidebarContent({
                     stops={locations.map((l, i) => ({
                       name: l.name,
                       description: l.description || '',
+                      rich_description: l.rich_description ?? null,
                       category: l.category || '',
                       day_number: l.day_number || 1,
                       order_index: i,
@@ -834,6 +858,8 @@ function SidebarContent({
                       image_url: l.image_url ?? null,
                     }))}
                     title={selectedItinerary.title}
+                    region={selectedItinerary.region}
+                    durationDays={selectedItinerary.duration_days}
                     userEmail={userEmail}
                     tier={userTier}
                     coverImageUrl={selectedItinerary.cover_image_url}
@@ -877,6 +903,7 @@ function SidebarContent({
                     lat={targetLoc.lat}
                     lng={targetLoc.lng}
                     onPlacesLoaded={onPlacesLoaded}
+                    itineraryId={selectedItinerary.id}
                   />
                 );
               })() : (
@@ -893,7 +920,7 @@ function SidebarContent({
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4m0 4h.01" />
             </svg>
             <h3 className="font-[family-name:var(--font-cormorant)] text-xl font-semibold text-foreground mb-2">No itineraries match your filters</h3>
-            <button onClick={() => { setSearch(''); setRegionFilter('All'); setDurationFilter('Any duration'); setSort('Default'); }} className="text-[11px] uppercase tracking-widest font-semibold text-primary hover:text-primary/80 transition-colors mt-2">
+            <button onClick={() => { setSearch(''); setDurationFilter('Any duration'); setSort('Default'); }} className="text-[11px] uppercase tracking-widest font-semibold text-primary hover:text-primary/80 transition-colors mt-2">
               Clear filters
             </button>
           </div>

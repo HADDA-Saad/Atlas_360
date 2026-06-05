@@ -7,7 +7,7 @@ import { createClient } from '@/lib/supabase/client'
 import type { User } from '@supabase/supabase-js'
 import type { UserTier } from '@/types'
 import { ThemeToggle } from '@/components/ThemeToggle'
-import { Menu, LogOut, LayoutDashboard, ChevronDown } from 'lucide-react'
+import { Menu, LogOut, LayoutDashboard, ChevronDown, Shield } from 'lucide-react'
 import {
   Sheet,
   SheetContent,
@@ -20,10 +20,13 @@ const NAV_LINKS = [
   { name: 'HOME', href: '/' },
   { name: 'ITINERARIES', href: '/explore' },
   { name: 'PRICING', href: '/pricing' },
+  { name: 'GUIDES', href: '/guides' },
   { name: 'DESTINATIONS', href: '/destinations' },
   { name: 'HELP', href: '/help' },
   { name: 'ABOUT', href: '/about' },
 ]
+
+const ADMIN_EMAILS = ['jaz.ouchene@gmail.com', 'jazoulizaka@gmail.com', 'jazoulizka@gmail.com']
 
 export default function Navbar() {
   const router = useRouter()
@@ -156,6 +159,16 @@ export default function Navbar() {
             {link.name}
           </Link>
         ))}
+        {user && ADMIN_EMAILS.includes(user.email || '') && (
+          <Link 
+            href="/dashboard/requests"
+            className={`text-[11px] font-semibold tracking-[0.2em] transition-all duration-200 ${
+              pathname === '/dashboard/requests' ? 'text-[#D4622E]' : 'text-[#D4622E]/80 hover:text-[#D4622E]'
+            }`}
+          >
+            ADMIN
+          </Link>
+        )}
       </div>
 
       {/* Right side — Auth, Theme & Mobile Menu */}
@@ -208,6 +221,16 @@ export default function Navbar() {
                   <LayoutDashboard className="w-4 h-4" />
                   My Account
                 </Link>
+                {ADMIN_EMAILS.includes(user.email || '') && (
+                  <Link
+                    href="/dashboard/requests"
+                    onClick={() => setIsUserMenuOpen(false)}
+                    className="flex items-center gap-3 px-4 py-2.5 text-[13px] font-medium text-[#D4622E] hover:text-[#D4622E]/80 hover:bg-muted/50 transition-colors"
+                  >
+                    <Shield className="w-4 h-4" />
+                    Admin Portal
+                  </Link>
+                )}
                 <button
                   onClick={() => {
                     setIsUserMenuOpen(false)
@@ -267,6 +290,17 @@ export default function Navbar() {
                     {link.name}
                   </Link>
                 ))}
+                {user && ADMIN_EMAILS.includes(user.email || '') && (
+                  <Link 
+                    href="/dashboard/requests"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className={`px-4 py-3 text-[11px] font-semibold tracking-[0.2em] rounded-lg transition-colors ${
+                      pathname === '/dashboard/requests' ? 'bg-[#D4622E]/10 text-[#D4622E]' : 'text-[#D4622E] hover:bg-muted hover:text-[#D4622E]'
+                    }`}
+                  >
+                    ADMIN DASHBOARD
+                  </Link>
+                )}
 
                 {!user && (
                   <div className="mt-8 flex flex-col gap-3 px-4 border-t border-border pt-6">

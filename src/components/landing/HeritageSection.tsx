@@ -1,5 +1,7 @@
 'use client'
 
+import Image from 'next/image'
+
 export default function HeritageSection() {
   return (
     <section className="bg-background py-24 md:py-32 border-b border-border">
@@ -45,18 +47,22 @@ export default function HeritageSection() {
             <div className="flex flex-col gap-4 md:gap-6 pt-12">
               {/* Top Left Image */}
               <div className="relative w-full aspect-square rounded-sm overflow-hidden group">
-                <img
+                <Image
                   src="/Images/Zellige.png"
                   alt="Moroccan geometric tile pattern"
-                  className="object-cover w-full h-full transform group-hover:scale-105 transition-transform duration-700"
+                  fill
+                  sizes="(max-width: 768px) 50vw, 300px"
+                  className="object-cover transform group-hover:scale-105 transition-transform duration-700"
                 />
               </div>
               {/* Bottom Left Image */}
               <div className="relative w-full aspect-[4/3] rounded-sm overflow-hidden group">
-                <img
+                <Image
                   src="/Images/riad.png"
                   alt="Traditional Moroccan courtyard riad"
-                  className="object-cover w-full h-full transform group-hover:scale-105 transition-transform duration-700"
+                  fill
+                  sizes="(max-width: 768px) 50vw, 300px"
+                  className="object-cover transform group-hover:scale-105 transition-transform duration-700"
                 />
               </div>
             </div>
@@ -65,18 +71,22 @@ export default function HeritageSection() {
             <div className="flex flex-col gap-4 md:gap-6">
               {/* Top Right Image */}
               <div className="relative w-full aspect-[4/3] rounded-sm overflow-hidden group">
-                <img
+                <Image
                   src="/Images/spices.png"
                   alt="Colorful spices in a souk"
-                  className="object-cover w-full h-full transform group-hover:scale-105 transition-transform duration-700"
+                  fill
+                  sizes="(max-width: 768px) 50vw, 300px"
+                  className="object-cover transform group-hover:scale-105 transition-transform duration-700"
                 />
               </div>
               {/* Bottom Right Image */}
               <div className="relative w-full aspect-[3/4] rounded-sm overflow-hidden group">
-                <img
+                <Image
                   src="/Images/Zerbia.png"
                   alt="Woven Moroccan rug"
-                  className="object-cover w-full h-full transform group-hover:scale-105 transition-transform duration-700"
+                  fill
+                  sizes="(max-width: 768px) 50vw, 300px"
+                  className="object-cover transform group-hover:scale-105 transition-transform duration-700"
                 />
               </div>
             </div>

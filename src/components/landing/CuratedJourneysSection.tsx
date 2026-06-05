@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import ReviewSummaryBadge from '@/components/reviews/ReviewSummaryBadge'
 import type { Itinerary } from '@/types'
 
@@ -43,14 +44,16 @@ export default function CuratedJourneysSection({ itineraries }: { itineraries: I
               className="group flex flex-col bg-card border border-border overflow-hidden hover:border-primary/30 hover:shadow-2xl hover:shadow-primary/5 hover:-translate-y-1.5 transition-all duration-500"
             >
               {/* Card Image */}
-              <div className="relative aspect-[4/3] overflow-hidden">
-                <img 
+              <div className="relative aspect-[4/3] overflow-hidden w-full">
+                <Image 
                   src={itinerary.cover_image_url ?? '/Images/jame3.png'} 
                   alt={itinerary.title}
-                  className="object-cover w-full h-full transform group-hover:scale-105 transition-transform duration-700"
+                  fill
+                  sizes="(max-width: 768px) 100vw, 33vw"
+                  className="object-cover transform group-hover:scale-105 transition-transform duration-700"
                 />
                 {/* Duration Badge */}
-                <div className="absolute top-4 right-4 bg-background/80 backdrop-blur-md border border-border px-3 py-1.5 rounded-sm">
+                <div className="absolute top-4 right-4 bg-background/80 backdrop-blur-md border border-border px-3 py-1.5 rounded-sm z-10">
                   <span className="text-primary text-[10px] font-bold tracking-widest uppercase">
                     {itinerary.duration_days ? itinerary.duration_days + ' DAYS' : '— DAYS'}
                   </span>

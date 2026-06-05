@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Image from 'next/image'
 
 interface WeatherData {
   main: {
@@ -62,10 +63,12 @@ export default function WeatherWidget({ city }: { city: string }) {
 
   return (
     <div className="flex items-center gap-1.5 bg-muted/30 px-2 py-1 rounded-md border border-border/50 shadow-sm" title={description}>
-      <img
+      <Image
         src={`https://openweathermap.org/img/wn/${icon}.png`}
         alt={description}
-        className="w-6 h-6 drop-shadow-sm"
+        width={24}
+        height={24}
+        className="drop-shadow-sm"
       />
       <span className="text-[11px] font-semibold text-muted-foreground tracking-wide">
         {Math.round(temp)}°C

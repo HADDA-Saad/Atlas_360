@@ -23,7 +23,9 @@ function getErrorMessage(error: unknown) {
 }
 
 function getPaidTier(value: string | null | undefined): PaidTier {
-  return value === 'elite' ? 'elite' : 'nomad'
+  if (value === 'elite') return 'elite'
+  if (value === 'trip_pass') return 'trip_pass'
+  return 'nomad'
 }
 
 function tierForSubscription(subscription: Stripe.Subscription): UserTier {
@@ -58,6 +60,23 @@ export async function POST(req: Request) {
 
     if (event.type === 'checkout.session.completed') {
       const session = event.data.object as Stripe.Checkout.Session
+      const bookingId = session.metadata?.bookingId
+
+      if (bookingId) {
+        const { error } = await supabaseAdmin
+          .from('guide_bookings')
+          .update({ status: 'paid' })
+          .eq('id', bookingId)
+
+        if (error) {
+          console.error('Error updating guide booking to paid:', error)
+          return jsonResponse({ error: 'Database Update Failed' }, 500)
+        }
+
+        console.log(`Successfully marked guide booking ${bookingId} as paid.`)
+        return jsonResponse({ received: true }, 200)
+      }
+
       const userId = session.client_reference_id
       const customerId = typeof session.customer === 'string' ? session.customer : null
       const tier = getPaidTier(session.metadata?.tier)
@@ -67,6 +86,31 @@ export async function POST(req: Request) {
         return jsonResponse({ received: true }, 200)
       }
 
+      // ── Trip Pass: one-time payment → set 30-day expiry ──
+      if (session.mode === 'payment' && tier === 'trip_pass') {
+        const expiresAt = new Date()
+        expiresAt.setDate(expiresAt.getDate() + 30)
+
+        const { error } = await supabaseAdmin
+          .from('profiles')
+          .update({
+            tier: 'trip_pass',
+            stripe_customer_id: customerId,
+            subscription_status: 'active',
+            trip_pass_expires_at: expiresAt.toISOString(),
+          })
+          .eq('id', userId)
+
+        if (error) {
+          console.error('Error updating profile for trip pass:', error)
+          return jsonResponse({ error: 'Database Update Failed' }, 500)
+        }
+
+        console.log(`Successfully activated Trip Pass for user ${userId}, expires ${expiresAt.toISOString()}.`)
+        return jsonResponse({ received: true }, 200)
+      }
+
+      // ── Subscription checkout (Nomad / Elite) ──
       const { error } = await supabaseAdmin
         .from('profiles')
         .update({

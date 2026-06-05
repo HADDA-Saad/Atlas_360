@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import { createClient } from '@/lib/supabase/server'
 import PDFDownloadButton from '@/components/pdf/PDFDownloadButton'
 import ReviewPanel from '@/components/reviews/ReviewPanel'
@@ -6,7 +7,7 @@ import type { Itinerary, Location, UserTier } from '@/types'
 
 export const dynamic = 'force-dynamic'
 
-const TIER_LEVELS: Record<UserTier, number> = { explorer: 0, nomad: 1, elite: 2 }
+const TIER_LEVELS: Record<UserTier, number> = { explorer: 0, trip_pass: 1, nomad: 1, elite: 2 }
 const FALLBACK_IMAGES = ['/Images/jame3.png', '/Images/riad.png', '/Images/sea.png', '/Images/spices.png', '/Images/Zellige.png']
 
 interface PublicStop {
@@ -64,7 +65,22 @@ function formatDuration(mins: number | null) {
   return rem === 0 ? `${hrs} hr${hrs > 1 ? 's' : ''}` : `${hrs} hr ${rem} min`
 }
 
-function getFallbackImage(index: number) {
+function getFallbackImage(index: number, category?: string | null) {
+  if (category) {
+    const cat = category.toLowerCase()
+    if (cat.includes('market') || cat.includes('food') || cat.includes('shopping') || cat.includes('spices')) {
+      return '/Images/spices.png'
+    }
+    if (cat.includes('riad') || cat.includes('lodging') || cat.includes('hotel') || cat.includes('stay')) {
+      return '/Images/riad.png'
+    }
+    if (cat.includes('nature') || cat.includes('peaks') || cat.includes('desert') || cat.includes('sea') || cat.includes('mountain') || cat.includes('canyon')) {
+      return '/Images/sea.png'
+    }
+    if (cat.includes('museum') || cat.includes('culture') || cat.includes('monument') || cat.includes('history') || cat.includes('kasbah')) {
+      return '/Images/Zellige.png'
+    }
+  }
   return FALLBACK_IMAGES[index % FALLBACK_IMAGES.length]
 }
 
@@ -194,10 +210,12 @@ export default async function ItineraryMagazinePage({
   return (
     <div className="min-h-screen bg-background text-foreground atlas-grain">
       <section className="relative min-h-[82vh] overflow-hidden">
-        <img
+        <Image
           src={heroImage}
           alt={title}
-          className="absolute inset-0 h-full w-full object-cover"
+          fill
+          className="object-cover"
+          priority
         />
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-black/35" />
         <div className="relative z-10 mx-auto flex min-h-[82vh] max-w-7xl flex-col justify-end px-6 pb-12 pt-32 md:px-12">
@@ -256,6 +274,7 @@ export default async function ItineraryMagazinePage({
                   stops={stops.map((stop, index) => ({
                     name: stop.locations.name,
                     description: stop.custom_notes || stop.locations.description || '',
+                    rich_description: stop.locations.rich_description ?? null,
                     category: stop.locations.category || '',
                     day_number: stop.day_number,
                     order_index: index,
@@ -301,12 +320,12 @@ export default async function ItineraryMagazinePage({
                   const location = stop.locations
                   const duration = formatDuration(location.duration_minutes)
                   const globalIndex = stops.findIndex((candidate) => candidate.locations.id === location.id)
-                  const image = location.image_url || getFallbackImage(globalIndex >= 0 ? globalIndex : index)
+                  const image = location.image_url || getFallbackImage(globalIndex >= 0 ? globalIndex : index, location.category)
 
                   return (
                     <article key={location.id} className="grid gap-6 border-b border-border pb-10 md:grid-cols-[300px_1fr]">
-                      <div className="overflow-hidden rounded-lg border border-border bg-card">
-                        <img src={image} alt={location.name} className="aspect-[4/3] h-full w-full object-cover" />
+                      <div className="overflow-hidden rounded-lg border border-border bg-card relative aspect-[4/3] w-full">
+                        <Image src={image} alt={location.name} fill sizes="(max-width: 768px) 100vw, 300px" className="object-cover" />
                       </div>
 
                       <div>

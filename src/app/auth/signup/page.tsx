@@ -6,8 +6,10 @@ import { createClient } from '@/lib/supabase/client'
 
 export default function SignupPage() {
   const [email, setEmail] = useState('')
+  const [fullName, setFullName] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
+  const [isGuide, setIsGuide] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
@@ -35,6 +37,12 @@ export default function SignupPage() {
       const { error: authError } = await supabase.auth.signUp({
         email,
         password,
+        options: {
+          data: {
+            full_name: fullName,
+            is_guide: isGuide,
+          },
+        },
       })
 
       if (authError) {
@@ -116,6 +124,32 @@ export default function SignupPage() {
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-5">
+                {/* Full Name */}
+                <div className="space-y-2">
+                  <label
+                    htmlFor="signup-name"
+                    className="block text-[11px] font-semibold uppercase tracking-[0.15em] text-muted-foreground"
+                  >
+                    Full Name
+                  </label>
+                  <input
+                    id="signup-name"
+                    type="text"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    required
+                    placeholder="Your Name"
+                    className="
+                      w-full px-4 py-3 rounded-xl
+                      bg-background border border-border
+                      text-foreground text-sm
+                      placeholder:text-muted-foreground/50
+                      focus:outline-none focus:border-primary/40 focus:ring-1 focus:ring-[#C1440E]/20
+                      transition-all duration-300
+                    "
+                  />
+                </div>
+
                 {/* Email */}
                 <div className="space-y-2">
                   <label
@@ -193,6 +227,26 @@ export default function SignupPage() {
                       transition-all duration-300
                     "
                   />
+                </div>
+
+                {/* Register as Guide Checkbox */}
+                <div className="flex items-center gap-3.5 px-1 py-1">
+                  <input
+                    id="signup-guide"
+                    type="checkbox"
+                    checked={isGuide}
+                    onChange={(e) => setIsGuide(e.target.checked)}
+                    className="
+                      w-4.5 h-4.5 rounded border-border bg-background text-primary
+                      focus:ring-primary/30 cursor-pointer accent-primary
+                    "
+                  />
+                  <label
+                    htmlFor="signup-guide"
+                    className="text-xs text-muted-foreground select-none cursor-pointer"
+                  >
+                    I want to list my services as a local Tour Guide
+                  </label>
                 </div>
 
                 {/* Error message */}

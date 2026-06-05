@@ -9,9 +9,11 @@ interface PDFDownloadButtonProps {
   userEmail: string
   tier: string
   coverImageUrl?: string | null
+  region?: string | null
+  durationDays?: number | null
 }
 
-export default function PDFDownloadButton({ stops, title, userEmail, tier, coverImageUrl }: PDFDownloadButtonProps) {
+export default function PDFDownloadButton({ stops, title, userEmail, tier, coverImageUrl, region, durationDays }: PDFDownloadButtonProps) {
   const [isGenerating, setIsGenerating] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -29,6 +31,8 @@ export default function PDFDownloadButton({ stops, title, userEmail, tier, cover
       const doc = (
         <ItineraryPDF
           title={title}
+          region={region}
+          durationDays={durationDays}
           coverImageUrl={coverImageUrl}
           stops={stops}
           userEmail={userEmail}

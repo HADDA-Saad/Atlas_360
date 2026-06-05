@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo } from 'react'
+import Image from 'next/image'
 import SlideOverPanel from '@/components/SlideOverPanel'
 import PDFDownloadButton from '@/components/pdf/PDFDownloadButton'
 import ReviewPanel from '@/components/reviews/ReviewPanel'
@@ -14,7 +15,22 @@ const FALLBACK_IMAGES = [
   '/Images/Zellige.png',
 ]
 
-function getFallbackImage(index: number) {
+function getFallbackImage(index: number, category?: string | null) {
+  if (category) {
+    const cat = category.toLowerCase()
+    if (cat.includes('market') || cat.includes('food') || cat.includes('shopping') || cat.includes('spices')) {
+      return '/Images/spices.png'
+    }
+    if (cat.includes('riad') || cat.includes('lodging') || cat.includes('hotel') || cat.includes('stay')) {
+      return '/Images/riad.png'
+    }
+    if (cat.includes('nature') || cat.includes('peaks') || cat.includes('desert') || cat.includes('sea') || cat.includes('mountain') || cat.includes('canyon')) {
+      return '/Images/sea.png'
+    }
+    if (cat.includes('museum') || cat.includes('culture') || cat.includes('monument') || cat.includes('history') || cat.includes('kasbah')) {
+      return '/Images/Zellige.png'
+    }
+  }
   return FALLBACK_IMAGES[index % FALLBACK_IMAGES.length]
 }
 
@@ -79,10 +95,12 @@ export default function MagazineSlideOver({
       <div className="min-h-full bg-background text-foreground">
         {/* Hero Section */}
         <section className="relative min-h-[65vh] overflow-hidden">
-          <img
+          <Image
             src={heroImage}
             alt={itinerary.title}
-            className="absolute inset-0 h-full w-full object-cover"
+            fill
+            className="object-cover"
+            priority
           />
           <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-black/35" />
           <div className="relative z-10 mx-auto flex min-h-[65vh] max-w-6xl flex-col justify-end px-6 pb-10 pt-24 md:px-12">
@@ -149,6 +167,7 @@ export default function MagazineSlideOver({
                 stops={locations.map((l, i) => ({
                   name: l.name,
                   description: l.description || '',
+                  rich_description: l.rich_description ?? null,
                   category: l.category || '',
                   day_number: l.day_number || 1,
                   order_index: i,
@@ -160,6 +179,8 @@ export default function MagazineSlideOver({
                   image_url: l.image_url || getFallbackImage(i),
                 }))}
                 title={itinerary.title}
+                region={itinerary.region}
+                durationDays={itinerary.duration_days}
                 userEmail={userEmail}
                 tier={userTier}
                 coverImageUrl={heroImage}
@@ -193,7 +214,7 @@ export default function MagazineSlideOver({
                 <div className="space-y-9">
                   {groupedByDay[dayNumber].map(({ location, globalIndex }) => {
                     const duration = formatDuration(location.duration_minutes)
-                    const image = location.image_url || getFallbackImage(globalIndex)
+                    const image = location.image_url || getFallbackImage(globalIndex, location.category)
 
                     return (
                       <article
@@ -201,11 +222,13 @@ export default function MagazineSlideOver({
                         className="grid gap-6 border-b border-border pb-9 md:grid-cols-[300px_1fr]"
                       >
                         {/* Image */}
-                        <div className="overflow-hidden rounded-lg border border-border bg-card">
-                          <img
+                        <div className="overflow-hidden rounded-lg border border-border bg-card relative aspect-[4/3] w-full">
+                          <Image
                             src={image}
                             alt={location.name}
-                            className="aspect-[4/3] h-full w-full object-cover transition-transform duration-700 hover:scale-105"
+                            fill
+                            sizes="(max-width: 768px) 100vw, 300px"
+                            className="object-cover transition-transform duration-700 hover:scale-105"
                           />
                         </div>
 
