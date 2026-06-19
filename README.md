@@ -10,14 +10,16 @@
 
 ## About the Project
 
-**Atlas 360** is a premium, luxury-editorial web application designed to let users explore curated Moroccan travel itineraries. Built with an immersive interactive Google Maps interface, travelers can select an itinerary, view exact coordinates for their journey, and click any location marker to instantly open a 360° Google Street View panorama of that specific spot. 
+**Atlas 360** is a premium, luxury-editorial web application designed to let users explore curated Moroccan travel itineraries. Travelers can select an itinerary, view exact coordinates on an interactive Google Map, and click any location marker to instantly open a 360° Google Street View panorama. 
+
+Beyond exploration, Atlas 360 features a full marketplace for local tour guides and a premium subscription system, all backed by a robust, fully tested architecture.
 
 ### Key Features
-- **Curated Itineraries:** Browse handcrafted journeys like the *Marrakech Medina Walk* or the *Chefchaouen Blue City*.
-- **Interactive Mapping:** Powered by Google Maps API featuring custom markers that react to your selected journey.
-- **360° Panoramas:** Integrated Street View modal allowing you to look around iconic Moroccan destinations before you even buy a ticket.
-- **Premium Aesthetics:** A bespoke "Warm Moroccan Night" dark theme utilizing custom fonts (*Cormorant Garamond* and *Outfit*), grain textures, and tailored animations.
-- **Secure Authentication:** Full sign-up and login workflows powered by Supabase.
+- **Interactive Mapping & 360° Panoramas:** Powered by Google Maps API, featuring custom markers and an integrated Street View modal to look around iconic Moroccan destinations.
+- **Local Guide Marketplace:** Browse verified local guides, check their real-time availability calendars, and send booking requests.
+- **Premium Subscriptions & Trip Passes:** Monetization powered by Stripe, including recurring tier subscriptions (Explorer, Nomad, Elite) and one-time Trip Passes.
+- **Secure Authentication:** Full sign-up, login, and protected route workflows powered by Supabase.
+- **Bulletproof Testing:** Comprehensive test coverage including 38 Unit/Integration tests (Vitest) and 17 automated browser tests (Playwright).
 
 ---
 
@@ -26,20 +28,21 @@
 *   **Frontend:** Next.js 16 (App Router), React, TypeScript
 *   **Styling:** Tailwind CSS v4, shadcn/ui
 *   **Database & Authentication:** Supabase (PostgreSQL + Auth)
+*   **Payments:** Stripe Checkout & Webhooks
 *   **Maps Engine:** `@vis.gl/react-google-maps`
+*   **Testing:** Vitest, Playwright
 
 ---
 
 ## Getting Started
 
-Follow these instructions to get a copy of the project up and running on your local machine for development and testing purposes.
-
 ### Prerequisites
 
 *   Node.js (v18.17 or higher)
-*   npm or yarn or pnpm
-*   A Supabase account
-*   A Google Cloud account (for Maps API)
+*   npm, yarn, or pnpm
+*   Supabase account
+*   Stripe account
+*   Google Cloud account (Maps API)
 
 ### Installation
 
@@ -57,37 +60,23 @@ Follow these instructions to get a copy of the project up and running on your lo
 3. **Configure Environment Variables**
    Create a `.env.local` file in the root of the project:
    ```env
-   # Your Supabase Base URL (Do not include /rest/v1/)
+   # Supabase
    NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
-   
-   # Your Supabase public API key
    NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
-
-   # Supabase service role key (server-only; used for Stripe webhooks and scripts)
    SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
    
-   # Public Google Maps browser key (Maps JavaScript API + Street View enabled)
+   # Google Maps
    NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=your-maps-api-key
-
-   # Google Cloud Map ID for Advanced Markers
    NEXT_PUBLIC_GOOGLE_MAP_ID=your-google-map-id
-
-   # Server-only Google Places key (Places API enabled)
    PLACES_API_KEY=your-places-api-key
 
-   # App URL used for Stripe redirects
+   # Stripe
    NEXT_PUBLIC_APP_URL=http://localhost:3000
-
-   # Stripe server keys
    STRIPE_SECRET_KEY=sk_test_your-stripe-secret-key
    STRIPE_WEBHOOK_SECRET=whsec_your-webhook-secret
-
-   # Optional Stripe recurring price IDs (dynamic MAD prices are used if omitted)
    STRIPE_NOMAD_PRICE_ID=price_your-nomad-price-id
    STRIPE_ELITE_PRICE_ID=price_your-elite-price-id
    ```
-
-   If `NEXT_PUBLIC_GOOGLE_MAP_ID` is missing, the app will show a local "Map unavailable" fallback instead of mounting Google Maps. This prevents Google's error modal from blocking the itinerary UI during development, but advanced markers require a real Map ID.
 
 4. **Initialize the Database**
    * Log into your Supabase Dashboard and open the **SQL Editor**.
@@ -102,42 +91,47 @@ Follow these instructions to get a copy of the project up and running on your lo
 
 ---
 
+## Testing
+
+Atlas 360 is fully tested. We use a separate `.env.test` file to keep testing credentials out of version control. 
+
+**For a full, beginner-friendly guide on how to set up your test accounts and run the test suite, please read the [Testing Guide](TESTING.md).**
+
+```bash
+# Run Unit and Integration Tests (Vitest)
+npm run test
+
+# Run End-to-End Browser Tests (Playwright)
+npm run test:e2e
+```
+
+---
+
 ## Project Structure
 
 ```text
 src/
 ├── app/                  # Next.js App Router (Pages, Layouts, API Routes)
-│   ├── api/              # Supabase data fetching endpoints
-│   └── auth/             # Login & Signup pages
+│   ├── api/              # Secure endpoints for Stripe webhooks and bookings
+│   ├── auth/             # Login & Signup flows
+│   ├── dashboard/        # Protected user and guide dashboards
+│   └── pricing/          # Subscription and Trip Pass purchase flows
 ├── components/           # React Components
-│   ├── AtlasApp.tsx      # Main application state orchestration
 │   ├── MapView.tsx       # Interactive Google Maps integration
 │   ├── PanoramaModal.tsx # 360° view overlay handler
 │   └── ui/               # shadcn/ui generic components
-├── lib/                  # Utilities and Supabase SDK setup
+├── lib/                  # Utilities, Supabase SDK, and pricing logic
+├── tests/                # Automated test suites
+│   ├── e2e/              # Playwright browser tests
+│   ├── integration/      # API and webhook testing
+│   └── unit/             # Utility function testing
 └── types/                # Typescript Definitions
 
 supabase/                 # SQL Migrations and Seed data
 ```
-
-## Authentication & Testing
-
-### Testing the Workflow
-1. Visit the **Sign Up** page and create a new account.
-2. By default, Supabase requires email confirmation. You can either:
-   - Click the confirmation link in the email sent to you.
-   - Go to your **Supabase Dashboard > Authentication > Users** and manually select "Confirm User".
-3. Once confirmed, you can use the **Login** page to access the full application state.
-
-### Creating an Admin Account
-Currently, Atlas 360 operates on a standard authenticated user model. To manage users or provide "admin" capabilities:
-- **User Management**: Use the **Supabase Dashboard > Authentication** section to view, confirm, or delete users.
-- **Admin Roles**: To restrict specific actions to admins in the future, you can add a `is_admin` boolean to your user metadata or a dedicated `profiles` table with role definitions.
 
 ---
 
 ## License
 
 Distributed under the MIT License. See `LICENSE` for more information.
-
----

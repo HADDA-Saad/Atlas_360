@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { calculateBookingPrice } from '@/lib/booking-utils'
 
 interface BookingRequestBody {
   guide_id?: unknown
@@ -71,9 +72,7 @@ export async function POST(request: Request) {
     }
 
     // 3. Calculate price and commission
-    const daysCount = Math.max(1, Math.round((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1)
-    const total_price = guide.daily_rate_mad * daysCount
-    const commission_amount = Math.round(total_price * 0.10) // 10% commission
+    const { daysCount, total_price, commission_amount } = calculateBookingPrice(start_date, end_date, guide.daily_rate_mad)
 
     // 4. Create booking
     const { data: booking, error: insertError } = await supabase
