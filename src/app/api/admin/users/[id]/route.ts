@@ -1,11 +1,13 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { isAdmin } from '@/lib/auth/roles'
+
+const VALID_ROLES = new Set(['member', 'moderator', 'admin'])
+const VALID_TIERS = new Set(['explorer', 'nomad', 'elite'])
 
 interface PatchBody {
-  photo_approved?: unknown
-  clear_photos?: unknown
+  role?: unknown
+  tier?: unknown
 }
 
 export async function PATCH(
@@ -16,7 +18,18 @@ export async function PATCH(
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
 
-    if (!user || !await isAdmin()) {
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    // Verify requesting user is an administrator via the database role
+    const { data: requestorProfile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single()
+
+    if (!requestorProfile || requestorProfile.role !== 'admin') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
     }
 
@@ -25,24 +38,31 @@ export async function PATCH(
 
     const updateObj: Record<string, unknown> = {}
 
-    if ('photo_approved' in body) {
-      if (typeof body.photo_approved !== 'boolean') {
-        return NextResponse.json({ error: 'photo_approved must be a boolean' }, { status: 400 })
+    // Validate role update
+    if ('role' in body) {
+      if (typeof body.role !== 'string' || !VALID_ROLES.has(body.role)) {
+        return NextResponse.json({ error: 'Invalid role' }, { status: 400 })
       }
-      updateObj.photo_approved = body.photo_approved
+      updateObj.role = body.role
     }
 
-    if ('clear_photos' in body && body.clear_photos === true) {
-      updateObj.photo_urls = []
-      updateObj.photo_approved = false
+    // Validate tier update
+    if ('tier' in body) {
+      if (typeof body.tier !== 'string' || !VALID_TIERS.has(body.tier)) {
+        return NextResponse.json({ error: 'Invalid tier' }, { status: 400 })
+      }
+      updateObj.tier = body.tier
     }
+
+
 
     if (Object.keys(updateObj).length === 0) {
       return NextResponse.json({ error: 'No fields to update' }, { status: 400 })
     }
 
+    // Perform database update using admin client to bypass policies
     const { data, error } = await createAdminClient()
-      .from('reviews')
+      .from('profiles')
       .update(updateObj)
       .eq('id', id)
       .select('*')

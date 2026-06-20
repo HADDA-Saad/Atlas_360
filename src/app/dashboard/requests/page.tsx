@@ -10,6 +10,8 @@ import GuideVerificationTab from './GuideVerificationTab'
 import PhotoModerationTab from './PhotoModerationTab'
 import GuidePayoutsTab from './GuidePayoutsTab'
 import { isAdmin } from '@/lib/auth/roles'
+import UserManagementTab from './UserManagementTab'
+import AnalyticsTab from './AnalyticsTab'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -57,9 +59,16 @@ export default async function RequestsDashboardPage({
   // Load data depending on active tab
   let requests: AssistanceRequest[] = []
   let statusCounts = { new: 0, in_progress: 0, completed: 0, closed: 0 }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let guidesList: any[] = []
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let reviewsList: any[] = []
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let payoutsList: any[] = []
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let usersList: any[] = []
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let analyticsData: any = null
 
   if (tab === 'requests') {
     let query = supabase
@@ -132,6 +141,53 @@ export default async function RequestsDashboardPage({
         guide_name: guide ? guide.full_name : 'Local Guide',
       }
     })
+  } else if (tab === 'users') {
+    const { data: profilesData } = await adminSupabase
+      .from('profiles')
+      .select('*')
+      .order('created_at', { ascending: false })
+
+    const { data: authData } = await adminSupabase.auth.admin.listUsers({
+      page: 1,
+      perPage: 1000
+    })
+
+    const authUsers = authData?.users || []
+    usersList = (profilesData || []).map(p => {
+      const authUser = authUsers.find(u => u.id === p.id)
+      return {
+        ...p,
+        email: authUser?.email || 'Unknown email'
+      }
+    })
+  } else if (tab === 'analytics') {
+    const { data: profilesData } = await adminSupabase
+      .from('profiles')
+      .select('tier, created_at')
+
+    const { data: bookingsData } = await adminSupabase
+      .from('guide_bookings')
+      .select('total_price, commission_amount, status')
+
+    const { count: itinerariesCount } = await adminSupabase
+      .from('itineraries')
+      .select('*', { count: 'exact', head: true })
+
+    const { count: reviewsCount } = await adminSupabase
+      .from('reviews')
+      .select('*', { count: 'exact', head: true })
+
+    const { count: assistanceCount } = await adminSupabase
+      .from('assistance_requests')
+      .select('*', { count: 'exact', head: true })
+
+    analyticsData = {
+      profiles: profilesData || [],
+      bookings: bookingsData || [],
+      itinerariesCount: itinerariesCount || 0,
+      reviewsCount: reviewsCount || 0,
+      assistanceCount: assistanceCount || 0
+    }
   }
 
   return (
@@ -155,10 +211,19 @@ export default async function RequestsDashboardPage({
         {/* Tab Selector Navbar */}
         <div className="flex border-b border-border mb-8 overflow-x-auto gap-2">
           {[
+<<<<<<< HEAD
             { id: 'requests', label: 'Assistance Requests', icon: <ClipboardList size={14} /> },
             { id: 'guides',   label: 'Guide Verification',  icon: <UserCheck size={14} /> },
             { id: 'photos',   label: 'Review Photos',       icon: <Image size={14} /> },
             { id: 'payouts',  label: 'Guide Payouts',       icon: <Banknote size={14} /> },
+=======
+            { id: 'requests', label: 'Assistance Requests 📋' },
+            { id: 'users', label: 'User Management 👥' },
+            { id: 'guides', label: 'Guide Verification 👤' },
+            { id: 'photos', label: 'Review Photos 🖼️' },
+            { id: 'payouts', label: 'Guide Payouts 💰' },
+            { id: 'analytics', label: 'Analytics & KPIs 📊' },
+>>>>>>> db7b9d4 (feat: operations dashboard, admin user management, guide directory, and media moderation)
           ].map(t => {
             const isActive = tab === t.id
             return (
@@ -320,6 +385,10 @@ export default async function RequestsDashboardPage({
           </div>
         )}
 
+        {tab === 'users' && (
+          <UserManagementTab initialUsers={usersList} />
+        )}
+
         {tab === 'guides' && (
           <GuideVerificationTab initialGuides={guidesList} />
         )}
@@ -330,6 +399,10 @@ export default async function RequestsDashboardPage({
 
         {tab === 'payouts' && (
           <GuidePayoutsTab initialBookings={payoutsList} />
+        )}
+
+        {tab === 'analytics' && analyticsData && (
+          <AnalyticsTab initialData={analyticsData} />
         )}
       </div>
     </div>

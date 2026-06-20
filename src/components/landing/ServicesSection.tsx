@@ -161,7 +161,7 @@ export default function ServicesSection() {
             href="/pricing"
             className="text-[11px] font-semibold uppercase tracking-[0.25em] text-muted-foreground hover:text-primary transition-colors"
           >
-            See what's included at each tier →
+            See what&apos;s included at each tier →
           </Link>
         </div>
       </div>

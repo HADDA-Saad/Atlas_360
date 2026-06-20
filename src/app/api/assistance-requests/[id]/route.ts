@@ -25,7 +25,7 @@ export async function PATCH(
     const { id } = await params
     const body = await request.json() as PatchBody
 
-    const updateObj: Record<string, any> = {}
+    const updateObj: Record<string, unknown> = {}
 
     if ('status' in body) {
       if (typeof body.status !== 'string' || !VALID_STATUSES.has(body.status)) {

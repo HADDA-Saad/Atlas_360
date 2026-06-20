@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
@@ -12,19 +12,34 @@ import { createClient } from '@/lib/supabase/client'
 
 // Simple media query hook
 export function useMediaQuery(query: string) {
-  const [value, setValue] = useState(false)
+  const [value, setValue] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return matchMedia(query).matches
+    }
+    return false
+  })
 
   useEffect(() => {
+    let active = true
+    const result = matchMedia(query)
+
     function onChange(event: MediaQueryListEvent) {
-      setValue(event.matches)
+      if (active) setValue(event.matches)
     }
 
-    const result = matchMedia(query)
     result.addEventListener('change', onChange)
-    setValue(result.matches)
 
-    return () => result.removeEventListener('change', onChange)
-  }, [query])
+    if (result.matches !== value) {
+      Promise.resolve().then(() => {
+        if (active) setValue(result.matches)
+      })
+    }
+
+    return () => {
+      active = false
+      result.removeEventListener('change', onChange)
+    }
+  }, [query, value])
 
   return value
 }
@@ -64,7 +79,7 @@ function InlineReviewWidget({ locationId }: { locationId: string }) {
   const [body, setBody] = useState<string>('')
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
 
-  const fetchReviews = async () => {
+  const fetchReviews = useCallback(async () => {
     try {
       const res = await fetch(`/api/reviews?target_type=location&location_id=${locationId}`)
       if (res.ok) {
@@ -76,15 +91,23 @@ function InlineReviewWidget({ locationId }: { locationId: string }) {
     } catch (err) {
       console.error('Failed to fetch location reviews', err)
     }
-  }
+  }, [locationId])
 
   useEffect(() => {
-    fetchReviews()
-    const supabase = createClient()
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      setIsLoggedIn(!!user)
+    let active = true
+    Promise.resolve().then(async () => {
+      if (!active) return
+      await fetchReviews()
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (active) {
+        setIsLoggedIn(!!user)
+      }
     })
-  }, [locationId])
+    return () => {
+      active = false
+    }
+  }, [locationId, fetchReviews])
 
   const handleSubmit = async () => {
     if (body.trim().length < 3) return
@@ -270,15 +293,23 @@ export default function StopPopupModal({
   const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null)
 
   useEffect(() => {
+    let active = true
     if (isOpen && location) {
-      setIsLoadingReviews(true)
+      Promise.resolve().then(() => {
+        if (active) setIsLoadingReviews(true)
+      })
       fetch(`/api/reviews?target_type=location&location_id=${location.id}`)
         .then((res) => res.json())
         .then((data) => {
-          setRating(data.averageRating)
+          if (active) setRating(data.averageRating)
         })
         .catch((err) => console.error('Failed to fetch rating', err))
-        .finally(() => setIsLoadingReviews(false))
+        .finally(() => {
+          if (active) setIsLoadingReviews(false)
+        })
+    }
+    return () => {
+      active = false
     }
   }, [isOpen, location])
 

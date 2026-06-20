@@ -464,9 +464,9 @@ export default function ItineraryPDF({ title, region, durationDays, coverImageUr
                         {displayDescription}
                       </Text>
 
-                      {/* eslint-disable-next-line jsx-a11y/alt-text */}
                       {stopImage && (
                         <View wrap={false}>
+                          {/* eslint-disable-next-line jsx-a11y/alt-text */}
                           <Image src={stopImage} style={styles.stopImage} />
                         </View>
                       )}

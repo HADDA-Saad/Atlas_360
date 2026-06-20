@@ -33,15 +33,28 @@ export default function PanoramaModal({ location, isOpen, onClose }: PanoramaMod
   // When modal opens: delay-mount the content so the CSS transition completes first
   // When modal closes: destroy immediately, then unmount content
   useEffect(() => {
+    let active = true
     if (isOpen) {
       // Mount the container after a tick so the modal wrapper is visible first
-      const t = setTimeout(() => setShowContent(true), 50)
-      return () => clearTimeout(t)
+      const t = setTimeout(() => {
+        if (active) setShowContent(true)
+      }, 50)
+      return () => {
+        active = false
+        clearTimeout(t)
+      }
     } else {
       destroyPanorama()
-      setShowContent(false)
-      setError(null)
-      setIsLoading(false)
+      Promise.resolve().then(() => {
+        if (active) {
+          setShowContent(false)
+          setError(null)
+          setIsLoading(false)
+        }
+      })
+    }
+    return () => {
+      active = false
     }
   }, [isOpen, destroyPanorama])
 

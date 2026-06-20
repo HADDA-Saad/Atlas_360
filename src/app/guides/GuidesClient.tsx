@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import AvailabilityCalendar from '@/components/AvailabilityCalendar'
+import type { User } from '@supabase/supabase-js'
 
 interface Guide {
   id: string
@@ -28,7 +29,7 @@ interface Itinerary {
 interface GuidesClientProps {
   guides: Guide[]
   itineraries: Itinerary[]
-  user: any
+  user: User | null
 }
 
 const AVAILABLE_LANGUAGES = ['Arabic', 'French', 'English', 'Berber', 'Spanish', 'German', 'Italian']

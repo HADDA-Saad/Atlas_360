@@ -67,38 +67,6 @@ function SidebarSkeleton() {
   )
 }
 
-/* ─── Empty State ─── */
-function EmptyState() {
-  return (
-    <div className="flex flex-col items-center justify-center flex-1 px-8 py-16 text-center">
-      {/* Animated compass SVG */}
-      <div className="relative w-20 h-20 mb-8">
-        <div className="absolute inset-0 rounded-full border border-primary/20 animate-ping" style={{ animationDuration: '3s' }} />
-        <div className="absolute inset-0 flex items-center justify-center rounded-full border border-border bg-card">
-          <svg
-            viewBox="0 0 24 24"
-            className="w-8 h-8 text-primary"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={1}
-          >
-            <circle cx="12" cy="12" r="10" strokeOpacity="0.3" />
-            <polygon fill="currentColor" stroke="none" points="12,3 14,12 12,10 10,12" />
-            <polygon fill="currentColor" stroke="none" opacity="0.25" points="12,21 10,12 12,14 14,12" />
-            <circle cx="12" cy="12" r="1.5" fill="currentColor" />
-          </svg>
-        </div>
-      </div>
-
-      <h3 className="font-[family-name:var(--font-cormorant)] text-2xl font-semibold text-foreground mb-2">
-        Explore Morocco
-      </h3>
-      <p className="text-sm text-muted-foreground leading-relaxed max-w-[240px]">
-        Select an itinerary to begin your journey through Morocco&apos;s most iconic destinations.
-      </p>
-    </div>
-  )
-}
 
 /* ─── Stop List Item ─── */
 function StopItem({
@@ -526,7 +494,7 @@ function SidebarContent({
         const res = await fetch('/api/itineraries/ratings')
         if (res.ok) {
           const data = await res.json()
-          const ratingsMap = data.reduce((acc: any, curr: any) => ({ ...acc, [curr.itinerary_id]: curr.average }), {})
+          const ratingsMap = data.reduce((acc: Record<string, number>, curr: { itinerary_id: string; average: number }) => ({ ...acc, [curr.itinerary_id]: curr.average }), {} as Record<string, number>)
           setRatings(ratingsMap)
         }
       } catch (err) {
@@ -683,7 +651,7 @@ function SidebarContent({
 
             {/* Guide Match Widget */}
             <div className="mt-4">
-              <GuideMatchWidget region={selectedItinerary.region} />
+              <GuideMatchWidget region={selectedItinerary.region} itineraryId={selectedItinerary.id} />
             </div>
 
             {/* Divider */}
