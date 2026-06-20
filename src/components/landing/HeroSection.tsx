@@ -24,23 +24,26 @@ export default function HeroSection() {
           transform: `translateY(${scrollY * 0.4}px)`,
         }}
       >
-        {/* Gradient Overlay for text readability */}
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/70 to-background/20"></div>
-        <div className="absolute inset-0 bg-background/10 dark:bg-background/20"></div>
+        {/* Gradient overlay — light mode: reduced opacity so image shows through */}
+        <div className="absolute inset-0 dark:hidden bg-gradient-to-t from-background/55 via-background/20 to-transparent"></div>
+        {/* Gradient overlay — dark mode: original values unchanged */}
+        <div className="absolute inset-0 hidden dark:block bg-gradient-to-t from-background via-background/70 to-background/20"></div>
+        {/* Subtle tint: lighter in light mode, same in dark */}
+        <div className="absolute inset-0 bg-background/5 dark:bg-background/20"></div>
       </div>
 
       {/* Content */}
       <div className="relative z-10 w-full max-w-7xl mx-auto px-6 md:px-12 pb-32 pt-32">
         <div className="max-w-2xl">
-          <h1 className="font-[family-name:var(--font-cormorant)] text-6xl md:text-7xl lg:text-8xl font-medium text-foreground mb-6 leading-[1.05] tracking-tighter">
+          <h1 className="font-[family-name:var(--font-cormorant)] text-6xl md:text-7xl lg:text-8xl font-medium mb-6 leading-[1.05] tracking-tighter text-white dark:text-foreground">
             <span className="block animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-150 fill-mode-both">
               Unveil the Soul
             </span>
-            <span className="block animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-300 fill-mode-both italic text-foreground/80 pr-4">
+            <span className="block animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-300 fill-mode-both italic opacity-85 pr-4">
               of Morocco
             </span>
           </h1>
-          <p className="font-[family-name:var(--font-cormorant)] text-xl md:text-2xl text-muted-foreground mb-10 max-w-lg animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-500 fill-mode-both leading-relaxed">
+          <p className="font-[family-name:var(--font-cormorant)] text-xl md:text-2xl mb-10 max-w-lg animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-500 fill-mode-both leading-relaxed text-white/75 dark:text-muted-foreground">
             Curated itineraries for the modern explorer.
           </p>
           

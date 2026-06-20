@@ -85,7 +85,7 @@ export default async function DashboardPage() {
   return (
     <div className="min-h-screen bg-background flex flex-col atlas-grain">
       {/* Hero Banner */}
-      <div className="w-full h-[180px] bg-[#111] relative border-b border-border flex items-end">
+      <div className="w-full h-[180px] bg-card dark:bg-[#111] relative border-b border-border flex items-end">
         <div className="absolute inset-0 atlas-grain opacity-50"></div>
         <div className="w-full max-w-[1100px] mx-auto px-6 md:px-12 pb-8 relative z-10 flex items-center gap-4">
           <h1 className="font-[family-name:var(--font-cormorant)] text-4xl md:text-5xl font-semibold text-foreground tracking-tight">
