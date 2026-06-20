@@ -107,11 +107,11 @@ export default function Navbar() {
         flex items-center justify-between
         px-6 md:px-8 h-16
         transition-all duration-500 ease-out
-        border-b border-border/40
-        ${scrolled || pathname === '/'
-          ? 'bg-background/90 backdrop-blur-xl shadow-sm'
-          : 'bg-background/90 backdrop-blur-xl'
-        }
+        border-b
+        backdrop-blur-[10px]
+        dark:bg-background/90 dark:border-[rgba(232,213,183,0.06)] dark:backdrop-blur-xl
+        [background:rgba(247,242,234,0.82)] [border-color:rgba(120,72,32,0.12)]
+        ${scrolled ? 'shadow-sm dark:shadow-none' : ''}
       `}
     >
       {/* Left side — Logo */}

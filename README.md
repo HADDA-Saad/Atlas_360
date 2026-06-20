@@ -10,11 +10,12 @@
 
 ## About the Project
 
-**Atlas 360** is a premium, luxury-editorial web application designed to let users explore curated Moroccan travel itineraries. Travelers can select an itinerary, view exact coordinates on an interactive Google Map, and click any location marker to instantly open a 360° Google Street View panorama. 
+**Atlas 360** is a premium, luxury-editorial web application designed to let users explore curated Moroccan travel itineraries. Travelers can select an itinerary, view exact coordinates on an interactive Google Map, and click any location marker to instantly open a 360° Google Street View panorama.
 
 Beyond exploration, Atlas 360 features a full marketplace for local tour guides and a premium subscription system, all backed by a robust, fully tested architecture.
 
 ### Key Features
+
 - **Interactive Mapping & 360° Panoramas:** Powered by Google Maps API, featuring custom markers and an integrated Street View modal to look around iconic Moroccan destinations.
 - **Local Guide Marketplace:** Browse verified local guides, check their real-time availability calendars, and send booking requests.
 - **Premium Subscriptions & Trip Passes:** Monetization powered by Stripe, including recurring tier subscriptions (Explorer, Nomad, Elite) and one-time Trip Passes.
@@ -25,12 +26,12 @@ Beyond exploration, Atlas 360 features a full marketplace for local tour guides 
 
 ## Tech Stack
 
-*   **Frontend:** Next.js 16 (App Router), React, TypeScript
-*   **Styling:** Tailwind CSS v4, shadcn/ui
-*   **Database & Authentication:** Supabase (PostgreSQL + Auth)
-*   **Payments:** Stripe Checkout & Webhooks
-*   **Maps Engine:** `@vis.gl/react-google-maps`
-*   **Testing:** Vitest, Playwright
+- **Frontend:** Next.js 16 (App Router), React, TypeScript
+- **Styling:** Tailwind CSS v4, shadcn/ui
+- **Database & Authentication:** Supabase (PostgreSQL + Auth)
+- **Payments:** Stripe Checkout & Webhooks
+- **Maps Engine:** `@vis.gl/react-google-maps`
+- **Testing:** Vitest, Playwright
 
 ---
 
@@ -38,33 +39,36 @@ Beyond exploration, Atlas 360 features a full marketplace for local tour guides 
 
 ### Prerequisites
 
-*   Node.js (v18.17 or higher)
-*   npm, yarn, or pnpm
-*   Supabase account
-*   Stripe account
-*   Google Cloud account (Maps API)
+- Node.js (v18.17 or higher)
+- npm, yarn, or pnpm
+- Supabase account
+- Stripe account
+- Google Cloud account (Maps API)
 
 ### Installation
 
 1. **Clone the repository**
+
    ```bash
    git clone https://github.com/yourusername/atlas-360.git
    cd atlas-360
    ```
 
 2. **Install dependencies**
+
    ```bash
    npm install
    ```
 
 3. **Configure Environment Variables**
    Create a `.env.local` file in the root of the project:
+
    ```env
    # Supabase
    NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
    NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
    SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
-   
+
    # Google Maps
    NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=your-maps-api-key
    NEXT_PUBLIC_GOOGLE_MAP_ID=your-google-map-id
@@ -79,9 +83,9 @@ Beyond exploration, Atlas 360 features a full marketplace for local tour guides 
    ```
 
 4. **Initialize the Database**
-   * Log into your Supabase Dashboard and open the **SQL Editor**.
-   * Run the contents of `supabase/migrations/001_initial_schema.sql` to build the tables and RLS policies.
-   * Run the contents of `supabase/seed.sql` to populate the introductory itineraries and map coordinates.
+   - Log into your Supabase Dashboard and open the **SQL Editor**.
+   - Run the contents of `supabase/migrations/001_initial_schema.sql` to build the tables and RLS policies.
+   - Run the contents of `supabase/seed.sql` to populate the introductory itineraries and map coordinates.
 
 5. **Start the Development Server**
    ```bash
@@ -93,7 +97,7 @@ Beyond exploration, Atlas 360 features a full marketplace for local tour guides 
 
 ## Testing
 
-Atlas 360 is fully tested. We use a separate `.env.test` file to keep testing credentials out of version control. 
+Atlas 360 is fully tested. We use a separate `.env.test` file to keep testing credentials out of version control.
 
 **For a full, beginner-friendly guide on how to set up your test accounts and run the test suite, please read the [Testing Guide](TESTING.md).**
 

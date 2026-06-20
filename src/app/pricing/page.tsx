@@ -1,20 +1,22 @@
 'use client'
 
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 
 export default function PricingPage() {
   const router = useRouter()
+  const [billing, setBilling] = useState<'month' | 'year'>('month')
 
   const handleSubscribe = async (tier: string) => {
     try {
       const res = await fetch('/api/checkout/session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tier }),
+        body: JSON.stringify({ tier, billing }),
       })
-      
+
       const data = await res.json()
-      
+
       if (data.url) {
         window.location.href = data.url
       } else {
@@ -26,10 +28,14 @@ export default function PricingPage() {
     }
   }
 
+  const nomadPrice = billing === 'month' ? '99' : '990'
+  const elitePrice = billing === 'month' ? '199' : '1990'
+  const period = billing === 'month' ? 'MAD / mo' : 'MAD / yr'
+
   return (
     <div className="min-h-screen bg-background flex flex-col items-center py-20 px-4 atlas-grain">
       {/* Header */}
-      <div className="text-center max-w-2xl mx-auto mb-16">
+      <div className="text-center max-w-2xl mx-auto mb-10">
         <h4 className="text-[10px] font-semibold uppercase tracking-[0.25em] text-muted-foreground mb-4 flex items-center justify-center gap-3">
           <span className="w-8 h-px bg-muted-foreground/30" />
           ATLAS 360 — PRICING · MOROCCO MARKET
@@ -39,13 +45,34 @@ export default function PricingPage() {
           Accessible tiers for every traveler
         </h1>
         <p className="text-[14px] text-muted-foreground">
-          Monthly subscription or one-time trip pass · cancel anytime · all prices in MAD
+          Monthly or yearly subscription · cancel anytime · all prices in MAD
         </p>
       </div>
 
+      {/* Billing Toggle */}
+      <div className="flex items-center gap-3 mb-12">
+        <span className={`text-[13px] font-medium ${billing === 'month' ? 'text-foreground' : 'text-muted-foreground'}`}>
+          Monthly
+        </span>
+        <button
+          onClick={() => setBilling(b => b === 'month' ? 'year' : 'month')}
+          className={`relative w-12 h-6 rounded-full transition-colors duration-200 ${billing === 'year' ? 'bg-primary' : 'bg-muted-foreground/20'}`}
+        >
+          <span className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full shadow transition-transform duration-200 ${billing === 'year' ? 'translate-x-6' : 'translate-x-0'}`} />
+        </button>
+        <span className={`text-[13px] font-medium ${billing === 'year' ? 'text-foreground' : 'text-muted-foreground'}`}>
+          Yearly
+        </span>
+        {billing === 'year' && (
+          <span className="px-2.5 py-1 bg-primary/10 border border-primary/20 text-primary text-[10px] font-bold uppercase tracking-widest rounded-full">
+            Save 2 months
+          </span>
+        )}
+      </div>
+
       {/* Pricing Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto w-full">
-        
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto w-full">
+
         {/* Explorer Card */}
         <div className="flex flex-col bg-card border border-border rounded-3xl p-8 relative transition-all duration-300 hover:border-muted-foreground/30">
           <div className="mb-6">
@@ -68,7 +95,7 @@ export default function PricingPage() {
                 <CheckIcon /> 3 curated itineraries (Marrakech, Fes, Chefchaouen)
               </li>
               <li className="flex items-start gap-3 text-muted-foreground">
-                <CheckIcon /> Interactive map + 360° Street View
+                <CheckIcon /> Interactive map + 360° Street View (3 views)
               </li>
               <li className="flex items-start gap-3 text-muted-foreground">
                 <CheckIcon /> Basic stop cards
@@ -84,7 +111,7 @@ export default function PricingPage() {
               </li>
             </ul>
           </div>
-          <button 
+          <button
             onClick={() => router.push('/explore')}
             className="mt-8 relative w-full py-3.5 px-4 rounded-xl border border-border text-foreground text-[12px] font-bold uppercase tracking-widest overflow-hidden group/btn hover:border-primary hover:text-primary-foreground transition-colors"
           >
@@ -93,60 +120,8 @@ export default function PricingPage() {
           </button>
         </div>
 
-        {/* Trip Pass Card */}
-        <div className="flex flex-col bg-card border border-teal-500/25 rounded-3xl p-8 relative transition-all duration-300 hover:border-teal-500/40">
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2">
-            <span className="px-4 py-1 bg-teal-500/15 text-teal-400 border border-teal-500/25 text-[10px] font-bold uppercase tracking-widest rounded-full">
-              One-time
-            </span>
-          </div>
-          <div className="mb-6 mt-2">
-            <span className="inline-block px-3 py-1 bg-teal-500/10 border border-teal-500/20 text-teal-400 text-[11px] font-bold uppercase tracking-widest rounded-full mb-6">
-              Trip Pass
-            </span>
-            <h2 className="text-2xl font-[family-name:var(--font-cormorant)] text-foreground font-semibold tracking-tight">Trip Pass</h2>
-            <p className="text-[13px] text-muted-foreground mt-1">Plan one Morocco trip</p>
-          </div>
-          <div className="mb-8">
-            <div className="flex items-baseline gap-1.5">
-              <span className="font-[family-name:var(--font-cormorant)] text-5xl font-semibold text-foreground">199</span>
-              <span className="text-sm font-medium text-muted-foreground">MAD</span>
-            </div>
-            <p className="text-[12px] text-muted-foreground/60 mt-2">~$20 USD · one-time · 30-day access</p>
-          </div>
-          <div className="flex-1">
-            <ul className="space-y-4 text-[13px]">
-              <li className="flex items-start gap-3 text-muted-foreground">
-                <CheckIcon pass /> All 10+ curated itineraries
-              </li>
-              <li className="flex items-start gap-3 text-muted-foreground">
-                <CheckIcon pass /> Full logistics: day dividers, transport, tips
-              </li>
-              <li className="flex items-start gap-3 text-muted-foreground">
-                <CheckIcon pass /> Downloadable travel books (PDF)
-              </li>
-              <li className="flex items-start gap-3 text-muted-foreground">
-                <CheckIcon pass /> Google Places markers on map
-              </li>
-              <li className="flex items-start gap-3 text-muted-foreground">
-                <CheckIcon pass /> Valid for 30 days from purchase
-              </li>
-              <li className="flex items-start gap-3 text-muted-foreground/40 line-through">
-                <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground/20 mt-1.5 flex-shrink-0" /> Itinerary builder — locked
-              </li>
-            </ul>
-          </div>
-          <button 
-            onClick={() => handleSubscribe('trip_pass')}
-            className="mt-8 relative w-full py-3.5 px-4 rounded-xl border-2 border-teal-500/20 text-teal-400 text-[12px] font-bold uppercase tracking-widest hover:text-teal-900 transition-colors overflow-hidden group/btn"
-          >
-            <span className="relative z-10">Buy Trip Pass</span>
-            <div className="absolute inset-0 bg-teal-400 translate-y-[101%] group-hover/btn:translate-y-0 transition-transform duration-300 ease-out z-0" />
-          </button>
-        </div>
-
         {/* Nomad Card (Most Popular) */}
-        <div className="flex flex-col bg-card border border-primary/30 rounded-3xl p-8 relative shadow-[0_0_40px_rgba(193,68,14,0.05)] transform lg:-translate-y-4">
+        <div className="flex flex-col bg-card border border-primary/30 rounded-3xl p-8 relative shadow-[0_0_40px_rgba(193,68,14,0.05)] transform md:-translate-y-4">
           <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2">
             <span className="px-4 py-1 bg-primary text-primary-foreground text-[10px] font-bold uppercase tracking-widest rounded-full shadow-lg shadow-primary/20">
               Most popular
@@ -161,10 +136,12 @@ export default function PricingPage() {
           </div>
           <div className="mb-8">
             <div className="flex items-baseline gap-1.5">
-              <span className="font-[family-name:var(--font-cormorant)] text-5xl font-semibold text-foreground">99</span>
-              <span className="text-sm font-medium text-muted-foreground">MAD / mo</span>
+              <span className="font-[family-name:var(--font-cormorant)] text-5xl font-semibold text-foreground">{nomadPrice}</span>
+              <span className="text-sm font-medium text-muted-foreground">{period}</span>
             </div>
-            <p className="text-[12px] text-muted-foreground/60 mt-2">~10 USD · less than a city taxi ride</p>
+            <p className="text-[12px] text-muted-foreground/60 mt-2">
+              {billing === 'month' ? '~10 USD · less than a city taxi ride' : '~100 USD · 2 months free'}
+            </p>
           </div>
           <div className="flex-1">
             <ul className="space-y-4 text-[13px]">
@@ -188,7 +165,7 @@ export default function PricingPage() {
               </li>
             </ul>
           </div>
-          <button 
+          <button
             onClick={() => handleSubscribe('nomad')}
             className="mt-8 relative w-full py-3.5 px-4 rounded-xl bg-primary text-primary-foreground text-[12px] font-bold uppercase tracking-widest shadow-lg shadow-primary/20 overflow-hidden group/btn"
           >
@@ -208,10 +185,12 @@ export default function PricingPage() {
           </div>
           <div className="mb-8">
             <div className="flex items-baseline gap-1.5">
-              <span className="font-[family-name:var(--font-cormorant)] text-5xl font-semibold text-foreground">199</span>
-              <span className="text-sm font-medium text-muted-foreground">MAD / mo</span>
+              <span className="font-[family-name:var(--font-cormorant)] text-5xl font-semibold text-foreground">{elitePrice}</span>
+              <span className="text-sm font-medium text-muted-foreground">{period}</span>
             </div>
-            <p className="text-[12px] text-muted-foreground/60 mt-2">~20 USD · premium full access</p>
+            <p className="text-[12px] text-muted-foreground/60 mt-2">
+              {billing === 'month' ? '~20 USD · premium full access' : '~200 USD · 2 months free'}
+            </p>
           </div>
           <div className="flex-1">
             <ul className="space-y-4 text-[13px]">
@@ -235,7 +214,7 @@ export default function PricingPage() {
               </li>
             </ul>
           </div>
-          <button 
+          <button
             onClick={() => handleSubscribe('elite')}
             className="mt-8 relative w-full py-3.5 px-4 rounded-xl border-2 border-amber-500/20 text-amber-400 text-[12px] font-bold uppercase tracking-widest hover:text-amber-900 transition-colors overflow-hidden group/btn"
           >
@@ -249,8 +228,8 @@ export default function PricingPage() {
   )
 }
 
-function CheckIcon({ active, premium, pass }: { active?: boolean, premium?: boolean, pass?: boolean }) {
-  const color = premium ? 'text-amber-400' : pass ? 'text-teal-400' : active ? 'text-primary' : 'text-muted-foreground'
+function CheckIcon({ active, premium }: { active?: boolean, premium?: boolean }) {
+  const color = premium ? 'text-amber-400' : active ? 'text-primary' : 'text-muted-foreground'
   return (
     <svg className={`w-4 h-4 flex-shrink-0 mt-0.5 ${color}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
       <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />

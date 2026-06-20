@@ -1,16 +1,14 @@
 import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { createClient } from '@/lib/supabase/server'
-import type { UserTier } from '@/types'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
   apiVersion: '2026-04-22.dahlia',
 })
 
-type CheckoutTier = Exclude<UserTier, 'explorer'>
-
 interface CheckoutBody {
   tier?: unknown
+  billing?: unknown
   bookingId?: unknown
 }
 
@@ -29,7 +27,7 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json() as CheckoutBody
-    const { tier, bookingId } = body
+    const { tier, billing, bookingId } = body
 
     if (bookingId) {
       if (typeof bookingId !== 'string') {
@@ -64,7 +62,7 @@ export async function POST(req: Request) {
                 name: 'Local Guide Booking - Atlas 360',
                 description: `Tour Guide reservation from ${booking.start_date} to ${booking.end_date}`,
               },
-              unit_amount: booking.total_price * 100, // MAD in cents
+              unit_amount: booking.total_price * 100,
             },
             quantity: 1,
           },
@@ -82,11 +80,12 @@ export async function POST(req: Request) {
       return NextResponse.json({ url: session.url, sessionId: session.id })
     }
 
-    if (tier !== 'nomad' && tier !== 'elite' && tier !== 'trip_pass') {
+    if (tier !== 'nomad' && tier !== 'elite') {
       return NextResponse.json({ error: 'Invalid tier requested.' }, { status: 400 })
     }
 
-    const requestedTier = tier as CheckoutTier
+    const billingPeriod = billing === 'year' ? 'year' : 'month'
+    const isYearly = billingPeriod === 'year'
 
     const { data: profile } = await supabase
       .from('profiles')
@@ -96,47 +95,13 @@ export async function POST(req: Request) {
 
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
 
-    // ── Trip Pass: one-time payment ──
-    if (requestedTier === 'trip_pass') {
-      const tripPassPriceId = process.env.STRIPE_TRIP_PASS_PRICE_ID
+    const configuredPriceId = tier === 'elite'
+      ? (isYearly ? process.env.STRIPE_ELITE_YEARLY_PRICE_ID : process.env.STRIPE_ELITE_PRICE_ID)
+      : (isYearly ? process.env.STRIPE_NOMAD_YEARLY_PRICE_ID : process.env.STRIPE_NOMAD_PRICE_ID)
 
-      const lineItem = tripPassPriceId
-        ? { price: tripPassPriceId, quantity: 1 }
-        : {
-            price_data: {
-              currency: 'mad',
-              product_data: {
-                name: 'Atlas 360 - Morocco Trip Pass',
-                description: 'Full access to all curated itineraries, logistics, and travel books for 30 days.',
-              },
-              unit_amount: 19900, // 199 MAD
-            },
-            quantity: 1,
-          }
-
-      const session = await stripe.checkout.sessions.create({
-        mode: 'payment',
-        payment_method_types: ['card'],
-        line_items: [lineItem],
-        client_reference_id: user.id,
-        metadata: {
-          userId: user.id,
-          tier: 'trip_pass',
-        },
-        ...(profile?.stripe_customer_id
-          ? { customer: profile.stripe_customer_id }
-          : { customer_email: user.email }),
-        success_url: `${appUrl}/booking/success?session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${appUrl}/pricing?canceled=true`,
-      })
-
-      return NextResponse.json({ url: session.url })
-    }
-
-    // ── Nomad / Elite: recurring subscription ──
-    const configuredPriceId = requestedTier === 'elite'
-      ? process.env.STRIPE_ELITE_PRICE_ID
-      : process.env.STRIPE_NOMAD_PRICE_ID
+    const fallbackAmount = tier === 'elite'
+      ? (isYearly ? 199000 : 19900)
+      : (isYearly ? 99000 : 9900)
 
     const lineItem = configuredPriceId
       ? { price: configuredPriceId, quantity: 1 }
@@ -144,13 +109,11 @@ export async function POST(req: Request) {
           price_data: {
             currency: 'mad',
             product_data: {
-              name: requestedTier === 'elite'
-                ? 'Atlas 360 - Elite Tier'
-                : 'Atlas 360 - Nomad Tier',
+              name: tier === 'elite' ? 'Atlas 360 - Elite Tier' : 'Atlas 360 - Nomad Tier',
             },
-            unit_amount: requestedTier === 'elite' ? 19900 : 9900,
+            unit_amount: fallbackAmount,
             recurring: {
-              interval: 'month' as const,
+              interval: billingPeriod as 'month' | 'year',
             },
           },
           quantity: 1,
@@ -163,12 +126,12 @@ export async function POST(req: Request) {
       client_reference_id: user.id,
       metadata: {
         userId: user.id,
-        tier: requestedTier,
+        tier,
       },
       subscription_data: {
         metadata: {
           userId: user.id,
-          tier: requestedTier,
+          tier,
         },
       },
       ...(profile?.stripe_customer_id
