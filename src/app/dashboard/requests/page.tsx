@@ -8,13 +8,12 @@ import NotesEditor from './NotesEditor'
 import GuideVerificationTab from './GuideVerificationTab'
 import PhotoModerationTab from './PhotoModerationTab'
 import GuidePayoutsTab from './GuidePayoutsTab'
+import { isAdmin } from '@/lib/auth/roles'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
   title: 'Operations Dashboard | Atlas 360 Admin',
 }
-
-const ADMIN_EMAILS = ['jaz.ouchene@gmail.com', 'jazoulizaka@gmail.com', 'jazoulizka@gmail.com','saadhad08@gmail.com']
 
 interface AssistanceRequest {
   id: string
@@ -41,7 +40,7 @@ export default async function RequestsDashboardPage({
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  if (!user || !ADMIN_EMAILS.includes(user.email || '')) {
+  if (!user || !await isAdmin()) {
     redirect('/dashboard')
   }
 

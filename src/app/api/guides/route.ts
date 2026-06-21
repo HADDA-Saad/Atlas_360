@@ -1,8 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { notifyAdmins } from '@/lib/notifications'
-
-const ADMIN_EMAILS = ['jaz.ouchene@gmail.com', 'jazoulizaka@gmail.com', 'jazoulizka@gmail.com', 'saadhad08@gmail.com']
+import { notifyAdminsByRole } from '@/lib/notifications'
 
 interface CreateGuideBody {
   bio?: string | null
@@ -45,7 +43,7 @@ export async function POST(request: Request) {
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
     // Notify admins that a new guide is awaiting review
-    await notifyAdmins(ADMIN_EMAILS, {
+    await notifyAdminsByRole({
       type: 'guide_pending_review',
       title: 'New guide awaiting verification',
       body: `${user.email} has registered as a guide and is waiting for your review.`,

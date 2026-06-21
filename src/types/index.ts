@@ -1,4 +1,4 @@
-export type UserTier = 'explorer' | 'trip_pass' | 'nomad' | 'elite'
+export type UserTier = 'explorer' | 'nomad' | 'elite'
 
 export interface Itinerary {
   id: string

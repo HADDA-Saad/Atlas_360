@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { POST } from '@/app/api/webhooks/stripe/route';
 
-// hoisted so mocks are available before vi.mock() factories execute
-const { mockConstructEvent, mockUpdate, mockEq } = vi.hoisted(() => ({
+const { mockConstructEvent, mockSetPaid, mockUpdate, mockEq } = vi.hoisted(() => ({
   mockConstructEvent: vi.fn(),
+  mockSetPaid: vi.fn().mockResolvedValue(undefined),
   mockUpdate: vi.fn(),
   mockEq: vi.fn(),
 }));
@@ -12,6 +12,10 @@ vi.mock('stripe', () => ({
   default: class MockStripe {
     webhooks = { constructEvent: mockConstructEvent };
   },
+}));
+
+vi.mock('@/lib/setPaid', () => ({
+  setPaid: mockSetPaid,
 }));
 
 vi.mock('@supabase/supabase-js', () => ({
@@ -33,6 +37,7 @@ function createRequest(signature: string | null, body: any) {
 describe('Stripe Webhooks', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockSetPaid.mockResolvedValue(undefined);
     mockUpdate.mockReturnValue({ eq: mockEq });
     mockEq.mockResolvedValue({ error: null });
   });
@@ -52,7 +57,7 @@ describe('Stripe Webhooks', () => {
     expect(res.status).toBe(400);
   });
 
-  it('marks booking as paid on checkout.session.completed', async () => {
+  it('calls setPaid on checkout.session.completed for a booking', async () => {
     const mockEvent = {
       type: 'checkout.session.completed',
       data: { object: { metadata: { bookingId: 'booking-123' } } },
@@ -61,31 +66,6 @@ describe('Stripe Webhooks', () => {
 
     const res = await POST(createRequest('valid-sig', mockEvent));
     expect(res.status).toBe(200);
-    expect(mockUpdate).toHaveBeenCalledWith({ status: 'paid' });
-    expect(mockEq).toHaveBeenCalledWith('id', 'booking-123');
-  });
-
-  it('activates trip pass on one-time payment', async () => {
-    const mockEvent = {
-      type: 'checkout.session.completed',
-      data: {
-        object: {
-          mode: 'payment',
-          client_reference_id: 'user-456',
-          customer: 'cus_789',
-          metadata: { tier: 'trip_pass' },
-        },
-      },
-    };
-    mockConstructEvent.mockReturnValueOnce(mockEvent);
-
-    const res = await POST(createRequest('valid-sig', mockEvent));
-    expect(res.status).toBe(200);
-    expect(mockUpdate).toHaveBeenCalledWith(expect.objectContaining({
-      tier: 'trip_pass',
-      subscription_status: 'active',
-      stripe_customer_id: 'cus_789'
-    }));
-    expect(mockEq).toHaveBeenCalledWith('id', 'user-456');
+    expect(mockSetPaid).toHaveBeenCalledWith('booking-123');
   });
 });

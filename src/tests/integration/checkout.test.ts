@@ -102,11 +102,4 @@ describe('POST /api/checkout/session', () => {
     expect((await res.json()).url).toBe('https://stripe.com/pay/test');
   });
 
-  it('returns stripe url for trip_pass', async () => {
-    mockGetUser.mockResolvedValueOnce({ data: { user: { id: 'u1', email: 'test@test.com' } } });
-    mockSingle.mockResolvedValueOnce({ data: { stripe_customer_id: null }, error: null });
-    const res = await POST(createRequest({ tier: 'trip_pass' }));
-    expect(res.status).toBe(200);
-    expect((await res.json()).url).toBe('https://stripe.com/pay/test');
-  });
 });

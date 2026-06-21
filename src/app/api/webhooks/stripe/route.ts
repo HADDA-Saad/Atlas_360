@@ -25,7 +25,6 @@ function getErrorMessage(error: unknown) {
 
 function getPaidTier(value: string | null | undefined): PaidTier {
   if (value === 'elite') return 'elite'
-  if (value === 'trip_pass') return 'trip_pass'
   return 'nomad'
 }
 
@@ -80,30 +79,6 @@ export async function POST(req: Request) {
 
       if (!userId || !customerId) {
         console.error('Missing userId or customerId in checkout session:', { userId, customerId })
-        return jsonResponse({ received: true }, 200)
-      }
-
-      // ── Trip Pass: one-time payment → set 30-day expiry ──
-      if (session.mode === 'payment' && tier === 'trip_pass') {
-        const expiresAt = new Date()
-        expiresAt.setDate(expiresAt.getDate() + 30)
-
-        const { error } = await supabaseAdmin
-          .from('profiles')
-          .update({
-            tier: 'trip_pass',
-            stripe_customer_id: customerId,
-            subscription_status: 'active',
-            trip_pass_expires_at: expiresAt.toISOString(),
-          })
-          .eq('id', userId)
-
-        if (error) {
-          console.error('Error updating profile for trip pass:', error)
-          return jsonResponse({ error: 'Database Update Failed' }, 500)
-        }
-
-        console.log(`Successfully activated Trip Pass for user ${userId}, expires ${expiresAt.toISOString()}.`)
         return jsonResponse({ received: true }, 200)
       }
 

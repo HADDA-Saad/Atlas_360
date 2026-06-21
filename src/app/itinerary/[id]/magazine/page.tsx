@@ -7,7 +7,7 @@ import type { Itinerary, Location, UserTier } from '@/types'
 
 export const dynamic = 'force-dynamic'
 
-const TIER_LEVELS: Record<UserTier, number> = { explorer: 0, trip_pass: 1, nomad: 1, elite: 2 }
+const TIER_LEVELS: Record<UserTier, number> = { explorer: 0, nomad: 1, elite: 2 }
 const FALLBACK_IMAGES = ['/Images/jame3.png', '/Images/riad.png', '/Images/sea.png', '/Images/spices.png', '/Images/Zellige.png']
 
 interface PublicStop {

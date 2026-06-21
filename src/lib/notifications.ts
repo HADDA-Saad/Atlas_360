@@ -48,3 +48,27 @@ export async function notifyAdmins(
     // Notification failure must never break the calling request
   }
 }
+
+export async function notifyAdminsByRole(
+  params: Omit<NotificationParams, 'user_id'>
+): Promise<void> {
+  try {
+    const admin = createAdminClient()
+    const { data } = await admin
+      .from('profiles')
+      .select('id')
+      .eq('role', 'admin')
+    if (!data || data.length === 0) return
+    await admin.from('notifications').insert(
+      data.map(({ id }) => ({
+        user_id: id,
+        type: params.type,
+        title: params.title,
+        body: params.body,
+        link: params.link ?? '/dashboard',
+      }))
+    )
+  } catch {
+    // Notification failure must never break the calling request
+  }
+}

@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { isAdmin } from '@/lib/auth/roles'
 
 const VALID_STATUSES = new Set(['new', 'in_progress', 'completed', 'closed'])
-const ADMIN_EMAILS = ['jaz.ouchene@gmail.com', 'jazoulizaka@gmail.com', 'jazoulizka@gmail.com', 'saadhad08@gmail.com']
 
 interface PatchBody {
   status?: unknown
@@ -18,7 +18,7 @@ export async function PATCH(
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
 
-    if (!user || !ADMIN_EMAILS.includes(user.email || '')) {
+    if (!user || !await isAdmin()) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
     }
 
