@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter, usePathname } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import type { User } from '@supabase/supabase-js'
+import type { User, AuthChangeEvent, Session } from '@supabase/supabase-js'
 import type { UserTier } from '@/types'
 import { ThemeToggle } from '@/components/ThemeToggle'
 import NotificationsBell from '@/components/NotificationsBell'
@@ -76,7 +76,7 @@ export default function Navbar() {
 
     // Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
+      (_event: AuthChangeEvent, session: Session | null) => {
         setUser(session?.user ?? null)
         if (!session?.user) {
           setTier(null)

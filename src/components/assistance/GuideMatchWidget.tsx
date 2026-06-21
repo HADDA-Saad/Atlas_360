@@ -51,7 +51,7 @@ export default function GuideMatchWidget({ region, itineraryId }: GuideMatchWidg
         if (error) throw error
 
         if (guidesData) {
-          const formatted: Guide[] = guidesData.map(g => {
+          const formatted: Guide[] = guidesData.map((g: any) => {
             const profile = Array.isArray(g.profiles) ? g.profiles[0] : g.profiles
             return {
               id: g.id,

@@ -123,9 +123,11 @@ export default function ReviewPanel({
 
   useEffect(() => {
     const supabase = createClient()
-    supabase.auth.getUser().then(({ data }) => {
-      setIsLoggedIn(Boolean(data.user))
-    })
+    const checkUser = async () => {
+      const { data } = await supabase.auth.getUser()
+      setIsLoggedIn(Boolean(data?.user))
+    }
+    checkUser()
   }, [])
 
   useEffect(() => {
