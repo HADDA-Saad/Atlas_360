@@ -1,8 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import AvailabilityCalendar from '@/components/AvailabilityCalendar'
 
 interface Guide {
   id: string
@@ -10,10 +11,13 @@ interface Guide {
   languages: string[]
   regions: string[]
   daily_rate_mad: number
-  whatsapp_number: string | null
   is_verified: boolean
   rating: number | null
   full_name: string | null
+  completedTrips: number
+  reviewCount: number
+  responseRate: number | null
+  memberSince: number | null
 }
 
 interface Itinerary {
@@ -29,6 +33,43 @@ interface GuidesClientProps {
 
 const AVAILABLE_LANGUAGES = ['Arabic', 'French', 'English', 'Berber', 'Spanish', 'German', 'Italian']
 const AVAILABLE_REGIONS = ['Marrakech-Safi', 'High Atlas', 'Sahara-Merzouga', 'Chefchaouen-Rif', 'Rabat-Salé', 'Essaouira-Coast', 'Fes-Meknes']
+
+function TrustStats({
+  completedTrips, rating, reviewCount, responseRate, memberSince, compact = false,
+}: {
+  completedTrips: number
+  rating: number | null
+  reviewCount: number
+  responseRate: number | null
+  memberSince: number | null
+  compact?: boolean
+}) {
+  const hasActivity = completedTrips > 0 || reviewCount > 0 || rating !== null
+
+  if (!hasActivity) {
+    return (
+      <span className="text-[10px] uppercase tracking-widest text-muted-foreground/60 font-medium">
+        New guide
+      </span>
+    )
+  }
+
+  const parts: string[] = []
+  if (completedTrips > 0) parts.push(`${completedTrips} trip${completedTrips === 1 ? '' : 's'}`)
+  if (rating !== null) {
+    parts.push(reviewCount > 0 ? `${rating.toFixed(1)} ★ (${reviewCount})` : `${rating.toFixed(1)} ★`)
+  } else if (reviewCount > 0) {
+    parts.push(`${reviewCount} review${reviewCount === 1 ? '' : 's'}`)
+  }
+  if (!compact && responseRate !== null && responseRate > 0) parts.push(`${responseRate}% response rate`)
+  if (!compact && memberSince) parts.push(`Since ${memberSince}`)
+
+  return (
+    <span className="text-[10px] uppercase tracking-widest text-muted-foreground/80 font-medium leading-relaxed">
+      {parts.join(' · ')}
+    </span>
+  )
+}
 
 export default function GuidesClient({ guides, itineraries, user }: GuidesClientProps) {
   const router = useRouter()
@@ -50,6 +91,31 @@ export default function GuidesClient({ guides, itineraries, user }: GuidesClient
   const [bookingLoading, setBookingLoading] = useState(false)
   const [bookingError, setBookingError] = useState<string | null>(null)
   const [bookingSuccess, setBookingSuccess] = useState(false)
+  const [termsAgreed, setTermsAgreed] = useState(false)
+  const [checkingDates, setCheckingDates] = useState(false)
+  const [avail, setAvail] = useState<{ blockedDays: string[]; activeRanges: { start: string; end: string }[] }>({
+    blockedDays: [],
+    activeRanges: [],
+  })
+
+  // Fetch availability once when the modal opens for a guide
+  useEffect(() => {
+    if (!bookingGuide) {
+      setAvail({ blockedDays: [], activeRanges: [] })
+      return
+    }
+    const ctrl = new AbortController()
+    setCheckingDates(true)
+    fetch(`/api/guides/${bookingGuide.id}/availability`, { signal: ctrl.signal })
+      .then(r => r.json())
+      .then(data => setAvail({
+        blockedDays: data.blockedDays ?? [],
+        activeRanges: data.activeRanges ?? [],
+      }))
+      .catch(() => {})
+      .finally(() => setCheckingDates(false))
+    return () => ctrl.abort()
+  }, [bookingGuide?.id])
 
   // Filtered guides calculation
   const filteredGuides = guides.filter(guide => {
@@ -96,9 +162,10 @@ export default function GuidesClient({ guides, itineraries, user }: GuidesClient
         },
         body: JSON.stringify({
           guide_id: bookingGuide.id,
-          itinerary_id: selectedItineraryId || null,
+          itinerary_id: selectedItineraryId.trim() !== '' ? selectedItineraryId : null,
           start_date: startDate,
           end_date: endDate,
+          terms_agreed: true,
         }),
       })
 
@@ -110,7 +177,8 @@ export default function GuidesClient({ guides, itineraries, user }: GuidesClient
           setStartDate('')
           setEndDate('')
           setSelectedItineraryId('')
-          router.push('/dashboard')
+          setTermsAgreed(false)
+          router.push('/my-bookings')
         }, 2000)
       } else {
         const data = await res.json()
@@ -231,13 +299,20 @@ export default function GuidesClient({ guides, itineraries, user }: GuidesClient
                     </div>
                     <div>
                       <div className="flex items-center gap-1.5">
-                        <h3 className="font-[family-name:var(--font-cormorant)] text-xl font-semibold text-foreground group-hover:text-primary transition-colors">
+                        <Link href={`/guides/${guide.id}`} className="font-[family-name:var(--font-cormorant)] text-xl font-semibold text-foreground group-hover:text-primary transition-colors hover:underline underline-offset-2">
                           {guide.full_name}
-                        </h3>
+                        </Link>
                         <span className="text-[10px] text-green-400" title="Verified Expert">✓</span>
                       </div>
-                      <div className="flex items-center gap-1 mt-0.5">
-                        <span className="text-xs text-amber-500 font-semibold">★ {guide.rating?.toFixed(1) || '5.0'}</span>
+                      <div className="mt-0.5">
+                        <TrustStats
+                          completedTrips={guide.completedTrips}
+                          rating={guide.rating}
+                          reviewCount={guide.reviewCount}
+                          responseRate={guide.responseRate}
+                          memberSince={guide.memberSince}
+                          compact
+                        />
                       </div>
                     </div>
                   </div>
@@ -324,10 +399,16 @@ export default function GuidesClient({ guides, itineraries, user }: GuidesClient
                   </h2>
                   <span className="text-[11px] text-green-400" title="Verified Expert">✓</span>
                 </div>
-                <div className="flex items-center gap-2 mt-0.5">
-                  <span className="text-xs text-amber-500 font-semibold">★ {activeGuide.rating?.toFixed(1) || '5.0'}</span>
-                  <span className="text-muted-foreground/30">•</span>
+                <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 mt-0.5">
                   <span className="text-primary font-semibold text-xs font-mono">{activeGuide.daily_rate_mad} MAD / day</span>
+                  <span className="text-muted-foreground/30">·</span>
+                  <TrustStats
+                    completedTrips={activeGuide.completedTrips}
+                    rating={activeGuide.rating}
+                    reviewCount={activeGuide.reviewCount}
+                    responseRate={activeGuide.responseRate}
+                    memberSince={activeGuide.memberSince}
+                  />
                 </div>
               </div>
             </div>
@@ -362,7 +443,7 @@ export default function GuidesClient({ guides, itineraries, user }: GuidesClient
                 </div>
               </div>
 
-              <div className="pt-4 border-t border-border flex justify-between gap-4">
+              <div className="pt-4 border-t border-border flex flex-col gap-2">
                 <button
                   onClick={() => {
                     setBookingGuide(activeGuide)
@@ -372,6 +453,12 @@ export default function GuidesClient({ guides, itineraries, user }: GuidesClient
                 >
                   Book this Guide
                 </button>
+                <Link
+                  href={`/guides/${activeGuide.id}`}
+                  className="w-full py-2.5 border border-border rounded-lg text-[10px] font-bold uppercase tracking-widest text-muted-foreground hover:text-foreground hover:border-primary/25 transition-colors text-center"
+                >
+                  View reviews &amp; full profile →
+                </Link>
               </div>
             </div>
           </div>
@@ -381,13 +468,16 @@ export default function GuidesClient({ guides, itineraries, user }: GuidesClient
       {/* Booking Form Modal */}
       {bookingGuide && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm">
-          <div className="bg-card border border-border rounded-2xl w-full max-w-md p-6 md:p-8 relative shadow-2xl">
+          <div className="bg-card border border-border rounded-2xl w-full max-w-md relative shadow-2xl max-h-[92vh] overflow-y-auto p-6 md:p-8">
             <button
               onClick={() => {
                 setBookingGuide(null)
                 setBookingError(null)
+                setTermsAgreed(false)
+                setStartDate('')
+                setEndDate('')
               }}
-              className="absolute top-4 right-4 text-muted-foreground hover:text-foreground text-sm font-semibold transition-colors"
+              className="sticky top-0 float-right text-muted-foreground hover:text-foreground text-sm font-semibold transition-colors"
             >
               ✕
             </button>
@@ -401,12 +491,12 @@ export default function GuidesClient({ guides, itineraries, user }: GuidesClient
 
             {bookingSuccess ? (
               <div className="text-center py-8">
-                <div className="w-12 h-12 bg-green-500/10 border border-green-500/20 text-green-400 rounded-full flex items-center justify-center mx-auto mb-4">
+                <div className="w-12 h-12 bg-green-500/10 border border-green-500/20 text-green-400 rounded-full flex items-center justify-center mx-auto mb-4 text-lg">
                   ✓
                 </div>
-                <h3 className="font-semibold text-foreground text-sm">Request Submitted</h3>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Your request has been sent to the guide. Redirecting...
+                <h3 className="font-semibold text-foreground text-sm">Request Sent!</h3>
+                <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                  Your request is pending guide approval. We'll notify you when they respond — check your notifications bell for updates.
                 </p>
               </div>
             ) : (
@@ -417,33 +507,22 @@ export default function GuidesClient({ guides, itineraries, user }: GuidesClient
                   </div>
                 )}
 
-                {/* Dates */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <label htmlFor="start-date" className="block text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Start Date</label>
-                    <input
-                      id="start-date"
-                      type="date"
-                      required
-                      min={new Date().toISOString().split('T')[0]}
-                      value={startDate}
-                      onChange={e => setStartDate(e.target.value)}
-                      className="w-full h-10 px-3.5 rounded-lg bg-background border border-border text-foreground text-xs focus:outline-none focus:border-primary/40 transition-colors"
+                {/* Availability calendar — date range picker */}
+                {checkingDates ? (
+                  <p className="text-[11px] text-muted-foreground italic py-2">Loading availability…</p>
+                ) : (
+                  <div className="bg-card/30 border border-border/60 rounded-xl p-4">
+                    <AvailabilityCalendar
+                      mode="traveler"
+                      blockedDays={avail.blockedDays}
+                      activeRanges={avail.activeRanges}
+                      startDate={startDate}
+                      endDate={endDate}
+                      onStartChange={setStartDate}
+                      onEndChange={setEndDate}
                     />
                   </div>
-                  <div className="space-y-2">
-                    <label htmlFor="end-date" className="block text-[10px] font-bold uppercase tracking-widest text-muted-foreground">End Date</label>
-                    <input
-                      id="end-date"
-                      type="date"
-                      required
-                      min={startDate || new Date().toISOString().split('T')[0]}
-                      value={endDate}
-                      onChange={e => setEndDate(e.target.value)}
-                      className="w-full h-10 px-3.5 rounded-lg bg-background border border-border text-foreground text-xs focus:outline-none focus:border-primary/40 transition-colors"
-                    />
-                  </div>
-                </div>
+                )}
 
                 {/* Itinerary Association */}
                 <div className="space-y-2">
@@ -485,10 +564,40 @@ export default function GuidesClient({ guides, itineraries, user }: GuidesClient
                   </div>
                 )}
 
+                {/* Cancellation policy summary + agreement */}
+                <div className="rounded-xl border border-border/60 bg-muted/20 p-4 space-y-3 mt-2">
+                  <p className="text-[12px] text-muted-foreground leading-relaxed">
+                    <span className="font-semibold text-foreground">Cancellation:</span> Full refund if cancelled 14+ days before the start date. 50% refund 7–14 days before. No refund within 7 days.
+                  </p>
+                  <p className="text-[12px] text-muted-foreground leading-relaxed">
+                    Payment is held in escrow and released to the guide only after the tour is marked complete.{' '}
+                    <a
+                      href="/cancellation-policy"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary underline underline-offset-2 hover:text-primary/80 transition-colors"
+                    >
+                      Full policy →
+                    </a>
+                  </p>
+                  <label className="flex items-start gap-3 cursor-pointer group">
+                    <input
+                      type="checkbox"
+                      required
+                      checked={termsAgreed}
+                      onChange={e => setTermsAgreed(e.target.checked)}
+                      className="mt-0.5 w-4 h-4 rounded border-border accent-primary flex-shrink-0 cursor-pointer"
+                    />
+                    <span className="text-[12px] text-foreground/80 leading-snug group-hover:text-foreground transition-colors select-none">
+                      I have read and agree to the cancellation policy and booking terms.
+                    </span>
+                  </label>
+                </div>
+
                 <button
                   type="submit"
-                  disabled={bookingLoading}
-                  className="w-full h-11 bg-primary text-primary-foreground font-semibold rounded-lg text-xs uppercase tracking-widest hover:bg-primary/95 transition-all shadow-sm shadow-primary/10 flex items-center justify-center mt-6"
+                  disabled={bookingLoading || !termsAgreed || !startDate || !endDate || checkingDates}
+                  className="w-full h-11 bg-primary text-primary-foreground font-semibold rounded-lg text-xs uppercase tracking-widest hover:bg-primary/95 transition-all shadow-sm shadow-primary/10 flex items-center justify-center mt-4 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {bookingLoading ? 'Submitting Request...' : user ? 'Send Booking Request' : 'Login to Book Guide'}
                 </button>
