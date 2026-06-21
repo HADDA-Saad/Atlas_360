@@ -1,6 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
+import BookingChat from '@/components/BookingChat'
+import AvailabilityCalendar from '@/components/AvailabilityCalendar'
 
 interface GuideProfile {
   id: string
@@ -8,7 +10,6 @@ interface GuideProfile {
   languages: string[]
   regions: string[]
   daily_rate_mad: number
-  whatsapp_number: string | null
   is_verified: boolean
   rating: number | null
 }
@@ -39,6 +40,7 @@ interface GuideDashboardClientProps {
   guide: GuideProfile
   initialBookings: Booking[]
   initialBlockedDates: BlockedDate[]
+  userId: string
 }
 
 const AVAILABLE_LANGUAGES = ['Arabic', 'French', 'English', 'Berber', 'Spanish', 'German', 'Italian']
@@ -48,6 +50,7 @@ export default function GuideDashboardClient({
   guide,
   initialBookings,
   initialBlockedDates,
+  userId,
 }: GuideDashboardClientProps) {
   const [activeTab, setActiveTab] = useState<'bookings' | 'profile' | 'availability'>('bookings')
 
@@ -58,7 +61,6 @@ export default function GuideDashboardClient({
   // Profile states
   const [bio, setBio] = useState(guide.bio || '')
   const [dailyRate, setDailyRate] = useState(guide.daily_rate_mad)
-  const [whatsapp, setWhatsapp] = useState(guide.whatsapp_number || '')
   const [languages, setLanguages] = useState<string[]>(guide.languages || [])
   const [regions, setRegions] = useState<string[]>(guide.regions || [])
   const [profileSaving, setProfileSaving] = useState(false)
@@ -70,9 +72,23 @@ export default function GuideDashboardClient({
   const [newReason, setNewReason] = useState('')
   const [availabilitySaving, setAvailabilitySaving] = useState(false)
   const [availabilityError, setAvailabilityError] = useState<string | null>(null)
+  const [processingDay, setProcessingDay] = useState<string | null>(null)
+
+  // Derived availability data for the calendar
+  const activeRanges = useMemo(() =>
+    bookings
+      .filter(b => b.status === 'accepted' || b.status === 'paid')
+      .map(b => ({ start: b.start_date, end: b.end_date })),
+    [bookings]
+  )
+  const blockedDayList = useMemo(() => blockedDates.map(d => d.blocked_date), [blockedDates])
+  const blockedDayIds  = useMemo(() =>
+    Object.fromEntries(blockedDates.map(d => [d.blocked_date, d.id])),
+    [blockedDates]
+  )
 
   // Handlers
-  const handleBookingAction = async (bookingId: string, action: 'accepted' | 'declined') => {
+  const handleBookingAction = async (bookingId: string, action: 'accepted' | 'declined' | 'completed') => {
     setUpdatingBookingId(bookingId)
     try {
       const res = await fetch(`/api/bookings/${bookingId}`, {
@@ -116,7 +132,6 @@ export default function GuideDashboardClient({
           languages,
           regions,
           daily_rate_mad: Number(dailyRate),
-          whatsapp_number: whatsapp,
         }),
       })
 
@@ -167,17 +182,47 @@ export default function GuideDashboardClient({
 
   const handleRemoveBlockedDate = async (id: string) => {
     try {
-      const res = await fetch(`/api/guides/availability?id=${id}`, {
-        method: 'DELETE',
-      })
-
-      if (res.ok) {
-        setBlockedDates(prev => prev.filter(d => d.id !== id))
-      } else {
-        console.error('Failed to unblock date')
-      }
+      const res = await fetch(`/api/guides/availability?id=${id}`, { method: 'DELETE' })
+      if (res.ok) setBlockedDates(prev => prev.filter(d => d.id !== id))
     } catch (err) {
       console.error('Error removing blockout', err)
+    }
+  }
+
+  // Calendar quick-block (no reason)
+  const handleBlockDay = async (date: string) => {
+    setProcessingDay(date)
+    setAvailabilityError(null)
+    try {
+      const res = await fetch('/api/guides/availability', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ blocked_date: date, reason: null }),
+      })
+      if (res.ok) {
+        const added = await res.json() as BlockedDate
+        setBlockedDates(prev => [...prev, added].sort((a, b) => a.blocked_date.localeCompare(b.blocked_date)))
+      } else {
+        const data = await res.json() as { error?: string }
+        setAvailabilityError(data.error || 'Failed to block date.')
+      }
+    } catch {
+      setAvailabilityError('Network error occurred.')
+    } finally {
+      setProcessingDay(null)
+    }
+  }
+
+  // Calendar quick-unblock
+  const handleUnblockDay = async (date: string, id: string) => {
+    setProcessingDay(date)
+    try {
+      const res = await fetch(`/api/guides/availability?id=${id}`, { method: 'DELETE' })
+      if (res.ok) setBlockedDates(prev => prev.filter(d => d.id !== id))
+    } catch {
+      // fail silently; list still reflects truth
+    } finally {
+      setProcessingDay(null)
     }
   }
 
@@ -195,18 +240,14 @@ export default function GuideDashboardClient({
 
   const getStatusBadgeClass = (status: string) => {
     switch (status) {
-      case 'pending':
-        return 'bg-blue-500/10 text-blue-400 border border-blue-500/20'
-      case 'accepted':
-        return 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
-      case 'paid':
-        return 'bg-green-500/10 text-green-400 border border-green-500/20'
-      case 'declined':
-        return 'bg-red-500/10 text-red-400 border border-red-500/20'
-      case 'completed':
-        return 'bg-green-500/10 text-green-400 border border-green-500/20'
-      default:
-        return 'bg-muted-foreground/10 text-muted-foreground border border-muted-foreground/20'
+      case 'pending':   return 'bg-blue-500/10 text-blue-400 border border-blue-500/20'
+      case 'accepted':  return 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
+      case 'paid':      return 'bg-green-500/10 text-green-400 border border-green-500/20'
+      case 'completed': return 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+      case 'declined':  return 'bg-red-500/10 text-red-400 border border-red-500/20'
+      case 'cancelled': return 'bg-muted-foreground/10 text-muted-foreground border border-muted-foreground/20'
+      case 'expired':   return 'bg-orange-500/10 text-orange-400 border border-orange-500/20'
+      default:          return 'bg-muted-foreground/10 text-muted-foreground border border-muted-foreground/20'
     }
   }
 
@@ -248,7 +289,10 @@ export default function GuideDashboardClient({
 
             {bookings.length === 0 ? (
               <div className="text-center py-20 border border-dashed border-border rounded-xl">
-                <p className="text-muted-foreground text-sm">No reservations requested yet.</p>
+                <p className="text-muted-foreground text-sm font-medium">No reservations yet.</p>
+                <p className="text-xs text-muted-foreground/60 mt-1.5">
+                  Complete your profile so travelers can find and book you.
+                </p>
               </div>
             ) : (
               <div className="flex flex-col gap-4">
@@ -300,36 +344,82 @@ export default function GuideDashboardClient({
                       </div>
                     </div>
 
+                    {/* Status message row */}
                     {booking.status === 'pending' && (
-                      <div className="flex gap-3 justify-end mt-2">
-                        <button
-                          onClick={() => handleBookingAction(booking.id, 'declined')}
-                          disabled={updatingBookingId !== null}
-                          className="px-4 py-2 border border-border rounded-lg text-[11px] font-semibold uppercase tracking-widest text-muted-foreground hover:border-red-500/30 hover:text-red-400 transition-colors disabled:opacity-50"
-                        >
-                          Decline
-                        </button>
-                        <button
-                          onClick={() => handleBookingAction(booking.id, 'accepted')}
-                          disabled={updatingBookingId !== null}
-                          className="px-5 py-2 bg-primary text-primary-foreground rounded-lg text-[11px] font-semibold uppercase tracking-widest hover:bg-primary/90 transition-colors shadow-sm disabled:opacity-50"
-                        >
-                          {updatingBookingId === booking.id ? 'Processing...' : 'Accept Booking'}
-                        </button>
+                      <div className="flex flex-col gap-3">
+                        <p className="text-[11px] text-blue-400/90 font-medium">
+                          New request — accept or decline.
+                        </p>
+                        <div className="flex gap-3 justify-end">
+                          <button
+                            onClick={() => handleBookingAction(booking.id, 'declined')}
+                            disabled={updatingBookingId !== null}
+                            className="px-4 py-2 border border-border rounded-lg text-[11px] font-semibold uppercase tracking-widest text-muted-foreground hover:border-red-500/30 hover:text-red-400 transition-colors disabled:opacity-50"
+                          >
+                            Decline
+                          </button>
+                          <button
+                            onClick={() => handleBookingAction(booking.id, 'accepted')}
+                            disabled={updatingBookingId !== null}
+                            className="px-5 py-2 bg-primary text-primary-foreground rounded-lg text-[11px] font-semibold uppercase tracking-widest hover:bg-primary/90 transition-colors shadow-sm disabled:opacity-50"
+                          >
+                            {updatingBookingId === booking.id ? 'Processing...' : 'Accept Booking'}
+                          </button>
+                        </div>
                       </div>
                     )}
 
                     {booking.status === 'accepted' && (
-                      <p className="text-[11px] text-amber-500/80 italic text-right mt-1">
-                        Waiting for traveler payout. These dates have been automatically blocked.
+                      <p className="text-[11px] text-amber-400/90 font-medium">
+                        Accepted. Waiting for traveler payment.
                       </p>
                     )}
 
                     {booking.status === 'paid' && (
-                      <p className="text-[11px] text-green-400 font-semibold text-right mt-1 flex items-center gap-1.5 justify-end">
-                        ✓ Booking Paid. Funds held in platform escrow, ready for release post-trip.
+                      <div className="flex flex-col gap-2">
+                        <p className="text-[11px] text-green-400 font-medium">
+                          Paid. Chat unlocked — coordinate the trip.
+                        </p>
+                        <button
+                          onClick={() => handleBookingAction(booking.id, 'completed')}
+                          disabled={updatingBookingId !== null}
+                          className="self-end px-4 py-2 border border-green-500/30 text-green-400 hover:bg-green-500/10 rounded-lg text-[10px] font-semibold uppercase tracking-widest transition-colors disabled:opacity-50"
+                        >
+                          {updatingBookingId === booking.id ? 'Updating…' : 'Mark Tour Complete'}
+                        </button>
+                      </div>
+                    )}
+
+                    {booking.status === 'completed' && (
+                      <p className="text-[11px] text-emerald-400/80 font-medium">
+                        Completed. Awaiting payout / review.
                       </p>
                     )}
+
+                    {booking.status === 'declined' && (
+                      <p className="text-[11px] text-muted-foreground italic">
+                        You declined this request.
+                      </p>
+                    )}
+
+                    {booking.status === 'cancelled' && (
+                      <p className="text-[11px] text-muted-foreground italic">
+                        Cancelled.
+                      </p>
+                    )}
+
+                    {booking.status === 'expired' && (
+                      <p className="text-[11px] text-orange-400/80 italic">
+                        Expired request.
+                      </p>
+                    )}
+
+                    {/* Chat — unlocked when paid or completed */}
+                    <BookingChat
+                      bookingId={booking.id}
+                      currentUserId={userId}
+                      isLocked={!['paid', 'completed'].includes(booking.status)}
+                    />
                   </div>
                 ))}
               </div>
@@ -378,21 +468,6 @@ export default function GuideDashboardClient({
                 <span>1,000 MAD</span>
                 <span>2,000 MAD</span>
               </div>
-            </div>
-
-            {/* WhatsApp Number */}
-            <div className="space-y-2">
-              <label htmlFor="guide-whatsapp" className="block text-[11px] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
-                WhatsApp Number (including country code)
-              </label>
-              <input
-                id="guide-whatsapp"
-                type="text"
-                placeholder="+212600000000"
-                value={whatsapp}
-                onChange={(e) => setWhatsapp(e.target.value)}
-                className="w-full px-4 py-2.5 rounded-lg bg-background border border-border text-foreground text-sm focus:outline-none focus:border-primary/40 focus:ring-1 focus:ring-primary/20 transition-all placeholder:text-muted-foreground/30"
-              />
             </div>
 
             {/* Biography */}
@@ -479,10 +554,11 @@ export default function GuideDashboardClient({
           <div className="space-y-8">
             <div>
               <h2 className="font-[family-name:var(--font-cormorant)] text-3xl font-semibold text-foreground tracking-tight mb-2">
-                Availability Blockouts
+                Availability Calendar
               </h2>
               <p className="text-xs text-muted-foreground">
-                Manually block specific full days from traveler scheduling (e.g. personal holidays, external bookings).
+                Click any available day to mark it as a day off. Click a grey day to unblock it.
+                Booked dates (accepted / paid) cannot be changed here.
               </p>
             </div>
 
@@ -492,68 +568,83 @@ export default function GuideDashboardClient({
               </div>
             )}
 
-            {/* Add Date Blockout Form */}
-            <form onSubmit={handleAddBlockedDate} className="bg-card/40 border border-border p-4 rounded-xl grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+            {/* Calendar */}
+            <div className="bg-card/30 border border-border rounded-2xl p-5">
+              <AvailabilityCalendar
+                mode="guide"
+                blockedDays={blockedDayList}
+                activeRanges={activeRanges}
+                blockedDayIds={blockedDayIds}
+                processingDay={processingDay}
+                onBlockDay={handleBlockDay}
+                onUnblockDay={handleUnblockDay}
+              />
+            </div>
+
+            {/* Optional: block a date with a reason */}
+            <details className="group">
+              <summary className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground cursor-pointer hover:text-foreground transition-colors list-none flex items-center gap-2">
+                <span className="group-open:rotate-90 transition-transform duration-150 inline-block">▶</span>
+                Block a specific date with a note
+              </summary>
+              <form onSubmit={handleAddBlockedDate} className="mt-4 bg-card/40 border border-border p-4 rounded-xl grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+                <div className="space-y-2">
+                  <label className="block text-[11px] font-semibold uppercase tracking-[0.15em] text-muted-foreground">Date</label>
+                  <input
+                    type="date"
+                    value={newDate}
+                    min={new Date().toISOString().split('T')[0]}
+                    required
+                    onChange={e => setNewDate(e.target.value)}
+                    className="w-full h-10 px-3.5 rounded-lg bg-background border border-border text-foreground text-sm focus:outline-none focus:border-primary/40 transition-colors"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="block text-[11px] font-semibold uppercase tracking-[0.15em] text-muted-foreground">Note (optional)</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Holiday, External booking"
+                    value={newReason}
+                    onChange={e => setNewReason(e.target.value)}
+                    className="w-full h-10 px-3.5 rounded-lg bg-background border border-border text-foreground text-sm focus:outline-none focus:border-primary/40 transition-colors placeholder:text-muted-foreground/30"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  disabled={availabilitySaving}
+                  className="h-10 w-full bg-primary text-primary-foreground font-semibold text-[11px] uppercase tracking-widest rounded-lg hover:bg-primary/90 transition-colors shadow-sm disabled:opacity-50"
+                >
+                  {availabilitySaving ? 'Saving…' : 'Block Day'}
+                </button>
+              </form>
+            </details>
+
+            {/* Blocked dates list */}
+            {blockedDates.length > 0 && (
               <div className="space-y-2">
-                <label className="block text-[11px] font-semibold uppercase tracking-[0.15em] text-muted-foreground">Select Date</label>
-                <input
-                  type="date"
-                  value={newDate}
-                  min={new Date().toISOString().split('T')[0]}
-                  required
-                  onChange={(e) => setNewDate(e.target.value)}
-                  className="w-full h-10 px-3.5 rounded-lg bg-background border border-border text-foreground text-sm focus:outline-none focus:border-primary/40 transition-colors"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="block text-[11px] font-semibold uppercase tracking-[0.15em] text-muted-foreground">Reason (Optional)</label>
-                <input
-                  type="text"
-                  placeholder="e.g. Holiday, Riad tour"
-                  value={newReason}
-                  onChange={(e) => setNewReason(e.target.value)}
-                  className="w-full h-10 px-3.5 rounded-lg bg-background border border-border text-foreground text-sm focus:outline-none focus:border-primary/40 transition-colors placeholder:text-muted-foreground/30"
-                />
-              </div>
-
-              <button
-                type="submit"
-                disabled={availabilitySaving}
-                className="h-10 w-full bg-primary text-primary-foreground font-semibold text-[11px] uppercase tracking-widest rounded-lg hover:bg-primary/90 transition-colors shadow-sm disabled:opacity-50 flex items-center justify-center"
-              >
-                {availabilitySaving ? 'Blocking...' : 'Block Day'}
-              </button>
-            </form>
-
-            {/* List of Blockouts */}
-            <div className="space-y-3">
-              <h3 className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground mb-3">Blocked Calendar Dates</h3>
-              {blockedDates.length === 0 ? (
-                <p className="text-xs text-muted-foreground italic">No manual blockout dates logged.</p>
-              ) : (
-                <div className="border border-border rounded-xl divide-y divide-border/60 overflow-hidden max-h-[300px] overflow-y-auto bg-card/50">
+                <h3 className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                  Blocked Days ({blockedDates.length})
+                </h3>
+                <div className="border border-border rounded-xl divide-y divide-border/50 overflow-hidden max-h-[260px] overflow-y-auto bg-card/40">
                   {blockedDates.map(d => (
-                    <div key={d.id} className="flex justify-between items-center px-4 py-3 text-sm hover:bg-card/70 transition-colors">
-                      <div className="flex items-center gap-4">
-                        <span className="font-semibold text-foreground text-xs font-mono">
-                          {new Date(d.blocked_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                    <div key={d.id} className="flex justify-between items-center px-4 py-2.5 hover:bg-card/60 transition-colors">
+                      <div className="flex items-center gap-3">
+                        <span className="text-foreground text-xs font-mono font-semibold">
+                          {new Date(d.blocked_date + 'T00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
                         </span>
-                        {d.reason && (
-                          <span className="text-[11px] text-muted-foreground">({d.reason})</span>
-                        )}
+                        {d.reason && <span className="text-[11px] text-muted-foreground">— {d.reason}</span>}
                       </div>
                       <button
                         onClick={() => handleRemoveBlockedDate(d.id)}
-                        className="text-[10px] uppercase tracking-widest text-red-400 hover:text-red-300 transition-colors font-bold"
+                        className="text-[10px] uppercase tracking-widest text-red-400/70 hover:text-red-400 transition-colors font-bold"
                       >
-                        Unblock
+                        Remove
                       </button>
                     </div>
                   ))}
                 </div>
-              )}
-            </div>
+              </div>
+            )}
           </div>
         )}
       </div>
