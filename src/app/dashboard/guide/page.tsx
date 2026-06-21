@@ -1,7 +1,9 @@
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import GuideDashboardClient from './GuideDashboardClient'
+import { expireStalePendingBookings } from '@/lib/expire-bookings'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -14,7 +16,6 @@ interface GuideProfile {
   languages: string[]
   regions: string[]
   daily_rate_mad: number
-  whatsapp_number: string | null
   is_verified: boolean
   rating: number | null
 }
@@ -48,6 +49,9 @@ export default async function GuideDashboardPage() {
   if (!user) {
     redirect('/auth/login')
   }
+
+  // Expire stale pending bookings (48h no-response) — global sweep, runs on every load
+  await expireStalePendingBookings(createAdminClient())
 
   // Fetch guide details
   const { data: guideData } = await supabase
@@ -128,10 +132,11 @@ export default async function GuideDashboardPage() {
         </div>
 
         {/* Client Interactive Area */}
-        <GuideDashboardClient 
+        <GuideDashboardClient
           guide={guide}
           initialBookings={bookings}
           initialBlockedDates={blockedDates}
+          userId={user.id}
         />
       </div>
     </div>
