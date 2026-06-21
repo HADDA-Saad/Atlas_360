@@ -31,6 +31,7 @@ export interface Location {
   best_time: string | null
   rich_description?: string | null
   photo_urls?: string[] | null
+  existing_location_id?: string | null
   created_at: string
 }
 

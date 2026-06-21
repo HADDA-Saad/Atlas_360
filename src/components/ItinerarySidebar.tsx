@@ -44,6 +44,9 @@ interface ItinerarySidebarProps {
   onPlacesLoaded?: (hotels: PlaceResult[], restaurants: PlaceResult[]) => void
   reviewItineraryId?: string | null
   onOpenMagazine?: () => void
+  onAIGenerated?: (itinerary: Itinerary, stops: Location[]) => void
+  onSaveAITrip?: () => void
+  isSavingAITrip?: boolean
 }
 
 /* ─── Loading Skeleton ─── */
@@ -458,6 +461,9 @@ function SidebarContent({
   onPlacesLoaded,
   reviewItineraryId,
   onOpenMagazine,
+  onAIGenerated,
+  onSaveAITrip,
+  isSavingAITrip,
 }: ItinerarySidebarProps) {
   const [userTier, setUserTier] = useState<UserTier>('explorer')
   const [userEmail, setUserEmail] = useState('')
@@ -465,6 +471,13 @@ function SidebarContent({
   const [myTrips, setMyTrips] = useState<UserCustomItinerary[]>([])
   const [myTripsExpanded, setMyTripsExpanded] = useState(false)
   const router = useRouter()
+
+  // AI Planner state
+  const [isAiPlannerOpen, setIsAiPlannerOpen] = useState(false)
+  const [aiPrompt, setAiPrompt] = useState('')
+  const [isGenerating, setIsGenerating] = useState(false)
+  const [aiGenerationsCount, setAiGenerationsCount] = useState(0)
+  const [aiError, setAiError] = useState('')
 
   // Filtering & Sorting State
   const [search, setSearch] = useState('')
@@ -480,11 +493,16 @@ function SidebarContent({
         setUserEmail(user.email || '')
         const { data: profile } = await supabase
           .from('profiles')
-          .select('tier')
+          .select('tier, ai_generations_count')
           .eq('id', user.id)
           .single()
-        if (profile?.tier) {
-          setUserTier(profile.tier as UserTier)
+        if (profile) {
+          if (profile.tier) {
+            setUserTier(profile.tier as UserTier)
+          }
+          if (profile.ai_generations_count !== undefined && profile.ai_generations_count !== null) {
+            setAiGenerationsCount(profile.ai_generations_count)
+          }
         }
       }
     }
@@ -640,7 +658,7 @@ function SidebarContent({
                   </svg>
                   Open Travel Book
                 </button>
-                {userTier === 'elite' && (
+                {selectedItinerary.id !== 'ai-generated' && userTier === 'elite' && (
                   <ForkItineraryButton
                     itineraryId={selectedItinerary.id}
                     itineraryTitle={selectedItinerary.title}
@@ -650,9 +668,11 @@ function SidebarContent({
             </div>
 
             {/* Guide Match Widget */}
-            <div className="mt-4">
-              <GuideMatchWidget region={selectedItinerary.region} itineraryId={selectedItinerary.id} />
-            </div>
+            {selectedItinerary.id !== 'ai-generated' && (
+              <div className="mt-4">
+                <GuideMatchWidget region={selectedItinerary.region} itineraryId={selectedItinerary.id} />
+              </div>
+            )}
 
             {/* Divider */}
             <div className="mt-4 mb-1 flex items-center gap-3">
@@ -661,6 +681,47 @@ function SidebarContent({
                 {locations.length} stops
               </span>
               <div className="h-px flex-1 bg-gradient-to-l from-[#C1440E]/20 to-transparent" />
+            </div>
+          </>
+        ) : isAiPlannerOpen ? (
+          <>
+            {/* AI Assistant header */}
+            <button
+              onClick={() => {
+                setIsAiPlannerOpen(false)
+                setAiError('')
+              }}
+              className="
+                flex items-center gap-2 mb-5
+                text-[12px] font-medium uppercase tracking-[0.2em]
+                text-muted-foreground hover:text-muted-foreground
+                transition-colors duration-300
+                group
+              "
+            >
+              <svg
+                className="w-4 h-4 transition-transform duration-300 group-hover:-translate-x-1"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19 12H5m0 0l7 7m-7-7l7-7" />
+              </svg>
+              Back to Browse
+            </button>
+
+            <h2 className="font-[family-name:var(--font-cormorant)] text-[1.7rem] font-semibold text-foreground leading-tight tracking-wide">
+              AI Assistant
+            </h2>
+            <p className="text-[13px] text-muted-foreground mt-1.5">
+              Let AI plan your custom Moroccan adventure
+            </p>
+
+            <div className="mt-4 flex items-center gap-3">
+              <div className="h-px flex-1 bg-gradient-to-r from-border to-transparent" />
+              <div className="w-1 h-1 rounded-full bg-primary/40" />
+              <div className="h-px flex-1 bg-gradient-to-l from-border to-transparent" />
             </div>
           </>
         ) : (
@@ -684,6 +745,19 @@ function SidebarContent({
                 </Link>
               )}
             </div>
+
+            {/* AI Trip Planner trigger button */}
+            <button
+              onClick={() => setIsAiPlannerOpen(true)}
+              className="mt-3 w-full flex items-center justify-center gap-2 p-3 rounded-xl border border-primary/20 bg-primary/5 text-primary hover:bg-primary/10 text-[11px] font-bold uppercase tracking-widest transition-all duration-250 cursor-pointer shadow-sm"
+            >
+              <svg className="w-4 h-4 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
+                <polygon fill="currentColor" stroke="none" points="12,3 14,12 12,10 10,12" />
+                <polygon fill="currentColor" stroke="none" opacity="0.3" points="12,21 10,12 12,14 14,12" />
+                <circle cx="12" cy="12" r="1.5" fill="currentColor" />
+              </svg>
+              Plan with AI Assistant
+            </button>
 
             {/* Subtle ornamental divider */}
             <div className="mt-4 flex items-center gap-3">
@@ -808,40 +882,83 @@ function SidebarContent({
                   })}
                 </div>
 
-                {/* PDF Download Button */}
-                <div className="px-4 pb-2">
-                  <PDFDownloadButton
-                    stops={locations.map((l, i) => ({
-                      name: l.name,
-                      description: l.description || '',
-                      rich_description: l.rich_description ?? null,
-                      category: l.category || '',
-                      day_number: l.day_number || 1,
-                      order_index: i,
-                      duration_minutes: l.duration_minutes ?? null,
-                      transport_to_next: l.transport_to_next ?? null,
-                      transport_duration_minutes: l.transport_duration_minutes ?? null,
-                      best_time: l.best_time ?? null,
-                      tips: l.tips ?? null,
-                      image_url: l.image_url ?? null,
-                    }))}
-                    title={selectedItinerary.title}
-                    region={selectedItinerary.region}
-                    durationDays={selectedItinerary.duration_days}
-                    userEmail={userEmail}
-                    tier={userTier}
-                    coverImageUrl={selectedItinerary.cover_image_url}
-                  />
+                {/* PDF Download Button or AI Save Panel */}
+                <div className="px-4 pb-4">
+                  {selectedItinerary.id === 'ai-generated' ? (
+                    <div>
+                      {userTier === 'explorer' ? (
+                        <div className="text-center bg-card border border-primary/20 p-5 rounded-xl shadow-lg mt-2">
+                          <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-3">
+                            <svg className="w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+                            </svg>
+                          </div>
+                          <h4 className="font-[family-name:var(--font-cormorant)] text-[16px] font-semibold text-foreground mb-1">
+                            Save Itinerary to Profile
+                          </h4>
+                          <p className="text-[11px] text-muted-foreground mb-4 leading-normal">
+                            Only Nomad and Elite tier members can save generated custom trips. Upgrade to keep this route.
+                          </p>
+                          <button
+                            onClick={() => router.push('/pricing')}
+                            className="w-full py-2.5 rounded-xl bg-primary hover:bg-primary/95 text-primary-foreground text-[10px] font-bold uppercase tracking-widest transition-colors shadow-md cursor-pointer"
+                          >
+                            Upgrade to Save
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={onSaveAITrip}
+                          disabled={isSavingAITrip}
+                          className="w-full py-3.5 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground text-[11px] font-bold uppercase tracking-widest transition-all shadow-lg shadow-primary/20 flex items-center justify-center gap-2 cursor-pointer"
+                        >
+                          {isSavingAITrip ? (
+                            <>
+                              <div className="w-4 h-4 rounded-full border-2 border-primary-foreground/30 border-t-primary-foreground animate-spin" />
+                              Saving to Profile...
+                            </>
+                          ) : (
+                            'Save to My Trips'
+                          )}
+                        </button>
+                      )}
+                    </div>
+                  ) : (
+                    <>
+                      <PDFDownloadButton
+                        stops={locations.map((l, i) => ({
+                          name: l.name,
+                          description: l.description || '',
+                          rich_description: l.rich_description ?? null,
+                          category: l.category || '',
+                          day_number: l.day_number || 1,
+                          order_index: i,
+                          duration_minutes: l.duration_minutes ?? null,
+                          transport_to_next: l.transport_to_next ?? null,
+                          transport_duration_minutes: l.transport_duration_minutes ?? null,
+                          best_time: l.best_time ?? null,
+                          tips: l.tips ?? null,
+                          image_url: l.image_url ?? null,
+                        }))}
+                        title={selectedItinerary.title}
+                        region={selectedItinerary.region}
+                        durationDays={selectedItinerary.duration_days}
+                        userEmail={userEmail}
+                        tier={userTier}
+                        coverImageUrl={selectedItinerary.cover_image_url}
+                      />
 
-                  <ReviewPanel
-                    targetType="itinerary"
-                    itineraryId={selectedItinerary.id}
-                    title="Journey feedback"
-                  />
+                      <ReviewPanel
+                        targetType="itinerary"
+                        itineraryId={selectedItinerary.id}
+                        title="Journey feedback"
+                      />
+                    </>
+                  )}
                 </div>
 
                 {/* Lock Overlay + CTA */}
-                {userTier === 'explorer' && locations.some(l => (l.day_number || 1) > 1) && (
+                {selectedItinerary.id !== 'ai-generated' && userTier === 'explorer' && locations.some(l => (l.day_number || 1) > 1) && (
                   <div className="absolute inset-x-0 bottom-0 top-[20%] flex flex-col items-center justify-center z-10 bg-gradient-to-t from-background via-background/90 to-transparent pointer-events-auto pb-10">
                     <div className="w-12 h-12 rounded-full bg-card border border-border flex items-center justify-center mb-4 shadow-xl">
                       <svg className="w-5 h-5 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -881,6 +998,122 @@ function SidebarContent({
               )
             )}
           </>
+        ) : isAiPlannerOpen ? (
+          <div className="p-6 flex flex-col gap-4">
+            <div>
+              <label className="block text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-2">
+                Describe your dream itinerary
+              </label>
+              <textarea
+                rows={5}
+                value={aiPrompt}
+                onChange={(e) => setAiPrompt(e.target.value)}
+                placeholder="e.g. A 3-day trip in Marrakech focused on historic landmarks, museums, and food, with a moderate pace."
+                className="bg-card border border-border rounded-xl p-3.5 text-sm w-full focus:border-primary/50 outline-none resize-none leading-relaxed text-foreground"
+                disabled={isGenerating}
+              />
+            </div>
+
+            {userTier === 'explorer' && (
+              <div className="flex items-center justify-between p-3.5 bg-muted/40 border border-border rounded-xl text-xs text-muted-foreground">
+                <span>Free generations left:</span>
+                <span className="font-semibold text-foreground">
+                  {Math.max(0, 3 - aiGenerationsCount)} / 3
+                </span>
+              </div>
+            )}
+
+            {aiError && (
+              <div className="p-3 bg-red-500/10 border border-red-500/25 rounded-xl text-xs text-red-400 font-medium">
+                {aiError}
+              </div>
+            )}
+
+            {userTier === 'explorer' && aiGenerationsCount >= 3 ? (
+              <div className="bg-primary/5 border border-primary/20 p-5 rounded-xl text-center">
+                <p className="text-[12px] text-muted-foreground mb-4 leading-normal">
+                  You have used all 3 free generations. Upgrade to Nomad or Elite to plan unlimited trips.
+                </p>
+                <button
+                  onClick={() => router.push('/pricing')}
+                  className="w-full py-3 rounded-xl bg-primary text-primary-foreground text-[10px] font-bold uppercase tracking-widest shadow-md shadow-primary/10 cursor-pointer"
+                >
+                  Upgrade Now
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={async () => {
+                  if (!aiPrompt.trim()) return
+                  setIsGenerating(true)
+                  setAiError('')
+                  try {
+                    const res = await fetch('/api/ai-itinerary', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ prompt: aiPrompt })
+                    })
+                    const data = await res.json()
+                    if (!res.ok) {
+                      throw new Error(data.message || data.error || 'Failed to generate itinerary')
+                    }
+                    if (data.newGenerationsCount !== undefined) {
+                      setAiGenerationsCount(data.newGenerationsCount)
+                    }
+                    setIsAiPlannerOpen(false)
+                    setAiPrompt('')
+                    
+                    if (onAIGenerated) {
+                      const rawStops = data.itinerary.stops || []
+                      const mappedStops = rawStops.map((stop: any, index: number) => {
+                        const existingId = stop.existing_location_id
+                        const hasExistingId = existingId && existingId !== 'null' && existingId !== 'undefined'
+                        return {
+                          id: hasExistingId ? existingId : `temp-ai-stop-${index}`,
+                          name: stop.name,
+                          description: stop.description,
+                          lat: stop.lat,
+                          lng: stop.lng,
+                          order_index: stop.order_index || index + 1,
+                          day_number: stop.day_number || 1,
+                          category: stop.category || 'other',
+                          tips: stop.tips || '',
+                          duration_minutes: stop.duration_minutes || null,
+                          existing_location_id: hasExistingId ? existingId : null
+                        }
+                      })
+
+                      onAIGenerated({
+                        id: 'ai-generated',
+                        title: data.itinerary.title,
+                        description: data.itinerary.description,
+                        region: 'Custom',
+                        duration_days: Math.max(...mappedStops.map((s: any) => s.day_number || 1)),
+                        cover_image_url: '/Images/riad.png',
+                        tier: 'explorer',
+                        created_at: new Date().toISOString()
+                      }, mappedStops)
+                    }
+                  } catch (err: any) {
+                    setAiError(err.message || 'An error occurred')
+                  } finally {
+                    setIsGenerating(false)
+                  }
+                }}
+                disabled={isGenerating || !aiPrompt.trim()}
+                className="w-full py-3.5 px-4 rounded-xl bg-primary text-primary-foreground text-[11px] font-bold uppercase tracking-widest shadow-lg shadow-primary/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
+              >
+                {isGenerating ? (
+                  <>
+                    <div className="w-4 h-4 rounded-full border-2 border-primary-foreground/30 border-t-primary-foreground animate-spin" />
+                    Generating trip...
+                  </>
+                ) : (
+                  'Generate Trip Plan'
+                )}
+              </button>
+            )}
+          </div>
         ) : filteredItineraries.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-center px-6">
             <svg className="w-10 h-10 text-muted-foreground/30 mb-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1">
