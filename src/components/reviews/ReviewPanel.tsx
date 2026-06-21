@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react'
 import Link from 'next/link'
-import { ImageIcon, MessageSquareText, Star, Trash2, UserCircle } from 'lucide-react'
+import { ImageIcon, MessageSquareText, Star, Trash2 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import type { Review, ReviewsResponse, ReviewTargetType } from '@/types'
 

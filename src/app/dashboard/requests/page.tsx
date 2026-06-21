@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { ClipboardList, UserCheck, Image, Banknote } from 'lucide-react'
+import { ClipboardList, UserCheck, Image, Banknote, Users, BarChart2 } from 'lucide-react'
 import StatusSelect from './StatusSelect'
 import TeamMemberSelect from './TeamMemberSelect'
 import NotesEditor from './NotesEditor'
@@ -211,19 +211,12 @@ export default async function RequestsDashboardPage({
         {/* Tab Selector Navbar */}
         <div className="flex border-b border-border mb-8 overflow-x-auto gap-2">
           {[
-<<<<<<< HEAD
             { id: 'requests', label: 'Assistance Requests', icon: <ClipboardList size={14} /> },
-            { id: 'guides',   label: 'Guide Verification',  icon: <UserCheck size={14} /> },
-            { id: 'photos',   label: 'Review Photos',       icon: <Image size={14} /> },
-            { id: 'payouts',  label: 'Guide Payouts',       icon: <Banknote size={14} /> },
-=======
-            { id: 'requests', label: 'Assistance Requests 📋' },
-            { id: 'users', label: 'User Management 👥' },
-            { id: 'guides', label: 'Guide Verification 👤' },
-            { id: 'photos', label: 'Review Photos 🖼️' },
-            { id: 'payouts', label: 'Guide Payouts 💰' },
-            { id: 'analytics', label: 'Analytics & KPIs 📊' },
->>>>>>> db7b9d4 (feat: operations dashboard, admin user management, guide directory, and media moderation)
+            { id: 'users', label: 'User Management', icon: <Users size={14} /> },
+            { id: 'guides', label: 'Guide Verification', icon: <UserCheck size={14} /> },
+            { id: 'photos', label: 'Review Photos', icon: <Image size={14} /> },
+            { id: 'payouts', label: 'Guide Payouts', icon: <Banknote size={14} /> },
+            { id: 'analytics', label: 'Analytics & KPIs', icon: <BarChart2 size={14} /> },
           ].map(t => {
             const isActive = tab === t.id
             return (

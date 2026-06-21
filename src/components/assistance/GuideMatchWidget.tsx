@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Map } from 'lucide-react'
+
 import { createClient } from '@/lib/supabase/client'
 import { Star } from 'lucide-react'
 import BookingModal from '@/app/guides/BookingModal'
