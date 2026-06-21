@@ -1,6 +1,7 @@
 import Stripe from 'stripe'
 import { createClient } from '@supabase/supabase-js'
 import type { UserTier } from '@/types'
+import { setPaid } from '@/lib/setPaid'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
   apiVersion: '2026-04-22.dahlia',
@@ -63,17 +64,13 @@ export async function POST(req: Request) {
       const bookingId = session.metadata?.bookingId
 
       if (bookingId) {
-        const { error } = await supabaseAdmin
-          .from('guide_bookings')
-          .update({ status: 'paid' })
-          .eq('id', bookingId)
-
-        if (error) {
-          console.error('Error updating guide booking to paid:', error)
+        try {
+          await setPaid(bookingId)
+          console.log(`Successfully marked guide booking ${bookingId} as paid.`)
+        } catch (err) {
+          console.error('Error marking guide booking paid:', err)
           return jsonResponse({ error: 'Database Update Failed' }, 500)
         }
-
-        console.log(`Successfully marked guide booking ${bookingId} as paid.`)
         return jsonResponse({ received: true }, 200)
       }
 

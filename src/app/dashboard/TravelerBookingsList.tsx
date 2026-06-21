@@ -131,16 +131,20 @@ export default function TravelerBookingsList({ bookings: initial, userId }: Trav
     setLoadingId(bookingId)
     setError(null)
     try {
-      const res = await fetch(`/api/bookings/${bookingId}/pay`, { method: 'POST' })
+      const res = await fetch('/api/checkout/session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ bookingId }),
+      })
       if (!res.ok) {
         const data = await res.json()
-        throw new Error(data.error || 'Payment failed')
+        throw new Error(data.error || 'Checkout failed')
       }
-      const updated = await res.json()
-      setBookings(prev => prev.map(b => b.id === bookingId ? { ...b, status: updated.status } : b))
+      const { url } = await res.json()
+      window.location.href = url
+      // Don't clear loadingId — page is navigating away
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to confirm payment.')
-    } finally {
+      setError(err instanceof Error ? err.message : 'Failed to start checkout.')
       setLoadingId(null)
     }
   }
@@ -234,7 +238,7 @@ export default function TravelerBookingsList({ bookings: initial, userId }: Trav
                       disabled={loadingId === booking.id}
                       className="self-end px-5 py-2.5 bg-primary text-primary-foreground hover:bg-primary/95 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all shadow-sm shadow-primary/10 disabled:opacity-50"
                     >
-                      {loadingId === booking.id ? 'Confirming…' : 'Confirm & Pay →'}
+                      {loadingId === booking.id ? 'Redirecting…' : 'Pay & Confirm →'}
                     </button>
                   )}
 
