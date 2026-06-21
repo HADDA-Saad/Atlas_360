@@ -7,7 +7,8 @@ import { createClient } from '@/lib/supabase/client'
 import type { User } from '@supabase/supabase-js'
 import type { UserTier } from '@/types'
 import { ThemeToggle } from '@/components/ThemeToggle'
-import { Menu, LogOut, LayoutDashboard, ChevronDown, Shield } from 'lucide-react'
+import NotificationsBell from '@/components/NotificationsBell'
+import { Menu, LogOut, LayoutDashboard, ChevronDown, Shield, CalendarCheck } from 'lucide-react'
 import {
   Sheet,
   SheetContent,
@@ -26,7 +27,7 @@ const NAV_LINKS = [
   { name: 'ABOUT', href: '/about' },
 ]
 
-const ADMIN_EMAILS = ['jaz.ouchene@gmail.com', 'jazoulizaka@gmail.com', 'jazoulizka@gmail.com']
+const ADMIN_EMAILS = ['jaz.ouchene@gmail.com', 'jazoulizaka@gmail.com', 'jazoulizka@gmail.com', 'saadhad08@gmail.com']
 
 export default function Navbar() {
   const router = useRouter()
@@ -174,7 +175,8 @@ export default function Navbar() {
       {/* Right side — Auth, Theme & Mobile Menu */}
       <div className="flex items-center gap-2">
         <ThemeToggle />
-        
+        {user && <NotificationsBell />}
+
         {user ? (
           /* Logged in state: User Dropdown */
           <div className="relative user-menu-container ml-1">
@@ -220,6 +222,14 @@ export default function Navbar() {
                 >
                   <LayoutDashboard className="w-4 h-4" />
                   My Account
+                </Link>
+                <Link
+                  href="/my-bookings"
+                  onClick={() => setIsUserMenuOpen(false)}
+                  className="flex items-center gap-3 px-4 py-2.5 text-[13px] font-medium text-foreground/80 hover:text-primary hover:bg-muted/50 transition-colors"
+                >
+                  <CalendarCheck className="w-4 h-4" />
+                  My Bookings
                 </Link>
                 {ADMIN_EMAILS.includes(user.email || '') && (
                   <Link
@@ -299,6 +309,18 @@ export default function Navbar() {
                     }`}
                   >
                     ADMIN DASHBOARD
+                  </Link>
+                )}
+
+                {user && (
+                  <Link
+                    href="/my-bookings"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className={`px-4 py-3 text-[11px] font-semibold tracking-[0.2em] rounded-lg transition-colors ${
+                      pathname === '/my-bookings' ? 'bg-primary/10 text-primary' : 'text-foreground/80 hover:bg-muted hover:text-foreground'
+                    }`}
+                  >
+                    MY BOOKINGS
                   </Link>
                 )}
 

@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { createNotification } from '@/lib/notifications'
 
-const ADMIN_EMAILS = ['jaz.ouchene@gmail.com', 'jazoulizaka@gmail.com', 'jazoulizka@gmail.com']
+const ADMIN_EMAILS = ['jaz.ouchene@gmail.com', 'jazoulizaka@gmail.com', 'jazoulizka@gmail.com', 'saadhad08@gmail.com']
 
 interface PatchBody {
   is_verified?: unknown
@@ -36,6 +37,17 @@ export async function PATCH(
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 })
+    }
+
+    // Notify the guide when their profile is verified
+    if (body.is_verified) {
+      await createNotification({
+        user_id: id,
+        type: 'guide_verified',
+        title: "You're verified!",
+        body: 'Your guide profile is now live. Travelers can discover and book you.',
+        link: '/dashboard/guide',
+      })
     }
 
     return NextResponse.json(data)

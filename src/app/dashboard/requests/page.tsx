@@ -14,7 +14,7 @@ export const metadata: Metadata = {
   title: 'Operations Dashboard | Atlas 360 Admin',
 }
 
-const ADMIN_EMAILS = ['jaz.ouchene@gmail.com', 'jazoulizaka@gmail.com', 'jazoulizka@gmail.com']
+const ADMIN_EMAILS = ['jaz.ouchene@gmail.com', 'jazoulizaka@gmail.com', 'jazoulizka@gmail.com','saadhad08@gmail.com']
 
 interface AssistanceRequest {
   id: string
@@ -119,8 +119,8 @@ export default async function RequestsDashboardPage({
   } else if (tab === 'payouts') {
     const { data: bookingsData } = await adminSupabase
       .from('guide_bookings')
-      .select('*, guides(whatsapp_number)')
-      .in('status', ['paid', 'completed'])
+      .select('*')
+      .in('status', ['accepted', 'paid', 'completed'])
       .order('created_at', { ascending: false })
 
     payoutsList = (bookingsData || []).map(b => {
@@ -130,7 +130,6 @@ export default async function RequestsDashboardPage({
         ...b,
         traveler_name: traveler ? traveler.full_name : 'Unknown Traveler',
         guide_name: guide ? guide.full_name : 'Local Guide',
-        guide_whatsapp: b.guides ? b.guides.whatsapp_number : null
       }
     })
   }

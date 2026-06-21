@@ -8,7 +8,6 @@ export interface GuideWithProfile {
   languages: string[]
   regions: string[]
   daily_rate_mad: number
-  whatsapp_number: string | null
   is_verified: boolean
   rating: number | null
   created_at: string
@@ -85,7 +84,6 @@ export default function GuideVerificationTab({ initialGuides }: GuideVerificatio
                   <th className="text-left px-4 py-3 text-[10px] uppercase tracking-widest text-muted-foreground font-semibold">Languages</th>
                   <th className="text-left px-4 py-3 text-[10px] uppercase tracking-widest text-muted-foreground font-semibold">Regions</th>
                   <th className="text-left px-4 py-3 text-[10px] uppercase tracking-widest text-muted-foreground font-semibold">Daily Rate</th>
-                  <th className="text-left px-4 py-3 text-[10px] uppercase tracking-widest text-muted-foreground font-semibold">WhatsApp</th>
                   <th className="text-left px-4 py-3 text-[10px] uppercase tracking-widest text-muted-foreground font-semibold">Status</th>
                   <th className="text-right px-4 py-3 text-[10px] uppercase tracking-widest text-muted-foreground font-semibold">Action</th>
                 </tr>
@@ -130,9 +128,6 @@ export default function GuideVerificationTab({ initialGuides }: GuideVerificatio
                     </td>
                     <td className="px-4 py-3 text-foreground text-[12px] font-mono whitespace-nowrap">
                       {guide.daily_rate_mad} MAD
-                    </td>
-                    <td className="px-4 py-3 text-muted-foreground text-[12px]">
-                      {guide.whatsapp_number || <span className="italic text-muted-foreground/45">—</span>}
                     </td>
                     <td className="px-4 py-3">
                       <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-widest ${

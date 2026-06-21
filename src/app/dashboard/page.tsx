@@ -38,7 +38,7 @@ export default async function DashboardPage() {
   // Fetch guide bookings for this traveler
   const { data: bookingsData } = await supabase
     .from('guide_bookings')
-    .select('*, guides(whatsapp_number)')
+    .select('*')
     .eq('traveler_id', user.id)
     .order('created_at', { ascending: false })
 
@@ -188,7 +188,7 @@ export default async function DashboardPage() {
             </div>
           )}
 
-          <TravelerBookingsList bookings={travelerBookings} />
+          <TravelerBookingsList bookings={travelerBookings} userId={user.id} />
         </div>
       </div>
     </div>
