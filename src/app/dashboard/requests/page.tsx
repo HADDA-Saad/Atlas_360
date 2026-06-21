@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
+import { ClipboardList, UserCheck, Image, Banknote } from 'lucide-react'
 import StatusSelect from './StatusSelect'
 import TeamMemberSelect from './TeamMemberSelect'
 import NotesEditor from './NotesEditor'
@@ -154,10 +155,10 @@ export default async function RequestsDashboardPage({
         {/* Tab Selector Navbar */}
         <div className="flex border-b border-border mb-8 overflow-x-auto gap-2">
           {[
-            { id: 'requests', label: 'Assistance Requests 📋' },
-            { id: 'guides', label: 'Guide Verification 👤' },
-            { id: 'photos', label: 'Review Photos 🖼️' },
-            { id: 'payouts', label: 'Guide Payouts 💰' },
+            { id: 'requests', label: 'Assistance Requests', icon: <ClipboardList size={14} /> },
+            { id: 'guides',   label: 'Guide Verification',  icon: <UserCheck size={14} /> },
+            { id: 'photos',   label: 'Review Photos',       icon: <Image size={14} /> },
+            { id: 'payouts',  label: 'Guide Payouts',       icon: <Banknote size={14} /> },
           ].map(t => {
             const isActive = tab === t.id
             return (
@@ -170,7 +171,10 @@ export default async function RequestsDashboardPage({
                     : 'border-transparent text-muted-foreground hover:text-foreground'
                 }`}
               >
-                {t.label}
+                <span className="flex items-center gap-1.5">
+                  {t.icon}
+                  {t.label}
+                </span>
               </Link>
             )
           })}

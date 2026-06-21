@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { Map } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 
@@ -87,8 +88,9 @@ export default function GuideMatchWidget({ region }: GuideMatchWidgetProps) {
   return (
     <div className="bg-card/50 border border-border/80 rounded-xl p-4 space-y-3.5 shadow-sm">
       <div className="flex justify-between items-center">
-        <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-          Local Guides Matched 🗺️
+        <span className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+          <Map size={12} />
+          Local Guides Matched
         </span>
         <span className="px-1.5 py-0.5 rounded bg-primary/10 text-primary text-[8px] font-semibold uppercase tracking-wider">
           {region}

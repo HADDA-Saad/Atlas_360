@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
+import { CheckCircle, AlertCircle } from 'lucide-react'
 import GuideDashboardClient from './GuideDashboardClient'
 import { expireStalePendingBookings } from '@/lib/expire-bookings'
 import type { Metadata } from 'next'
@@ -105,9 +106,9 @@ export default async function GuideDashboardPage() {
   return (
     <div className="min-h-screen bg-background py-28 px-4 atlas-grain">
       <div className="max-w-5xl mx-auto">
-        {/* Back Link */}
-        <Link href="/dashboard" className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors mb-3 inline-block">
-          ← Back to Traveler Account
+        {/* Switch to traveler view */}
+        <Link href="/dashboard?view=traveler" className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors mb-3 inline-block">
+          Switch to traveler view →
         </Link>
 
         {/* Dashboard Title */}
@@ -121,12 +122,14 @@ export default async function GuideDashboardPage() {
             </p>
           </div>
           {guide.is_verified ? (
-            <span className="px-3.5 py-1.5 bg-green-500/10 border border-green-500/20 text-green-400 text-[10.5px] uppercase tracking-widest font-bold rounded-full">
-              ✓ Verified Partner
+            <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-green-500/10 border border-green-500/20 text-green-400 text-[10.5px] uppercase tracking-widest font-bold rounded-full">
+              <CheckCircle size={13} />
+              Verified Partner
             </span>
           ) : (
-            <span className="px-3.5 py-1.5 bg-amber-500/10 border border-amber-500/20 text-amber-400 text-[10.5px] uppercase tracking-widest font-bold rounded-full">
-              ⚠ Verification Pending
+            <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-amber-500/10 border border-amber-500/20 text-amber-400 text-[10.5px] uppercase tracking-widest font-bold rounded-full">
+              <AlertCircle size={13} />
+              Verification Pending
             </span>
           )}
         </div>

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useMemo } from 'react'
+import { CalendarDays, User, CalendarClock, ChevronRight } from 'lucide-react'
 import BookingChat from '@/components/BookingChat'
 import AvailabilityCalendar from '@/components/AvailabilityCalendar'
 
@@ -256,9 +257,9 @@ export default function GuideDashboardClient({
       {/* Sidebar Nav */}
       <nav className="w-full md:w-[240px] flex-shrink-0 flex flex-col gap-1.5">
         {[
-          { id: 'bookings', label: 'Reservations', icon: '📅' },
-          { id: 'profile', label: 'Profile Settings', icon: '👤' },
-          { id: 'availability', label: 'Availability Calendar', icon: '🔒' },
+          { id: 'bookings', label: 'Reservations', icon: <CalendarDays size={16} /> },
+          { id: 'profile', label: 'Profile Settings', icon: <User size={16} /> },
+          { id: 'availability', label: 'Availability Calendar', icon: <CalendarClock size={16} /> },
         ].map(tab => (
           <button
             key={tab.id}
@@ -269,7 +270,7 @@ export default function GuideDashboardClient({
                 : 'border-border bg-card/40 hover:bg-card hover:border-primary/20 text-muted-foreground hover:text-foreground'
             }`}
           >
-            <span>{tab.icon}</span>
+            <span className="shrink-0">{tab.icon}</span>
             {tab.label}
           </button>
         ))}
@@ -584,7 +585,7 @@ export default function GuideDashboardClient({
             {/* Optional: block a date with a reason */}
             <details className="group">
               <summary className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground cursor-pointer hover:text-foreground transition-colors list-none flex items-center gap-2">
-                <span className="group-open:rotate-90 transition-transform duration-150 inline-block">▶</span>
+                <ChevronRight size={13} className="group-open:rotate-90 transition-transform duration-150 shrink-0" />
                 Block a specific date with a note
               </summary>
               <form onSubmit={handleAddBlockedDate} className="mt-4 bg-card/40 border border-border p-4 rounded-xl grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
