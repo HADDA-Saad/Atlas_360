@@ -567,7 +567,7 @@ export default function GuidesClient({ guides, itineraries, user }: GuidesClient
                 {/* Cancellation policy summary + agreement */}
                 <div className="rounded-xl border border-border/60 bg-muted/20 p-4 space-y-3 mt-2">
                   <p className="text-[12px] text-muted-foreground leading-relaxed">
-                    <span className="font-semibold text-foreground">Cancellation:</span> Full refund if cancelled 14+ days before the start date. 50% refund 7–14 days before. No refund within 7 days.
+                    <span className="font-semibold text-foreground">Cancellation:</span> Full refund if cancelled 7+ days before the start date. 50% refund 2–7 days before. No refund within 2 days.
                   </p>
                   <p className="text-[12px] text-muted-foreground leading-relaxed">
                     Payment is held in escrow and released to the guide only after the tour is marked complete.{' '}

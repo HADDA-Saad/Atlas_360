@@ -8,8 +8,8 @@ const CANCELLABLE = new Set(['pending', 'accepted', 'paid'])
 function refundTier(startDate: string): { label: string; pct: number } {
   const msPerDay = 1000 * 60 * 60 * 24
   const daysUntil = Math.ceil((new Date(startDate).getTime() - Date.now()) / msPerDay)
-  if (daysUntil >= 14) return { label: 'Full refund', pct: 100 }
-  if (daysUntil >= 7)  return { label: '50% refund', pct: 50 }
+  if (daysUntil >= 7) return { label: 'Full refund', pct: 100 }
+  if (daysUntil >= 2) return { label: '50% refund', pct: 50 }
   return { label: 'No refund', pct: 0 }
 }
 

@@ -39,9 +39,9 @@ export default function CancellationPolicyPage() {
                 </thead>
                 <tbody>
                   {[
-                    ['More than 14 days before start date', 'Full refund'],
-                    ['7 – 14 days before start date', '50% refund'],
-                    ['Less than 7 days before start date', 'No refund'],
+                    ['More than 7 days before start date', 'Full refund'],
+                    ['2 – 7 days before start date', '50% refund'],
+                    ['Less than 2 days before start date', 'No refund'],
                     ['No-show on the day', 'No refund'],
                   ].map(([timing, refund]) => (
                     <tr key={timing} className="border-b border-border last:border-0">

@@ -44,9 +44,9 @@ const TRAVELER_MESSAGE: Record<string, string> = {
 function refundLabel(startDate: string): string {
   const msPerDay  = 1000 * 60 * 60 * 24
   const daysUntil = Math.ceil((new Date(startDate).getTime() - Date.now()) / msPerDay)
-  if (daysUntil >= 14) return 'You are eligible for a full refund.'
-  if (daysUntil >= 7)  return 'You are eligible for a 50% refund (tour is within 14 days).'
-  return 'No refund applies — the tour is within 7 days.'
+  if (daysUntil >= 7) return 'You are eligible for a full refund.'
+  if (daysUntil >= 2) return 'You are eligible for a 50% refund (tour is within 7 days).'
+  return 'No refund applies — the tour is within 2 days.'
 }
 
 function days(start: string, end: string) {
