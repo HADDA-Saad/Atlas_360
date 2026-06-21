@@ -54,7 +54,7 @@ export interface PlaceResult {
 
 export type PlaceType = 'lodging' | 'restaurant'
 
-export type ReviewTargetType = 'itinerary' | 'location'
+export type ReviewTargetType = 'itinerary' | 'location' | 'guide'
 
 export interface Review {
   id: string
@@ -62,6 +62,7 @@ export interface Review {
   target_type: ReviewTargetType
   itinerary_id: string | null
   location_id: string | null
+  guide_id: string | null
   rating: number
   body: string
   status: 'published' | 'hidden'

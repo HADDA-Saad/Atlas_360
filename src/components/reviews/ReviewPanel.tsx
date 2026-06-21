@@ -10,6 +10,7 @@ interface ReviewPanelProps {
   targetType: ReviewTargetType
   itineraryId?: string
   locationId?: string
+  guideId?: string
   title?: string
   compact?: boolean
 }
@@ -65,6 +66,7 @@ export default function ReviewPanel({
   targetType,
   itineraryId,
   locationId,
+  guideId,
   title = 'Traveler feedback',
   compact = false,
 }: ReviewPanelProps) {
@@ -85,9 +87,10 @@ export default function ReviewPanel({
   const targetQuery = useMemo(() => {
     const params = new URLSearchParams({ target_type: targetType })
     if (targetType === 'itinerary' && itineraryId) params.set('itinerary_id', itineraryId)
-    if (targetType === 'location' && locationId) params.set('location_id', locationId)
+    if (targetType === 'location' && locationId)   params.set('location_id',  locationId)
+    if (targetType === 'guide'     && guideId)     params.set('guide_id',     guideId)
     return params.toString()
-  }, [targetType, itineraryId, locationId])
+  }, [targetType, itineraryId, locationId, guideId])
 
   const ownReview = response.reviews.find((review) => review.is_own)
 
@@ -143,9 +146,10 @@ export default function ReviewPanel({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          target_type: targetType,
+          target_type:  targetType,
           itinerary_id: targetType === 'itinerary' ? itineraryId : null,
-          location_id: targetType === 'location' ? locationId : null,
+          location_id:  targetType === 'location'  ? locationId  : null,
+          guide_id:     targetType === 'guide'     ? guideId     : null,
           rating,
           body,
         }),
@@ -257,6 +261,11 @@ export default function ReviewPanel({
                         <span className="mt-1 block text-[10px] uppercase tracking-widest text-muted-foreground/70">
                           {review.is_own ? 'Your review' : formatDate(review.created_at)}
                         </span>
+                        {targetType === 'guide' && (
+                          <span className="mt-0.5 block text-[9px] uppercase tracking-widest text-green-400/80 font-semibold">
+                            ✓ Verified booking
+                          </span>
+                        )}
                       </div>
                     </div>
                     {review.is_own && (

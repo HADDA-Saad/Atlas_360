@@ -8,6 +8,7 @@ interface ReviewSummaryBadgeProps {
   targetType: ReviewTargetType
   itineraryId?: string
   locationId?: string
+  guideId?: string
   className?: string
 }
 
@@ -15,6 +16,7 @@ export default function ReviewSummaryBadge({
   targetType,
   itineraryId,
   locationId,
+  guideId,
   className = '',
 }: ReviewSummaryBadgeProps) {
   const [summary, setSummary] = useState<Pick<ReviewsResponse, 'averageRating' | 'reviewCount'> | null>(null)
@@ -22,9 +24,10 @@ export default function ReviewSummaryBadge({
   const targetQuery = useMemo(() => {
     const params = new URLSearchParams({ target_type: targetType })
     if (targetType === 'itinerary' && itineraryId) params.set('itinerary_id', itineraryId)
-    if (targetType === 'location' && locationId) params.set('location_id', locationId)
+    if (targetType === 'location'  && locationId)  params.set('location_id',  locationId)
+    if (targetType === 'guide'     && guideId)     params.set('guide_id',     guideId)
     return params.toString()
-  }, [targetType, itineraryId, locationId])
+  }, [targetType, itineraryId, locationId, guideId])
 
   useEffect(() => {
     let isMounted = true
