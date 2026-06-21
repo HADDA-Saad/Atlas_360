@@ -2,8 +2,6 @@ import HeroSection from '@/components/landing/HeroSection'
 import HeritageSection from '@/components/landing/HeritageSection'
 import CuratedJourneysSection from '@/components/landing/CuratedJourneysSection'
 import ServicesSection from '@/components/landing/ServicesSection'
-import PlanningSupportSection from '@/components/landing/PlanningSupportSection'
-import HelpCtaStrip from '@/components/landing/HelpCtaStrip'
 import { createClient } from '@/lib/supabase/server'
 
 export const dynamic = 'force-dynamic'
@@ -31,8 +29,6 @@ export default async function LandingPage() {
       <HeritageSection />
       <CuratedJourneysSection itineraries={itineraries} />
       <ServicesSection />
-      <PlanningSupportSection />
-      <HelpCtaStrip />
     </div>
   )
 }
