@@ -23,25 +23,45 @@ test.describe('Guide Booking Flow (Authenticated)', () => {
     await expect(bookNowBtn).toBeVisible({ timeout: 10000 });
     await bookNowBtn.click();
 
-    // pick random future dates so we don't collide with previous runs
-    const dateInputs = page.locator('input[type="date"]');
-    await expect(dateInputs.nth(0)).toBeVisible({ timeout: 5000 });
-    if (await dateInputs.count() >= 2) {
-      const randomOffset = Math.floor(Math.random() * 1000) + 10;
-      const start = new Date();
-      start.setDate(start.getDate() + randomOffset);
-      const end = new Date(start);
-      end.setDate(end.getDate() + 4);
+    // The booking form uses a custom AvailabilityCalendar (click-based grid),
+    // not native date inputs.  We need to navigate to a future month and
+    // click two available days to set a start → end range.
 
-      await dateInputs.nth(0).fill(start.toISOString().split('T')[0]);
-      await dateInputs.nth(1).fill(end.toISOString().split('T')[0]);
+    // Wait for the calendar grid to render
+    const calendarGrid = page.locator('.grid.grid-cols-7').last();
+    await expect(calendarGrid).toBeVisible({ timeout: 5000 });
+
+    // Navigate 3 months ahead so we're safely in the future & avoid collisions
+    const nextMonthBtn = page.getByRole('button', { name: /next month/i });
+    for (let i = 0; i < 3; i++) {
+      await nextMonthBtn.click();
+      await page.waitForTimeout(200);
+    }
+
+    // Pick two enabled (available) day buttons for start and end
+    const availableDays = calendarGrid.locator('button:not([disabled])');
+    const dayCount = await availableDays.count();
+    if (dayCount >= 2) {
+      // Click the first available day (sets start date)
+      await availableDays.nth(0).click();
+      await page.waitForTimeout(300);
+      // Click a later available day (sets end date)
+      const endIdx = Math.min(4, dayCount - 1);
+      await availableDays.nth(endIdx).click();
+      await page.waitForTimeout(300);
+    }
+
+    // Agree to terms (required checkbox)
+    const termsCheckbox = page.locator('input[type="checkbox"]');
+    if (await termsCheckbox.isVisible()) {
+      await termsCheckbox.check();
     }
 
     // submit and confirm redirect
     const sendBtn = page.getByRole('button', { name: /send booking request/i });
     await expect(sendBtn).toBeVisible();
     await sendBtn.click();
-    await page.waitForURL(/\/dashboard/, { timeout: 15000 });
-    expect(page.url()).toContain('/dashboard');
+    await page.waitForURL(/\/my-bookings|\/dashboard/, { timeout: 15000 });
+    expect(page.url()).toMatch(/my-bookings|dashboard/);
   });
 });

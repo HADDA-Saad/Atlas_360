@@ -54,6 +54,19 @@ export default async function RequestsDashboardPage({
     .select('id, full_name')
   const profiles = profilesData || []
 
+  // Fetch global badge counts in parallel
+  const [
+    { count: newRequestsCount },
+    { count: pendingVerificationsCount },
+    { data: unapprovedPhotosData }
+  ] = await Promise.all([
+    adminSupabase.from('assistance_requests').select('*', { count: 'exact', head: true }).eq('status', 'new'),
+    adminSupabase.from('guide_verifications').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
+    adminSupabase.from('reviews').select('id, photo_urls').eq('photo_approved', false)
+  ])
+
+  const pendingPhotosCount = (unapprovedPhotosData || []).filter(r => r.photo_urls && r.photo_urls.length > 0).length
+
   // Load data depending on active tab
   let requests: AssistanceRequest[] = []
   let statusCounts = { new: 0, in_progress: 0, completed: 0, closed: 0 }
@@ -62,7 +75,7 @@ export default async function RequestsDashboardPage({
   let payoutsList: any[] = []
 
   if (tab === 'requests') {
-    let query = supabase
+    let query = adminSupabase
       .from('assistance_requests')
       .select('*')
       .order('created_at', { ascending: false })
@@ -77,7 +90,7 @@ export default async function RequestsDashboardPage({
     const { data: requestsData } = await query
     requests = (requestsData || []) as AssistanceRequest[]
 
-    const { data: countData } = await supabase
+    const { data: countData } = await adminSupabase
       .from('assistance_requests')
       .select('status')
     
@@ -89,16 +102,16 @@ export default async function RequestsDashboardPage({
       closed: rawRequests.filter(r => r.status === 'closed').length,
     }
   } else if (tab === 'guides') {
-    const { data: guidesData } = await adminSupabase
-      .from('guides')
-      .select('*')
+    const { data: verificationsData } = await adminSupabase
+      .from('guide_verifications')
+      .select('*, guides(*)')
       .order('created_at', { ascending: false })
 
-    guidesList = (guidesData || []).map(g => {
-      const p = profiles.find(prof => prof.id === g.id)
+    guidesList = (verificationsData || []).map(v => {
+      const p = profiles.find(prof => prof.id === v.guide_id)
       return {
-        ...g,
-        full_name: p ? p.full_name : 'Unnamed Guide'
+        ...v,
+        profile_name: p ? p.full_name : 'Unnamed User'
       }
     })
   } else if (tab === 'photos') {
@@ -155,10 +168,10 @@ export default async function RequestsDashboardPage({
         {/* Tab Selector Navbar */}
         <div className="flex border-b border-border mb-8 overflow-x-auto gap-2">
           {[
-            { id: 'requests', label: 'Assistance Requests', icon: <ClipboardList size={14} /> },
-            { id: 'guides',   label: 'Guide Verification',  icon: <UserCheck size={14} /> },
-            { id: 'photos',   label: 'Review Photos',       icon: <Image size={14} /> },
-            { id: 'payouts',  label: 'Guide Payouts',       icon: <Banknote size={14} /> },
+            { id: 'requests', label: 'Assistance Requests', icon: <ClipboardList size={14} />, badge: newRequestsCount },
+            { id: 'guides',   label: 'Guide Verification',  icon: <UserCheck size={14} />, badge: pendingVerificationsCount },
+            { id: 'photos',   label: 'Review Photos',       icon: <Image size={14} />, badge: pendingPhotosCount },
+            { id: 'payouts',  label: 'Guide Payouts',       icon: <Banknote size={14} />, badge: 0 },
           ].map(t => {
             const isActive = tab === t.id
             return (
@@ -171,9 +184,16 @@ export default async function RequestsDashboardPage({
                     : 'border-transparent text-muted-foreground hover:text-foreground'
                 }`}
               >
-                <span className="flex items-center gap-1.5">
-                  {t.icon}
-                  {t.label}
+                <span className="flex items-center gap-2">
+                  <span className="flex items-center gap-1.5">
+                    {t.icon}
+                    {t.label}
+                  </span>
+                  {t.badge && t.badge > 0 ? (
+                    <span className="bg-primary/20 text-primary text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[20px] text-center leading-none flex items-center justify-center">
+                      {t.badge}
+                    </span>
+                  ) : null}
                 </span>
               </Link>
             )

@@ -70,7 +70,7 @@ export default function SignupPage() {
         {/* Logo */}
         <div className="text-center mb-10">
           <Link href="/" className="inline-block group">
-            <h1 className="font-[family-name:var(--font-cormorant)] text-3xl font-semibold tracking-wide text-foreground">
+            <h1 className="font-[family-name:var(--font-cormorant)] text-3xl font-semibold tracking-wide text-foreground pt-1 leading-normal">
               Atlas
               <span className="text-primary ml-1">360</span>
             </h1>

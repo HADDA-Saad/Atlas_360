@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { redirect } from 'next/navigation'
 import GuidesClient from './GuidesClient'
 import type { Metadata } from 'next'
 
@@ -9,6 +10,11 @@ export const metadata: Metadata = {
 
 export default async function GuidesPage() {
   const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) {
+    redirect('/auth/login?redirect=/guides')
+  }
 
   const { data: guidesData } = await supabase
     .from('guides')
@@ -19,7 +25,7 @@ export default async function GuidesPage() {
   const guideIds = guides.map(g => g.id)
 
   // Parallel fetches for profiles + stats
-  const [profilesRes, bookingsRes, reviewsRes, { data: { user } }] = await Promise.all([
+  const [profilesRes, bookingsRes, reviewsRes] = await Promise.all([
     guideIds.length > 0
       ? supabase.from('profiles').select('id, full_name, created_at').in('id', guideIds)
       : Promise.resolve({ data: [] }),
@@ -29,7 +35,6 @@ export default async function GuidesPage() {
     guideIds.length > 0
       ? supabase.from('reviews').select('guide_id').eq('target_type', 'guide').eq('status', 'published').in('guide_id', guideIds)
       : Promise.resolve({ data: [] }),
-    supabase.auth.getUser(),
   ])
 
   const profiles   = (profilesRes as any).data  || []

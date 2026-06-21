@@ -117,8 +117,16 @@ export default async function GuideProfilePage({ params }: Props) {
 
         {/* Hero card */}
         <div className="rounded-2xl border border-border bg-card/50 p-7 mb-6 flex flex-col sm:flex-row gap-6 items-start">
-          <div className="w-16 h-16 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-bold text-xl uppercase flex-shrink-0 shadow-inner">
-            {guideName.split(' ').map((n: string) => n[0]).slice(0, 2).join('').toUpperCase()}
+          <div className="w-16 h-16 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-bold text-xl uppercase flex-shrink-0 shadow-inner overflow-hidden">
+            {guide.profile_picture_url ? (
+              <img 
+                src={guide.profile_picture_url} 
+                alt={guideName || 'Guide'} 
+                className="w-full h-full object-cover" 
+              />
+            ) : (
+              guideName.split(' ').map((n: string) => n[0]).slice(0, 2).join('').toUpperCase()
+            )}
           </div>
 
           <div className="flex-1 min-w-0">
@@ -208,18 +216,20 @@ export default async function GuideProfilePage({ params }: Props) {
         </div>
 
         {/* Book CTA */}
-        <div className="rounded-xl border border-primary/20 bg-primary/5 p-5 mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div>
-            <p className="text-sm font-semibold text-foreground">Ready to book {guideName}?</p>
-            <p className="text-xs text-muted-foreground mt-0.5">Browse availability and submit a request in minutes.</p>
+        {user?.id !== id && (
+          <div className="rounded-xl border border-primary/20 bg-primary/5 p-5 mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div>
+              <p className="text-sm font-semibold text-foreground">Ready to book {guideName}?</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Browse availability and submit a request in minutes.</p>
+            </div>
+            <Link
+              href="/guides"
+              className="flex-shrink-0 px-5 py-2.5 bg-primary text-primary-foreground rounded-lg text-[10px] font-bold uppercase tracking-widest hover:bg-primary/90 transition-all shadow-sm shadow-primary/10"
+            >
+              Book This Guide →
+            </Link>
           </div>
-          <Link
-            href="/guides"
-            className="flex-shrink-0 px-5 py-2.5 bg-primary text-primary-foreground rounded-lg text-[10px] font-bold uppercase tracking-widest hover:bg-primary/90 transition-all shadow-sm shadow-primary/10"
-          >
-            Book This Guide →
-          </Link>
-        </div>
+        )}
 
         {/* Reviews */}
         <ReviewPanel

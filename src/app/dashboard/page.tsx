@@ -11,13 +11,7 @@ export const metadata: Metadata = {
   title: 'My Account | Atlas 360',
 }
 
-export default async function DashboardPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ view?: string }>
-}) {
-  const { view } = await searchParams
-
+export default async function DashboardPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -37,11 +31,6 @@ export default async function DashboardPage({
     .select('id, is_verified')
     .eq('id', user.id)
     .maybeSingle()
-
-  // Guides land on their own dashboard by default; ?view=traveler lets them opt in to traveler view
-  if (guide && view !== 'traveler') {
-    redirect('/dashboard/guide')
-  }
 
   const tier = profile?.tier || 'explorer'
   const status = profile?.subscription_status || 'none'

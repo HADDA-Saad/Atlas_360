@@ -27,7 +27,7 @@ const NAV_LINKS = [
   { name: 'ABOUT', href: '/about' },
 ]
 
-const ADMIN_EMAILS = ['jaz.ouchene@gmail.com', 'jazoulizaka@gmail.com', 'jazoulizka@gmail.com', 'saadhad08@gmail.com']
+
 
 export default function Navbar() {
   const router = useRouter()
@@ -36,6 +36,8 @@ export default function Navbar() {
   const [user, setUser] = useState<User | null>(null)
   const [tier, setTier] = useState<UserTier | null>(null)
   const [isLoggingOut, setIsLoggingOut] = useState(false)
+  const [isGuide, setIsGuide] = useState(false)
+  const [isAdmin, setIsAdmin] = useState(false)
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
@@ -68,8 +70,23 @@ export default function Navbar() {
       const { data: { user: currentUser } } = await supabase.auth.getUser()
       setUser(currentUser)
       if (currentUser) {
-        const { data } = await supabase.from('profiles').select('tier').eq('id', currentUser.id).single()
-        if (data) setTier(data.tier)
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('tier, role')
+          .eq('id', currentUser.id)
+          .single()
+        console.log('[Navbar] profile query →', { profile, profileError })
+        if (profile) {
+          setTier(profile.tier)
+          setIsAdmin(profile.role === 'admin')
+        }
+
+        const { data: guideRows } = await supabase
+          .from('guides')
+          .select('id')
+          .eq('id', currentUser.id)
+          .limit(1)
+        setIsGuide((guideRows?.length ?? 0) > 0)
       }
     }
     getUser()
@@ -80,6 +97,8 @@ export default function Navbar() {
         setUser(session?.user ?? null)
         if (!session?.user) {
           setTier(null)
+          setIsGuide(false)
+          setIsAdmin(false)
         }
       }
     )
@@ -160,7 +179,7 @@ export default function Navbar() {
             {link.name}
           </Link>
         ))}
-        {user && ADMIN_EMAILS.includes(user.email || '') && (
+        {user && isAdmin && (
           <Link 
             href="/dashboard/requests"
             className={`text-[11px] font-semibold tracking-[0.2em] transition-all duration-200 ${
@@ -205,7 +224,8 @@ export default function Navbar() {
             {/* Dropdown Menu */}
             {isUserMenuOpen && (
               <div className="absolute right-0 top-full mt-2 w-56 bg-card border border-border rounded-xl shadow-xl py-2 flex flex-col z-50">
-                <div className="px-4 py-2 border-b border-border/50 mb-1 sm:hidden">
+                {/* Email header — always visible */}
+                <div className="px-4 py-2.5 border-b border-border/50 mb-1">
                   <span className="text-[12px] text-foreground font-medium block truncate">
                     {user.email}
                   </span>
@@ -215,23 +235,40 @@ export default function Navbar() {
                     </span>
                   )}
                 </div>
+
+                {/* Account — always shown */}
                 <Link
                   href="/dashboard"
                   onClick={() => setIsUserMenuOpen(false)}
                   className="flex items-center gap-3 px-4 py-2.5 text-[13px] font-medium text-foreground/80 hover:text-primary hover:bg-muted/50 transition-colors"
                 >
                   <LayoutDashboard className="w-4 h-4" />
-                  My Account
+                  Account
                 </Link>
-                <Link
-                  href="/my-bookings"
-                  onClick={() => setIsUserMenuOpen(false)}
-                  className="flex items-center gap-3 px-4 py-2.5 text-[13px] font-medium text-foreground/80 hover:text-primary hover:bg-muted/50 transition-colors"
-                >
-                  <CalendarCheck className="w-4 h-4" />
-                  My Bookings
-                </Link>
-                {ADMIN_EMAILS.includes(user.email || '') && (
+
+                {/* Guide → Dashboard, Traveler → My Bookings */}
+                {isGuide ? (
+                  <Link
+                    href="/dashboard/guide"
+                    onClick={() => setIsUserMenuOpen(false)}
+                    className="flex items-center gap-3 px-4 py-2.5 text-[13px] font-medium text-foreground/80 hover:text-primary hover:bg-muted/50 transition-colors"
+                  >
+                    <CalendarCheck className="w-4 h-4" />
+                    Dashboard
+                  </Link>
+                ) : (
+                  <Link
+                    href="/my-bookings"
+                    onClick={() => setIsUserMenuOpen(false)}
+                    className="flex items-center gap-3 px-4 py-2.5 text-[13px] font-medium text-foreground/80 hover:text-primary hover:bg-muted/50 transition-colors"
+                  >
+                    <CalendarCheck className="w-4 h-4" />
+                    My Bookings
+                  </Link>
+                )}
+
+                {/* Admin Portal */}
+                {isAdmin && (
                   <Link
                     href="/dashboard/requests"
                     onClick={() => setIsUserMenuOpen(false)}
@@ -241,17 +278,20 @@ export default function Navbar() {
                     Admin Portal
                   </Link>
                 )}
-                <button
-                  onClick={() => {
-                    setIsUserMenuOpen(false)
-                    handleLogout()
-                  }}
-                  disabled={isLoggingOut}
-                  className="flex items-center gap-3 px-4 py-2.5 text-[13px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors text-left w-full disabled:opacity-50"
-                >
-                  <LogOut className="w-4 h-4" />
-                  {isLoggingOut ? 'Logging out...' : 'Logout'}
-                </button>
+
+                <div className="border-t border-border/50 mt-1 pt-1">
+                  <button
+                    onClick={() => {
+                      setIsUserMenuOpen(false)
+                      handleLogout()
+                    }}
+                    disabled={isLoggingOut}
+                    className="flex items-center gap-3 px-4 py-2.5 text-[13px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors text-left w-full disabled:opacity-50"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    {isLoggingOut ? 'Logging out...' : 'Log out'}
+                  </button>
+                </div>
               </div>
             )}
           </div>
@@ -300,7 +340,7 @@ export default function Navbar() {
                     {link.name}
                   </Link>
                 ))}
-                {user && ADMIN_EMAILS.includes(user.email || '') && (
+                {user && isAdmin && (
                   <Link 
                     href="/dashboard/requests"
                     onClick={() => setIsMobileMenuOpen(false)}
@@ -312,7 +352,7 @@ export default function Navbar() {
                   </Link>
                 )}
 
-                {user && (
+                {user && !isGuide && (
                   <Link
                     href="/my-bookings"
                     onClick={() => setIsMobileMenuOpen(false)}

@@ -294,8 +294,16 @@ export default function GuidesClient({ guides, itineraries, user }: GuidesClient
                 <div>
                   {/* Guide Identity Card Header */}
                   <div className="flex items-center gap-4 mb-5">
-                    <div className="w-12 h-12 bg-primary/10 border border-primary/20 rounded-full flex items-center justify-center text-primary font-bold text-xs uppercase shadow-inner">
-                      {getInitials(guide.full_name)}
+                    <div className="w-12 h-12 bg-primary/10 border border-primary/20 rounded-full flex items-center justify-center text-primary font-bold text-xs uppercase shadow-inner overflow-hidden shrink-0">
+                      {guide.profile_picture_url ? (
+                        <img 
+                          src={guide.profile_picture_url} 
+                          alt={guide.full_name || 'Guide'} 
+                          className="w-full h-full object-cover" 
+                        />
+                      ) : (
+                        getInitials(guide.full_name)
+                      )}
                     </div>
                     <div>
                       <div className="flex items-center gap-1.5">
@@ -363,12 +371,14 @@ export default function GuidesClient({ guides, itineraries, user }: GuidesClient
                     >
                       View Profile
                     </button>
-                    <button
-                      onClick={() => setBookingGuide(guide)}
-                      className="px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all shadow-sm shadow-primary/10"
-                    >
-                      Book Now
-                    </button>
+                    {user?.id !== guide.id && (
+                      <button
+                        onClick={() => setBookingGuide(guide)}
+                        className="px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all shadow-sm shadow-primary/10"
+                      >
+                        Book Now
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
@@ -444,15 +454,17 @@ export default function GuidesClient({ guides, itineraries, user }: GuidesClient
               </div>
 
               <div className="pt-4 border-t border-border flex flex-col gap-2">
-                <button
-                  onClick={() => {
-                    setBookingGuide(activeGuide)
-                    setActiveGuide(null)
-                  }}
-                  className="w-full py-3 bg-primary hover:bg-primary/95 text-primary-foreground font-semibold rounded-lg text-xs uppercase tracking-widest transition-all shadow-sm shadow-primary/10 text-center"
-                >
-                  Book this Guide
-                </button>
+                {user?.id !== activeGuide.id && (
+                  <button
+                    onClick={() => {
+                      setBookingGuide(activeGuide)
+                      setActiveGuide(null)
+                    }}
+                    className="w-full py-3 bg-primary hover:bg-primary/95 text-primary-foreground font-semibold rounded-lg text-xs uppercase tracking-widest transition-all shadow-sm shadow-primary/10 text-center"
+                  >
+                    Book this Guide
+                  </button>
+                )}
                 <Link
                   href={`/guides/${activeGuide.id}`}
                   className="w-full py-2.5 border border-border rounded-lg text-[10px] font-bold uppercase tracking-widest text-muted-foreground hover:text-foreground hover:border-primary/25 transition-colors text-center"

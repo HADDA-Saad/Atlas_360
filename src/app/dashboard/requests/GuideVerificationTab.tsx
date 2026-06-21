@@ -1,46 +1,59 @@
 'use client'
 
 import { useState } from 'react'
+import { CheckCircle, XCircle, FileText, ExternalLink, ShieldAlert, Loader2 } from 'lucide-react'
 
-export interface GuideWithProfile {
+export interface GuideVerificationRequest {
   id: string
-  bio: string | null
-  languages: string[]
-  regions: string[]
-  daily_rate_mad: number
-  is_verified: boolean
-  rating: number | null
+  guide_id: string
+  first_name: string
+  last_name: string
+  birth_date: string
+  id_document_url: string
+  license_document_url: string
+  status: 'pending' | 'approved' | 'rejected'
+  admin_notes: string | null
   created_at: string
-  full_name: string | null
+  profile_name: string
+  guides: {
+    bio: string
+    languages: string[]
+    regions: string[]
+    daily_rate_mad: number
+    whatsapp_number: string
+    profile_picture_url: string
+    is_verified: boolean
+  } | null
 }
 
 interface GuideVerificationTabProps {
-  initialGuides: GuideWithProfile[]
+  initialGuides: GuideVerificationRequest[]
 }
 
 export default function GuideVerificationTab({ initialGuides }: GuideVerificationTabProps) {
-  const [guides, setGuides] = useState<GuideWithProfile[]>(initialGuides)
+  const [requests, setRequests] = useState<GuideVerificationRequest[]>(initialGuides)
   const [updatingId, setUpdatingId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  
+  const [viewingDoc, setViewingDoc] = useState<{ url: string, loading: boolean } | null>(null)
 
-  const handleToggleVerify = async (guideId: string, currentStatus: boolean) => {
-    setUpdatingId(guideId)
+  const handleUpdateStatus = async (id: string, status: 'approved' | 'rejected') => {
+    const notes = status === 'rejected' ? prompt("Enter rejection reason (required):") : null
+    
+    if (status === 'rejected' && !notes) return // Cancelled or empty
+    
+    setUpdatingId(id)
     setError(null)
 
     try {
-      const res = await fetch(`/api/admin/guides/${guideId}/verify`, {
+      const res = await fetch(`/api/admin/verifications/${id}`, {
         method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ is_verified: !currentStatus }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status, admin_notes: notes }),
       })
 
       if (res.ok) {
-        const updated = await res.json()
-        setGuides(prev =>
-          prev.map(g => (g.id === guideId ? { ...g, is_verified: updated.is_verified } : g))
-        )
+        setRequests(prev => prev.map(r => r.id === id ? { ...r, status, admin_notes: notes } : r))
       } else {
         const data = await res.json()
         setError(data.error || 'Failed to update verification status.')
@@ -52,6 +65,27 @@ export default function GuideVerificationTab({ initialGuides }: GuideVerificatio
     }
   }
 
+  const openDocument = async (bucket: string, path: string) => {
+    setViewingDoc({ url: '', loading: true })
+    try {
+      const res = await fetch(`/api/admin/documents/${bucket}/${path}`)
+      if (!res.ok) throw new Error('Failed to get secure link')
+      const data = await res.json()
+      window.open(data.url, '_blank')
+    } catch (err: any) {
+      alert(err.message)
+    } finally {
+      setViewingDoc(null)
+    }
+  }
+
+  // Sort: Pending first, then by date
+  const sortedRequests = [...requests].sort((a, b) => {
+    if (a.status === 'pending' && b.status !== 'pending') return -1
+    if (a.status !== 'pending' && b.status === 'pending') return 1
+    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+  })
+
   return (
     <div className="space-y-6">
       <div>
@@ -59,7 +93,7 @@ export default function GuideVerificationTab({ initialGuides }: GuideVerificatio
           Guide Verification Queue
         </h2>
         <p className="text-[13px] text-muted-foreground mt-1">
-          Review and approve registered local tour guides to list them in the traveler index.
+          Review documents and personal information to approve local tour guides.
         </p>
       </div>
 
@@ -69,93 +103,124 @@ export default function GuideVerificationTab({ initialGuides }: GuideVerificatio
         </div>
       )}
 
-      {guides.length === 0 ? (
+      {sortedRequests.length === 0 ? (
         <div className="text-center py-16 border border-dashed border-border rounded-2xl">
-          <p className="text-muted-foreground text-sm">No registered guides found.</p>
+          <p className="text-muted-foreground text-sm">No verification requests found.</p>
         </div>
       ) : (
-        <div className="border border-border rounded-2xl overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-border bg-card/50">
-                  <th className="text-left px-4 py-3 text-[10px] uppercase tracking-widest text-muted-foreground font-semibold">Name</th>
-                  <th className="text-left px-4 py-3 text-[10px] uppercase tracking-widest text-muted-foreground font-semibold">Biography</th>
-                  <th className="text-left px-4 py-3 text-[10px] uppercase tracking-widest text-muted-foreground font-semibold">Languages</th>
-                  <th className="text-left px-4 py-3 text-[10px] uppercase tracking-widest text-muted-foreground font-semibold">Regions</th>
-                  <th className="text-left px-4 py-3 text-[10px] uppercase tracking-widest text-muted-foreground font-semibold">Daily Rate</th>
-                  <th className="text-left px-4 py-3 text-[10px] uppercase tracking-widest text-muted-foreground font-semibold">Status</th>
-                  <th className="text-right px-4 py-3 text-[10px] uppercase tracking-widest text-muted-foreground font-semibold">Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {guides.map(guide => (
-                  <tr key={guide.id} className="border-b border-border last:border-0 hover:bg-card/30 transition-colors">
-                    <td className="px-4 py-3">
-                      <p className="text-foreground text-[13px] font-medium">{guide.full_name || 'Unnamed Guide'}</p>
-                      <p className="text-[10px] text-muted-foreground">ID: {guide.id.substring(0, 8)}...</p>
-                    </td>
-                    <td className="px-4 py-3 max-w-[200px]">
-                      <p className="text-muted-foreground text-[12px] line-clamp-2" title={guide.bio || ''}>
-                        {guide.bio || <span className="italic text-muted-foreground/45">No bio written</span>}
-                      </p>
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex flex-wrap gap-1">
-                        {guide.languages.length === 0 ? (
-                          <span className="text-[11px] text-muted-foreground italic">—</span>
-                        ) : (
-                          guide.languages.map(lang => (
-                            <span key={lang} className="px-1.5 py-0.5 rounded bg-muted text-muted-foreground text-[10px]">
-                              {lang}
-                            </span>
-                          ))
-                        )}
-                      </div>
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex flex-wrap gap-1">
-                        {guide.regions.length === 0 ? (
-                          <span className="text-[11px] text-muted-foreground italic">—</span>
-                        ) : (
-                          guide.regions.map(reg => (
-                            <span key={reg} className="px-1.5 py-0.5 rounded bg-muted text-muted-foreground text-[10px]">
-                              {reg}
-                            </span>
-                          ))
-                        )}
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 text-foreground text-[12px] font-mono whitespace-nowrap">
-                      {guide.daily_rate_mad} MAD
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-widest ${
-                        guide.is_verified
-                          ? 'bg-green-500/10 text-green-400 border border-green-500/20'
-                          : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
-                      }`}>
-                        {guide.is_verified ? 'Verified' : 'Pending'}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-right">
+        <div className="grid gap-6">
+          {sortedRequests.map(req => (
+            <div key={req.id} className="bg-card border border-border rounded-2xl p-6 shadow-sm overflow-hidden flex flex-col md:flex-row gap-8">
+              
+              {/* Left Column: Personal & Profile */}
+              <div className="flex-1 space-y-6">
+                <div className="flex justify-between items-start">
+                  <div className="flex items-center gap-4">
+                    <div className="w-14 h-14 bg-muted rounded-full overflow-hidden shrink-0">
+                      {req.guides?.profile_picture_url ? (
+                        <img src={req.guides.profile_picture_url} className="w-full h-full object-cover" alt="Profile" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-muted-foreground text-xs font-bold">N/A</div>
+                      )}
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
+                        {req.first_name} {req.last_name}
+                      </h3>
+                      <p className="text-xs text-muted-foreground">User ID: {req.guide_id.substring(0,8)}</p>
+                    </div>
+                  </div>
+                  
+                  {/* Status Badge */}
+                  <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest ${
+                    req.status === 'approved' ? 'bg-green-500/10 text-green-500 border border-green-500/20' :
+                    req.status === 'rejected' ? 'bg-red-500/10 text-red-500 border border-red-500/20' :
+                    'bg-amber-500/10 text-amber-500 border border-amber-500/20'
+                  }`}>
+                    {req.status}
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="bg-background rounded-lg p-3 border border-border">
+                    <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-semibold mb-1">Birth Date</p>
+                    <p className="text-sm font-mono">{req.birth_date}</p>
+                  </div>
+                  <div className="bg-background rounded-lg p-3 border border-border">
+                    <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-semibold mb-1">WhatsApp</p>
+                    <p className="text-sm font-mono">{req.guides?.whatsapp_number || 'N/A'}</p>
+                  </div>
+                </div>
+
+                <div className="bg-background rounded-lg p-3 border border-border">
+                  <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-semibold mb-1">Bio</p>
+                  <p className="text-xs text-muted-foreground line-clamp-3">{req.guides?.bio || 'N/A'}</p>
+                </div>
+              </div>
+
+              {/* Right Column: Documents & Actions */}
+              <div className="md:w-80 shrink-0 flex flex-col justify-between border-t md:border-t-0 md:border-l border-border/50 pt-6 md:pt-0 md:pl-8">
+                
+                <div className="space-y-4 mb-8">
+                  <p className="text-[11px] font-bold uppercase tracking-widest text-foreground">Secure Documents</p>
+                  
+                  <button 
+                    onClick={() => openDocument('guide_documents', req.id_document_url)}
+                    className="w-full flex items-center justify-between p-3 rounded-lg border border-border hover:bg-muted/50 transition-colors text-left"
+                  >
+                    <div className="flex items-center gap-3">
+                      <FileText className="w-4 h-4 text-primary" />
+                      <span className="text-sm font-medium">ID / Passport</span>
+                    </div>
+                    <ExternalLink className="w-4 h-4 text-muted-foreground" />
+                  </button>
+
+                  <button 
+                    onClick={() => openDocument('guide_documents', req.license_document_url)}
+                    className="w-full flex items-center justify-between p-3 rounded-lg border border-border hover:bg-muted/50 transition-colors text-left"
+                  >
+                    <div className="flex items-center gap-3">
+                      <FileText className="w-4 h-4 text-primary" />
+                      <span className="text-sm font-medium">Guide License</span>
+                    </div>
+                    <ExternalLink className="w-4 h-4 text-muted-foreground" />
+                  </button>
+                </div>
+
+                <div className="space-y-3">
+                  {req.status === 'pending' && (
+                    <div className="flex gap-2">
                       <button
-                        onClick={() => handleToggleVerify(guide.id, guide.is_verified)}
-                        disabled={updatingId === guide.id}
-                        className={`px-3.5 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all ${
-                          guide.is_verified
-                            ? 'bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20'
-                            : 'bg-primary text-primary-foreground hover:bg-primary/95 border border-primary shadow-sm shadow-primary/10'
-                        } disabled:opacity-50`}
+                        onClick={() => handleUpdateStatus(req.id, 'rejected')}
+                        disabled={updatingId === req.id}
+                        className="flex-1 py-2.5 rounded-lg border border-red-500/20 bg-red-500/10 text-red-500 text-xs font-bold uppercase tracking-widest hover:bg-red-500/20 transition-colors flex items-center justify-center gap-2"
                       >
-                        {updatingId === guide.id ? 'Saving...' : guide.is_verified ? 'Unverify' : 'Verify'}
+                        <XCircle className="w-4 h-4" /> Reject
                       </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                      <button
+                        onClick={() => handleUpdateStatus(req.id, 'approved')}
+                        disabled={updatingId === req.id}
+                        className="flex-1 py-2.5 rounded-lg border border-green-500/20 bg-green-500/10 text-green-500 text-xs font-bold uppercase tracking-widest hover:bg-green-500/20 transition-colors flex items-center justify-center gap-2"
+                      >
+                        <CheckCircle className="w-4 h-4" /> Approve
+                      </button>
+                    </div>
+                  )}
+
+                  {req.status === 'rejected' && req.admin_notes && (
+                    <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20 flex gap-2">
+                      <ShieldAlert className="w-4 h-4 text-destructive shrink-0" />
+                      <div>
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-destructive mb-1">Rejection Reason</p>
+                        <p className="text-xs text-destructive/80">{req.admin_notes}</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+              </div>
+            </div>
+          ))}
         </div>
       )}
     </div>

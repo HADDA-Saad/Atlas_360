@@ -34,7 +34,8 @@ test.describe('Pricing Flow', () => {
     // go to pricing
     await page.goto('/pricing');
 
-    const buyBtn = page.getByRole('button', { name: /buy trip pass/i });
+    // The pricing page has "Subscribe to Nomad" and "Subscribe to Elite" buttons
+    const buyBtn = page.getByRole('button', { name: /subscribe to nomad/i });
     await expect(buyBtn).toBeVisible();
     await buyBtn.click();
 
