@@ -110,9 +110,22 @@ export default async function GuideDashboardPage() {
 
     const profilesMap = new Map(profiles?.map(p => [p.id, p.full_name]) || [])
     
-    // We also need user emails from auth (if we can join, else fallback to full name)
+    // Fetch emails using admin client for fallback
+    const adminSupabase = createAdminClient()
+    const travelerEmails = new Map<string, string>()
+    
+    await Promise.all(travelerIds.map(async (id) => {
+      const { data: { user: travelerUser } } = await adminSupabase.auth.admin.getUserById(id)
+      if (travelerUser?.email) {
+        travelerEmails.set(id, travelerUser.email)
+      }
+    }))
+    
     bookings.forEach(b => {
-      b.traveler_name = profilesMap.get(b.traveler_id) || 'Traveler'
+      const fullName = profilesMap.get(b.traveler_id)
+      const email = travelerEmails.get(b.traveler_id)
+      const emailPrefix = email ? email.split('@')[0] : null
+      b.traveler_name = fullName || emailPrefix || 'Traveler'
     })
   }
 

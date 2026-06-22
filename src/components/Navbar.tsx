@@ -68,38 +68,46 @@ export default function Navbar() {
   useEffect(() => {
     const supabase = createClient()
 
+    const fetchProfileAndRole = async (currentUser: User) => {
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('tier, role, full_name, avatar_url')
+        .eq('id', currentUser.id)
+        .single()
+      console.log('[Navbar] profile query →', { profile, profileError })
+      if (profile) {
+        setTier(profile.tier)
+        setIsAdmin(profile.role === 'admin')
+        setUserName(profile.full_name)
+        setAvatarUrl(profile.avatar_url)
+      }
+
+      const { data: guideRows } = await supabase
+        .from('guides')
+        .select('id')
+        .eq('id', currentUser.id)
+        .limit(1)
+      setIsGuide((guideRows?.length ?? 0) > 0)
+    }
+
     const getUser = async () => {
       const { data: { user: currentUser } } = await supabase.auth.getUser()
       setUser(currentUser)
       if (currentUser) {
-        const { data: profile, error: profileError } = await supabase
-          .from('profiles')
-          .select('tier, role, full_name, avatar_url')
-          .eq('id', currentUser.id)
-          .single()
-        console.log('[Navbar] profile query →', { profile, profileError })
-        if (profile) {
-          setTier(profile.tier)
-          setIsAdmin(profile.role === 'admin')
-          setUserName(profile.full_name)
-          setAvatarUrl(profile.avatar_url)
-        }
-
-        const { data: guideRows } = await supabase
-          .from('guides')
-          .select('id')
-          .eq('id', currentUser.id)
-          .limit(1)
-        setIsGuide((guideRows?.length ?? 0) > 0)
+        await fetchProfileAndRole(currentUser)
       }
     }
     getUser()
 
     // Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event: AuthChangeEvent, session: Session | null) => {
+      (event: AuthChangeEvent, session: Session | null) => {
+        if (event === 'INITIAL_SESSION') return; // Let getUser() handle the initial load
+
         setUser(session?.user ?? null)
-        if (!session?.user) {
+        if (session?.user) {
+          fetchProfileAndRole(session.user).catch(console.error)
+        } else {
           setTier(null)
           setIsGuide(false)
           setIsAdmin(false)

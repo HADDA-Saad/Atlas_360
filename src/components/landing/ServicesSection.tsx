@@ -67,7 +67,7 @@ const SERVICES = [
   {
     title: 'Booking bridge',
     description: 'A planned assisted flow for hotel, restaurant, and local experience coordination.',
-    status: 'Next',
+    status: 'Live',
     icon: ConciergeBell,
     tone: 'text-teal-300',
   },

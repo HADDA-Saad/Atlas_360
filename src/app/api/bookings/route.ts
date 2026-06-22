@@ -132,12 +132,21 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: insertError.message }, { status: 500 })
     }
 
+    // Fetch traveler's name
+    const { data: travelerProfile } = await supabase
+      .from('profiles')
+      .select('full_name')
+      .eq('id', user.id)
+      .maybeSingle()
+
+    const travelerName = travelerProfile?.full_name || user.email?.split('@')[0] || 'A traveler'
+
     // Notify the guide of the new booking request
     await createNotification({
       user_id: guide_id,
       type: 'booking_request',
       title: 'New booking request',
-      body: `${user.email} has requested a tour from ${start_date} to ${end_date}.`,
+      body: `${travelerName} has requested a tour from ${start_date} to ${end_date}.`,
       link: '/dashboard/guide',
     })
 
