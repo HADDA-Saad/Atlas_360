@@ -18,6 +18,7 @@ interface Guide {
   completedTrips: number
   reviewCount: number
   responseRate: number | null
+  memberSince: number | null
   avatar_url?: string | null
 }
 
