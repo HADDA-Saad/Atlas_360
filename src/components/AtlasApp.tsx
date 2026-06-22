@@ -34,6 +34,68 @@ export default function AtlasApp({ itineraries, userTier }: AtlasAppProps) {
   const [hotels, setHotels] = useState<PlaceResult[]>([])
   const [restaurants, setRestaurants] = useState<PlaceResult[]>([])
 
+  // AI Trip Planning State & Handlers
+  const [isSavingAITrip, setIsSavingAITrip] = useState(false)
+
+  const handleAIGenerated = useCallback((itinerary: Itinerary, stops: Location[]) => {
+    setSelectedItinerary(itinerary)
+    setLocations(stops)
+    setSelectedLocation(null)
+    setActiveTab('stops')
+  }, [])
+
+  const handleSaveAITrip = useCallback(async () => {
+    if (!selectedItinerary || selectedItinerary.id !== 'ai-generated') return
+    setIsSavingAITrip(true)
+    try {
+      const formattedStops = locations.map(loc => {
+        if (loc.existing_location_id && loc.existing_location_id !== 'null' && loc.existing_location_id !== 'undefined') {
+          return {
+            location_id: loc.existing_location_id,
+            day_number: loc.day_number || 1,
+            order_index: loc.order_index,
+            custom_notes: loc.tips || ''
+          }
+        } else {
+          return {
+            custom_stop: {
+              name: loc.name,
+              description: loc.description || '',
+              lat: loc.lat,
+              lng: loc.lng,
+              category: loc.category || 'other'
+            },
+            day_number: loc.day_number || 1,
+            order_index: loc.order_index,
+            custom_notes: loc.tips || ''
+          }
+        }
+      })
+
+      const res = await fetch('/api/user-itineraries', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: selectedItinerary.title,
+          description: selectedItinerary.description,
+          stops: formattedStops
+        })
+      })
+
+      if (!res.ok) {
+        const data = await res.json()
+        throw new Error(data.error || 'Failed to save itinerary')
+      }
+
+      alert('Trip saved successfully to My Trips!')
+      router.push('/dashboard')
+    } catch (err: any) {
+      alert(err.message || 'An error occurred while saving.')
+    } finally {
+      setIsSavingAITrip(false)
+    }
+  }, [selectedItinerary, locations, router])
+
   // Slide-over panel state
   const [isMagazineOpen, setIsMagazineOpen] = useState(false)
 
@@ -112,8 +174,11 @@ export default function AtlasApp({ itineraries, userTier }: AtlasAppProps) {
             activeTab={activeTab}
             onTabChange={setActiveTab}
             onPlacesLoaded={handlePlacesLoaded}
-            reviewItineraryId={selectedItinerary?.id ?? null}
+            reviewItineraryId={selectedItinerary?.id === 'ai-generated' ? null : (selectedItinerary?.id ?? null)}
             onOpenMagazine={handleOpenMagazine}
+            onAIGenerated={handleAIGenerated}
+            onSaveAITrip={handleSaveAITrip}
+            isSavingAITrip={isSavingAITrip}
           />
 
           {/* Map area */}

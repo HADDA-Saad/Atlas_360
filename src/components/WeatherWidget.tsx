@@ -14,15 +14,17 @@ interface WeatherData {
 }
 
 export default function WeatherWidget({ city }: { city: string }) {
+  const apiKey = process.env.NEXT_PUBLIC_OPENWEATHER_API_KEY
   const [weather, setWeather] = useState<WeatherData | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState(!!apiKey)
 
   useEffect(() => {
-    const apiKey = process.env.NEXT_PUBLIC_OPENWEATHER_API_KEY
-    if (!apiKey) {
-      setIsLoading(false)
-      return
-    }
+    if (!apiKey) return
+
+    let active = true
+    Promise.resolve().then(() => {
+      if (active) setIsLoading(true)
+    })
 
     const fetchWeather = async () => {
       try {
@@ -30,21 +32,23 @@ export default function WeatherWidget({ city }: { city: string }) {
           `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)},MA&units=metric&appid=${apiKey}`
         )
         if (!response.ok) {
-          // Silently discard non-OK responses (e.g. 401 invalid key, 404 city not found)
-          setIsLoading(false)
+          if (active) setIsLoading(false)
           return
         }
         const data = await response.json()
-        setWeather(data)
+        if (active) setWeather(data)
       } catch {
         // Network failure — stay silent, widget will return null
       } finally {
-        setIsLoading(false)
+        if (active) setIsLoading(false)
       }
     }
 
     fetchWeather()
-  }, [city])
+    return () => {
+      active = false
+    }
+  }, [city, apiKey])
 
   // If no key or fetch failed, silently return null
   if (!isLoading && !weather) return null

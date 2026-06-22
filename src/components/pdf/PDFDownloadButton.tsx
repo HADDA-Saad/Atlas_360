@@ -55,7 +55,7 @@ export default function PDFDownloadButton({ stops, title, userEmail, tier, cover
     } finally {
       setIsGenerating(false)
     }
-  }, [title, coverImageUrl, stops, userEmail])
+  }, [title, coverImageUrl, stops, userEmail, durationDays, region])
 
   const buttonIcon = (
     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
