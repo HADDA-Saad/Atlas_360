@@ -113,7 +113,7 @@ export default function BookingModal({ guide, onClose, itineraryId }: BookingMod
     : 0
 
   const totalPrice = totalDays * guide.daily_rate_mad
-  const deposit = Math.round(totalPrice * 0.15) // 15% booking reservation commission
+  const deposit = Math.round(totalPrice * 0.10) // 10% booking reservation commission
 
   // Submit request
   const handleSubmitBooking = async () => {
@@ -318,7 +318,7 @@ export default function BookingModal({ guide, onClose, itineraryId }: BookingMod
                 <div className="flex items-start gap-1.5 text-[10px] text-muted-foreground leading-normal mt-2 bg-background/50 p-2 rounded-lg border border-border/40">
                   <Info className="w-3.5 h-3.5 text-primary flex-shrink-0 mt-0.5" />
                   <p>
-                    A reservation deposit of <span className="font-bold text-[#D4622E]">{deposit} MAD</span> (15%) is required upon booking approval.
+                    A reservation deposit of <span className="font-bold text-[#D4622E]">{deposit} MAD</span> (10%) is required upon booking approval.
                   </p>
                 </div>
               </div>

@@ -21,9 +21,13 @@ export default async function DashboardPage() {
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('tier, subscription_status')
+    .select('tier, subscription_status, full_name, avatar_url, role')
     .eq('id', user.id)
     .single()
+
+  if (profile?.role === 'admin') {
+    redirect('/dashboard/requests')
+  }
 
   // Check if user is a guide
   const { data: guide } = await supabase
@@ -89,7 +93,7 @@ export default async function DashboardPage() {
         <div className="absolute inset-0 atlas-grain opacity-50"></div>
         <div className="w-full max-w-[1100px] mx-auto px-6 md:px-12 pb-8 relative z-10 flex items-center gap-4">
           <h1 className="font-[family-name:var(--font-cormorant)] text-4xl md:text-5xl font-semibold text-foreground tracking-tight">
-            Welcome back, {user.email?.split('@')[0]}
+            Welcome back, {profile?.full_name || user.email?.split('@')[0]}
           </h1>
           {tier === 'elite' && (
             <span className="px-3 py-1 bg-amber-500/10 border border-amber-500/20 text-amber-400 text-[10px] uppercase tracking-widest font-bold rounded-full mb-1">
@@ -106,12 +110,19 @@ export default async function DashboardPage() {
         <div className="w-full md:w-[280px] flex-shrink-0 flex flex-col gap-8">
           {/* Profile Card */}
           <div className="bg-card border border-border rounded-2xl p-6 flex flex-col items-center text-center">
-            <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center mb-4">
-              <span className="font-[family-name:var(--font-cormorant)] text-3xl font-semibold text-primary-foreground">
-                {user.email?.charAt(0).toUpperCase()}
-              </span>
+            <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center mb-4 overflow-hidden border-2 border-primary/20">
+              {profile?.avatar_url ? (
+                <img src={profile.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
+              ) : (
+                <span className="font-[family-name:var(--font-cormorant)] text-3xl font-semibold text-primary-foreground">
+                  {(profile?.full_name || user.email)?.charAt(0).toUpperCase()}
+                </span>
+              )}
             </div>
-            <p className="text-foreground font-medium text-sm mb-4 truncate w-full">{user.email}</p>
+            <p className="text-foreground font-medium text-sm mb-2 truncate w-full">{profile?.full_name || user.email}</p>
+            <Link href="/dashboard/settings" className="text-[10px] uppercase tracking-widest font-semibold text-muted-foreground hover:text-primary transition-colors mb-4">
+              Edit Profile
+            </Link>
             
             <div className="flex items-center gap-2 mb-6">
               <span className={`px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded-full border ${getTierColor(tier)}`}>

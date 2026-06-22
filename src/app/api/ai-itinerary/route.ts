@@ -30,7 +30,7 @@ export async function POST(request: Request) {
     // Retrieve user profile to check tier and ai_generations_count
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .select('tier, ai_generations_count')
+      .select('tier, ai_generations_count, role')
       .eq('id', user.id)
       .single()
 
@@ -40,9 +40,10 @@ export async function POST(request: Request) {
 
     const tier = profile.tier || 'explorer'
     const genCount = profile.ai_generations_count || 0
+    const isAdmin = profile.role === 'admin'
 
     // Enforce free tier (explorer) hard limit
-    if (tier === 'explorer' && genCount >= 1) {
+    if (!isAdmin && tier === 'explorer' && genCount >= 1) {
       return NextResponse.json({
         error: 'LIMIT_EXCEEDED',
         message: 'You have reached the limit of 1 free AI generation. Upgrade to Nomad or Elite for more!'
@@ -50,7 +51,7 @@ export async function POST(request: Request) {
     }
 
     // Enforce Nomad limit
-    if (tier === 'nomad' && genCount >= 6) {
+    if (!isAdmin && tier === 'nomad' && genCount >= 6) {
       return NextResponse.json({
         error: 'LIMIT_EXCEEDED',
         message: 'You have reached the limit of 6 AI generations on the Nomad plan. Upgrade to Elite for unlimited trips!'
