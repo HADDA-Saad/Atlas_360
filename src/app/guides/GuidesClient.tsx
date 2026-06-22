@@ -19,6 +19,7 @@ interface Guide {
   reviewCount: number
   responseRate: number | null
   memberSince: number | null
+  profile_picture_url?: string | null
 }
 
 interface Itinerary {
