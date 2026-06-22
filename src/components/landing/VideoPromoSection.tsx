@@ -104,7 +104,7 @@ export default function VideoPromoSection() {
                       Morocco Journey Designer
                     </h3>
                   </div>
-                  <span className="text-xs text-white/70 font-medium">02:14</span>
+                  <span className="text-xs text-white/70 font-medium">02:35</span>
                 </div>
               </div>
             </div>
