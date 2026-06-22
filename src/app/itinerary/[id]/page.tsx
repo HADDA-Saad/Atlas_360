@@ -321,45 +321,67 @@ export default async function PublicItineraryPage({
         </div>
 
         <div className="flex-1 overflow-y-auto p-6 space-y-8 atlas-scrollbar">
-          {Object.entries(groupedByDay).map(([dayStr, dayStops]) => (
-            <div key={dayStr} className="relative">
+          {Object.entries(groupedByDay).map(([dayStr, dayStops]) => {
+            const isDayLocked = viewerTier === 'explorer' && Number(dayStr) > 2;
+
+            return (
+            <div key={dayStr} className="relative mb-6">
               <div className="flex items-center gap-3 mb-4 sticky top-0 bg-background z-10 py-2">
                 <h3 className="text-[12px] uppercase tracking-[0.2em] font-semibold text-muted-foreground">Day {dayStr}</h3>
                 <div className="h-px flex-1 bg-gradient-to-r from-muted-foreground/20 to-transparent" />
               </div>
 
-              <div className="space-y-4">
-                {dayStops.map((stop, idx) => (
-                  <div key={`${dayStr}-${stop.locations.id}`} className="flex gap-4 group">
-                    <div className="flex flex-col items-center">
-                      <div className="w-7 h-7 rounded-full bg-card border border-border flex items-center justify-center text-[10px] font-semibold text-muted-foreground shadow-sm">
-                        {idx + 1}
+              <div className={`space-y-4 relative ${isDayLocked ? 'select-none' : ''}`}>
+                {isDayLocked && (
+                  <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-background/30 backdrop-blur-md rounded-xl border border-border/20 shadow-inner overflow-hidden pointer-events-auto">
+                    <div className="bg-card border border-primary/20 shadow-2xl rounded-2xl p-6 text-center max-w-[280px] mx-auto animate-in fade-in zoom-in duration-700">
+                      <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4 border border-primary/20">
+                        <svg className="w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+                        </svg>
                       </div>
-                      {idx !== dayStops.length - 1 && (
-                        <div className="w-px h-full min-h-[30px] bg-gradient-to-b from-muted-foreground/30 to-transparent mt-2" />
-                      )}
-                    </div>
-
-                    <div className="flex-1 pb-4">
-                      <h4 className="text-[15px] font-medium text-foreground mb-1 leading-snug">{stop.locations.name}</h4>
-                      {stop.locations.duration_minutes && (
-                        <span className="inline-block px-2 py-0.5 rounded-md bg-card border border-border text-muted-foreground text-[10px] mb-2">
-                          {stop.locations.duration_minutes} min
-                        </span>
-                      )}
-                      {stop.custom_notes ? (
-                        <div className="bg-card/50 border border-primary/10 rounded-lg p-3 mt-1">
-                          <p className="text-[12px] italic text-muted-foreground/80">{stop.custom_notes}</p>
-                        </div>
-                      ) : (
-                        <p className="text-[12px] text-muted-foreground/70 line-clamp-2">{stop.locations.description}</p>
-                      )}
+                      <h4 className="text-sm font-semibold text-foreground mb-1.5">Unlock the Journey</h4>
+                      <p className="text-[11px] text-muted-foreground mb-5 leading-relaxed px-2">Upgrade to Nomad to see the rest of this premium itinerary.</p>
+                      <Link href="/pricing" className="block w-full py-2.5 bg-primary text-primary-foreground text-[10px] font-bold uppercase tracking-widest rounded-lg hover:bg-primary/90 transition-colors shadow-lg shadow-primary/20">
+                        Upgrade Now
+                      </Link>
                     </div>
                   </div>
-                ))}
+                )}
+
+                <div className={isDayLocked ? 'opacity-40 blur-[4px] grayscale-[50%] pointer-events-none' : ''}>
+                  {dayStops.map((stop, idx) => (
+                    <div key={`${dayStr}-${stop.locations.id}`} className="flex gap-4 group mb-4">
+                      <div className="flex flex-col items-center">
+                        <div className="w-7 h-7 rounded-full bg-card border border-border flex items-center justify-center text-[10px] font-semibold text-muted-foreground shadow-sm">
+                          {idx + 1}
+                        </div>
+                        {idx !== dayStops.length - 1 && (
+                          <div className="w-px h-full min-h-[30px] bg-gradient-to-b from-muted-foreground/30 to-transparent mt-2" />
+                        )}
+                      </div>
+
+                      <div className="flex-1 pb-2">
+                        <h4 className="text-[15px] font-medium text-foreground mb-1 leading-snug">{stop.locations.name}</h4>
+                        {stop.locations.duration_minutes && (
+                          <span className="inline-block px-2 py-0.5 rounded-md bg-card border border-border text-muted-foreground text-[10px] mb-2">
+                            {stop.locations.duration_minutes} min
+                          </span>
+                        )}
+                        {stop.custom_notes ? (
+                          <div className="bg-card/50 border border-primary/10 rounded-lg p-3 mt-1">
+                            <p className="text-[12px] italic text-muted-foreground/80">{stop.custom_notes}</p>
+                          </div>
+                        ) : (
+                          <p className="text-[12px] text-muted-foreground/70 line-clamp-2">{stop.locations.description}</p>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
-          ))}
+          )})}
 
           <div className="px-2 pb-6">
             <PDFDownloadButton

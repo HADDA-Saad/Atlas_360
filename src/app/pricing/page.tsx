@@ -103,6 +103,9 @@ export default function PricingPage() {
               <li className="flex items-start gap-3 text-muted-foreground">
                 <CheckIcon /> Google Places tab
               </li>
+              <li className="flex items-start gap-3 text-muted-foreground">
+                <CheckIcon /> 1 free AI itinerary generation
+              </li>
               <li className="flex items-start gap-3 text-muted-foreground/40 line-through">
                 <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground/20 mt-1.5 flex-shrink-0" /> Logistics detail — locked
               </li>
@@ -160,6 +163,9 @@ export default function PricingPage() {
               <li className="flex items-start gap-3 text-muted-foreground">
                 <CheckIcon active /> Priority booking slots
               </li>
+              <li className="flex items-start gap-3 text-muted-foreground">
+                <CheckIcon active /> 6 AI itinerary generations
+              </li>
               <li className="flex items-start gap-3 text-muted-foreground/40 line-through">
                 <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground/20 mt-1.5 flex-shrink-0" /> Itinerary builder — locked
               </li>
@@ -196,6 +202,9 @@ export default function PricingPage() {
             <ul className="space-y-4 text-[13px]">
               <li className="flex items-start gap-3 text-muted-foreground">
                 <CheckIcon premium /> Everything in Nomad
+              </li>
+              <li className="flex items-start gap-3 text-muted-foreground">
+                <CheckIcon premium /> Unlimited AI itinerary generation
               </li>
               <li className="flex items-start gap-3 text-muted-foreground">
                 <CheckIcon premium /> Custom drag-drop itinerary builder

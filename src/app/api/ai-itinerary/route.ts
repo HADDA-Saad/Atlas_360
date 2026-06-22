@@ -42,10 +42,18 @@ export async function POST(request: Request) {
     const genCount = profile.ai_generations_count || 0
 
     // Enforce free tier (explorer) hard limit
-    if (tier === 'explorer' && genCount >= 3) {
+    if (tier === 'explorer' && genCount >= 1) {
       return NextResponse.json({
         error: 'LIMIT_EXCEEDED',
-        message: 'You have reached the limit of 3 free AI generations. Upgrade to Nomad or Elite to plan unlimited trips!'
+        message: 'You have reached the limit of 1 free AI generation. Upgrade to Nomad or Elite for more!'
+      }, { status: 403 })
+    }
+
+    // Enforce Nomad limit
+    if (tier === 'nomad' && genCount >= 6) {
+      return NextResponse.json({
+        error: 'LIMIT_EXCEEDED',
+        message: 'You have reached the limit of 6 AI generations on the Nomad plan. Upgrade to Elite for unlimited trips!'
       }, { status: 403 })
     }
 
