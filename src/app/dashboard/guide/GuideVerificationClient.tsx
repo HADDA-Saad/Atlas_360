@@ -72,7 +72,7 @@ export default function GuideVerificationClient({ guide, verificationRequest }: 
     setFormData((prev) => {
       const current = prev[field]
       if (current.includes(value)) {
-        return { ...prev, [field]: current.filter((item) => item !== value) }
+        return { ...prev, [field]: current.filter((item: string) => item !== value) }
       } else {
         return { ...prev, [field]: [...current, value] }
       }
