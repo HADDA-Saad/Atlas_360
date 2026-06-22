@@ -42,7 +42,7 @@ export default function AnalyticsTab({ initialData }: AnalyticsTabProps) {
   const totalCommissions = validBookings.reduce((sum, b) => sum + b.commission_amount, 0)
 
   // Estimated subscription revenue
-  const monthlySubscriptionRevenue = (nomadCount * 99) + (eliteCount * 249) // Estimation in MAD
+  const monthlySubscriptionRevenue = (nomadCount * 99) + (eliteCount * 199) // Estimation in MAD
 
   // 3. User Registration Timeline (Last 6 Months)
   const last6Months = Array.from({ length: 6 }).map((_, i) => {
@@ -90,7 +90,7 @@ export default function AnalyticsTab({ initialData }: AnalyticsTabProps) {
         <div className="bg-card border border-border rounded-2xl p-6 relative overflow-hidden">
           <div className="flex justify-between items-start mb-4">
             <div>
-              <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">Platform Commission (15%)</p>
+              <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">Platform Commission (10%)</p>
               <h3 className="font-[family-name:var(--font-cormorant)] text-3xl font-bold text-[#D4622E] mt-1">
                 {totalCommissions.toLocaleString()} <span className="text-sm font-semibold text-muted-foreground">MAD</span>
               </h3>
@@ -154,7 +154,7 @@ export default function AnalyticsTab({ initialData }: AnalyticsTabProps) {
                 <span className="text-[10px] text-[#D4622E]/80 mt-1">{nomadPct.toFixed(0)}% of members</span>
               </div>
               <div className="p-4 rounded-xl border border-amber-500/10 bg-amber-500/5 flex flex-col justify-between">
-                <span className="text-[9px] uppercase tracking-widest font-bold text-amber-400">Elite (249 MAD/mo)</span>
+                <span className="text-[9px] uppercase tracking-widest font-bold text-amber-400">Elite (199 MAD/mo)</span>
                 <span className="font-[family-name:var(--font-cormorant)] text-2xl font-bold text-amber-400 mt-2">{eliteCount}</span>
                 <span className="text-[10px] text-amber-400/80 mt-1">{elitePct.toFixed(0)}% of members</span>
               </div>

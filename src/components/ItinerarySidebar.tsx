@@ -493,11 +493,13 @@ function SidebarContent({
         setUserEmail(user.email || '')
         const { data: profile } = await supabase
           .from('profiles')
-          .select('tier, ai_generations_count')
+          .select('tier, ai_generations_count, role')
           .eq('id', user.id)
           .single()
         if (profile) {
-          if (profile.tier) {
+          if (profile.role === 'admin') {
+            setUserTier('elite')
+          } else if (profile.tier) {
             setUserTier(profile.tier as UserTier)
           }
           if (profile.ai_generations_count !== undefined && profile.ai_generations_count !== null) {
@@ -851,11 +853,35 @@ function SidebarContent({
             {isLoadingLocations ? (
               <SidebarSkeleton />
             ) : activeTab === 'magazine' ? (
-              <MagazinePanel
-                locations={locations}
-                itinerary={selectedItinerary}
-                reviewItineraryId={reviewItineraryId}
-              />
+              userTier === 'explorer' ? (
+                <div className="relative h-full flex flex-col">
+                  <div className="opacity-30 blur-[4px] pointer-events-none flex-1 overflow-hidden">
+                    <MagazinePanel locations={locations.slice(0, 3)} itinerary={selectedItinerary} />
+                  </div>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center z-10 p-6 text-center">
+                    <div className="w-12 h-12 rounded-full bg-card border border-border flex items-center justify-center mb-4 shadow-xl">
+                      <svg className="w-5 h-5 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+                      </svg>
+                    </div>
+                    <h4 className="font-[family-name:var(--font-cormorant)] text-xl font-semibold text-foreground mb-2">
+                      Unlock Travel Book
+                    </h4>
+                    <p className="text-[12px] text-muted-foreground mb-5">
+                      Subscribe to view beautiful interactive magazines for your itineraries.
+                    </p>
+                    <button onClick={() => router.push('/pricing')} className="px-6 py-2.5 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground text-[11px] font-semibold uppercase tracking-widest transition-colors shadow-lg">
+                      Unlock — 99 MAD/mo
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <MagazinePanel
+                  locations={locations}
+                  itinerary={selectedItinerary}
+                  reviewItineraryId={reviewItineraryId}
+                />
+              )
             ) : activeTab === 'stops' ? (
               <div className="relative">
                 <div className="flex flex-col gap-1 px-4 pb-6">
@@ -864,10 +890,10 @@ function SidebarContent({
                     const nextLoc = locations[i + 1];
                     const showDayDivider = !prevLoc || prevLoc.day_number !== location.day_number;
                     const nextTransport = nextLoc ? nextLoc.transport : null;
-                    const isLocked = userTier === 'explorer' && (location.day_number || 1) > 1;
+                    const isLocked = userTier === 'explorer' && (location.day_number || 1) > 2;
 
                     return (
-                      <div key={location.id} className={isLocked ? 'opacity-30 blur-[2px] pointer-events-none select-none transition-all duration-500' : ''}>
+                      <div key={`${location.id}-${i}`} className={isLocked ? 'opacity-30 blur-[2px] pointer-events-none select-none transition-all duration-500' : ''}>
                         <StopItem
                           location={location}
                           isSelected={selectedLocationId === location.id}
@@ -958,7 +984,7 @@ function SidebarContent({
                 </div>
 
                 {/* Lock Overlay + CTA */}
-                {selectedItinerary.id !== 'ai-generated' && userTier === 'explorer' && locations.some(l => (l.day_number || 1) > 1) && (
+                {selectedItinerary.id !== 'ai-generated' && userTier === 'explorer' && locations.some(l => (l.day_number || 1) > 2) && (
                   <div className="absolute inset-x-0 bottom-0 top-[20%] flex flex-col items-center justify-center z-10 bg-gradient-to-t from-background via-background/90 to-transparent pointer-events-auto pb-10">
                     <div className="w-12 h-12 rounded-full bg-card border border-border flex items-center justify-center mb-4 shadow-xl">
                       <svg className="w-5 h-5 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -981,7 +1007,31 @@ function SidebarContent({
                 )}
               </div>
             ) : (
-              locations.length > 0 ? (() => {
+              userTier === 'explorer' ? (
+                <div className="relative h-full flex flex-col">
+                  <div className="opacity-30 blur-[4px] pointer-events-none flex-1 p-4">
+                    <div className="h-32 bg-muted rounded-xl mb-4" />
+                    <div className="h-32 bg-muted rounded-xl mb-4" />
+                    <div className="h-32 bg-muted rounded-xl" />
+                  </div>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center z-10 p-6 text-center">
+                    <div className="w-12 h-12 rounded-full bg-card border border-border flex items-center justify-center mb-4 shadow-xl">
+                      <svg className="w-5 h-5 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+                      </svg>
+                    </div>
+                    <h4 className="font-[family-name:var(--font-cormorant)] text-xl font-semibold text-foreground mb-2">
+                      Unlock Nearby Places
+                    </h4>
+                    <p className="text-[12px] text-muted-foreground mb-5">
+                      Subscribe to see luxury hotels and top-rated restaurants near these stops.
+                    </p>
+                    <button onClick={() => router.push('/pricing')} className="px-6 py-2.5 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground text-[11px] font-semibold uppercase tracking-widest transition-colors shadow-lg">
+                      Unlock — 99 MAD/mo
+                    </button>
+                  </div>
+                </div>
+              ) : locations.length > 0 ? (() => {
                 const targetLoc = locations.find(l => l.id === selectedLocationId) || locations[0];
                 return (
                   <PlacesTab
@@ -1018,7 +1068,7 @@ function SidebarContent({
               <div className="flex items-center justify-between p-3.5 bg-muted/40 border border-border rounded-xl text-xs text-muted-foreground">
                 <span>Free generations left:</span>
                 <span className="font-semibold text-foreground">
-                  {Math.max(0, 3 - aiGenerationsCount)} / 3
+                  {Math.max(0, 1 - aiGenerationsCount)} / 1
                 </span>
               </div>
             )}
@@ -1029,10 +1079,10 @@ function SidebarContent({
               </div>
             )}
 
-            {userTier === 'explorer' && aiGenerationsCount >= 3 ? (
+            {userTier === 'explorer' && aiGenerationsCount >= 1 ? (
               <div className="bg-primary/5 border border-primary/20 p-5 rounded-xl text-center">
                 <p className="text-[12px] text-muted-foreground mb-4 leading-normal">
-                  You have used all 3 free generations. Upgrade to Nomad or Elite to plan unlimited trips.
+                  You have used your 1 free generation. Upgrade to Nomad or Elite to plan unlimited trips.
                 </p>
                 <button
                   onClick={() => router.push('/pricing')}

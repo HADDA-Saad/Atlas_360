@@ -27,7 +27,7 @@ export default async function GuidesPage() {
   // Parallel fetches for profiles + stats
   const [profilesRes, bookingsRes, reviewsRes] = await Promise.all([
     guideIds.length > 0
-      ? supabase.from('profiles').select('id, full_name, created_at').in('id', guideIds)
+      ? supabase.from('profiles').select('id, full_name, avatar_url, created_at').in('id', guideIds)
       : Promise.resolve({ data: [] }),
     guideIds.length > 0
       ? supabase.from('guide_bookings').select('guide_id, status').in('guide_id', guideIds)
@@ -63,7 +63,7 @@ export default async function GuidesPage() {
   const guidesWithProfiles = guides.map(g => {
     const p     = profiles.find((prof: any) => prof.id === g.id)
     const stats = statsByGuide.get(g.id) ?? { completedTrips: 0, responseRate: null, reviewCount: 0, memberSince: null }
-    return { ...g, full_name: p?.full_name ?? 'Local Guide', ...stats }
+    return { ...g, full_name: p?.full_name ?? 'Local Guide', avatar_url: p?.avatar_url ?? null, ...stats }
   })
 
   let itineraries: any[] = []

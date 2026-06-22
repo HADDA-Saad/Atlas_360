@@ -142,9 +142,9 @@ export default function MapView({
         clickableIcons={false}
         className="w-full h-full"
       >
-        {sortedLocations.map((location) => (
+        {sortedLocations.map((location, index) => (
           <AdvancedMarker
-            key={location.id}
+            key={`${location.id}-${index}`}
             position={{ lat: location.lat, lng: location.lng }}
             title={location.name}
             onClick={() => handleMarkerClick(location)}

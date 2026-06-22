@@ -62,7 +62,7 @@ describe('POST /api/ai-itinerary', () => {
   it('403 — limit exceeded on free explorer tier', async () => {
     mockGetUser.mockResolvedValueOnce({ data: { user: { id: 'user-123' } } })
     mockSingle.mockResolvedValueOnce({
-      data: { tier: 'explorer', ai_generations_count: 3 },
+      data: { tier: 'explorer', ai_generations_count: 1 },
       error: null,
     })
 
@@ -70,7 +70,7 @@ describe('POST /api/ai-itinerary', () => {
     expect(res.status).toBe(403)
     const json = await res.json()
     expect(json.error).toBe('LIMIT_EXCEEDED')
-    expect(json.message).toContain('limit of 3 free AI generations')
+    expect(json.message).toContain('limit of 1 free AI generation')
   })
 
   it('400 — missing prompt', async () => {

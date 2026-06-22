@@ -165,8 +165,8 @@ export default function UserManagementTab({ initialUsers }: UserManagementTabPro
                       </span>
                     </td>
                     <td className="px-4 py-3">
-                      <span className={`px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider border ${getTierColor(user.tier)}`}>
-                        {user.tier.replace('_', ' ')}
+                      <span className={`px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider border ${user.role === 'admin' ? getTierColor('elite') : getTierColor(user.tier)}`}>
+                        {user.role === 'admin' ? 'ELITE' : user.tier.replace('_', ' ')}
                       </span>
                     </td>
                     <td className="px-4 py-3">

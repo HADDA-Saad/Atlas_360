@@ -38,6 +38,8 @@ export default function Navbar() {
   const [isLoggingOut, setIsLoggingOut] = useState(false)
   const [isGuide, setIsGuide] = useState(false)
   const [isAdmin, setIsAdmin] = useState(false)
+  const [userName, setUserName] = useState<string | null>(null)
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
@@ -72,13 +74,15 @@ export default function Navbar() {
       if (currentUser) {
         const { data: profile, error: profileError } = await supabase
           .from('profiles')
-          .select('tier, role')
+          .select('tier, role, full_name, avatar_url')
           .eq('id', currentUser.id)
           .single()
         console.log('[Navbar] profile query →', { profile, profileError })
         if (profile) {
           setTier(profile.tier)
           setIsAdmin(profile.role === 'admin')
+          setUserName(profile.full_name)
+          setAvatarUrl(profile.avatar_url)
         }
 
         const { data: guideRows } = await supabase
@@ -99,6 +103,8 @@ export default function Navbar() {
           setTier(null)
           setIsGuide(false)
           setIsAdmin(false)
+          setUserName(null)
+          setAvatarUrl(null)
         }
       }
     )
@@ -168,7 +174,7 @@ export default function Navbar() {
 
       {/* Center Links (Desktop only) */}
       <div className="hidden md:flex items-center gap-8 absolute left-1/2 -translate-x-1/2">
-        {NAV_LINKS.map(link => (
+        {NAV_LINKS.filter(link => !(isAdmin && link.name === 'PRICING')).map(link => (
           <Link 
             key={link.href} 
             href={link.href}
@@ -203,16 +209,24 @@ export default function Navbar() {
               onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
               className="flex items-center gap-2.5 hover:bg-muted/50 p-1.5 rounded-lg transition-colors border border-transparent hover:border-border"
             >
-              <div className="w-7 h-7 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center">
-                <span className="text-[11px] font-semibold text-primary uppercase">
-                  {user.email?.charAt(0) ?? 'U'}
-                </span>
+              <div className="w-7 h-7 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center overflow-hidden">
+                {avatarUrl ? (
+                  <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                ) : (
+                  <span className="text-[11px] font-semibold text-primary uppercase">
+                    {(userName || user.email)?.charAt(0) ?? 'U'}
+                  </span>
+                )}
               </div>
               <div className="hidden sm:flex flex-col items-start text-left">
                 <span className="text-[12px] text-foreground font-medium max-w-[120px] truncate leading-tight">
-                  {user.email}
+                  {userName || user.email}
                 </span>
-                {tier && (
+                {isAdmin ? (
+                  <span className="text-[9px] font-bold text-[#D4622E] uppercase tracking-widest mt-0.5">
+                    ADMIN
+                  </span>
+                ) : tier && (
                   <span className="text-[9px] font-bold text-primary uppercase tracking-widest mt-0.5">
                     {tier}
                   </span>
@@ -227,23 +241,37 @@ export default function Navbar() {
                 {/* Email header — always visible */}
                 <div className="px-4 py-2.5 border-b border-border/50 mb-1">
                   <span className="text-[12px] text-foreground font-medium block truncate">
-                    {user.email}
+                    {userName || user.email}
                   </span>
-                  {tier && (
+                  {isAdmin ? (
+                    <span className="text-[9px] font-bold text-[#D4622E] uppercase tracking-widest mt-0.5 block">
+                      ADMIN
+                    </span>
+                  ) : tier && (
                     <span className="text-[9px] font-bold text-primary uppercase tracking-widest mt-0.5 block">
                       {tier}
                     </span>
                   )}
                 </div>
 
-                {/* Account — always shown */}
+                {/* Account & Settings */}
+                {!isAdmin && (
+                  <Link
+                    href="/dashboard"
+                    onClick={() => setIsUserMenuOpen(false)}
+                    className="flex items-center gap-3 px-4 py-2.5 text-[13px] font-medium text-foreground/80 hover:text-primary hover:bg-muted/50 transition-colors"
+                  >
+                    <LayoutDashboard className="w-4 h-4" />
+                    Account
+                  </Link>
+                )}
                 <Link
-                  href="/dashboard"
+                  href="/dashboard/settings"
                   onClick={() => setIsUserMenuOpen(false)}
                   className="flex items-center gap-3 px-4 py-2.5 text-[13px] font-medium text-foreground/80 hover:text-primary hover:bg-muted/50 transition-colors"
                 >
-                  <LayoutDashboard className="w-4 h-4" />
-                  Account
+                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                  Settings
                 </Link>
 
                 {/* Guide → Dashboard, Traveler → My Bookings */}
@@ -256,7 +284,7 @@ export default function Navbar() {
                     <CalendarCheck className="w-4 h-4" />
                     Dashboard
                   </Link>
-                ) : (
+                ) : !isAdmin ? (
                   <Link
                     href="/my-bookings"
                     onClick={() => setIsUserMenuOpen(false)}
@@ -265,7 +293,7 @@ export default function Navbar() {
                     <CalendarCheck className="w-4 h-4" />
                     My Bookings
                   </Link>
-                )}
+                ) : null}
 
                 {/* Admin Portal */}
                 {isAdmin && (
@@ -328,7 +356,7 @@ export default function Navbar() {
               </SheetHeader>
               
               <div className="flex flex-col py-6 px-4 gap-2 flex-1 overflow-y-auto">
-                {NAV_LINKS.map(link => (
+                {NAV_LINKS.filter(link => !(isAdmin && link.name === 'PRICING')).map(link => (
                   <Link 
                     key={link.href} 
                     href={link.href}
@@ -352,7 +380,7 @@ export default function Navbar() {
                   </Link>
                 )}
 
-                {user && !isGuide && (
+                {user && !isGuide && !isAdmin && (
                   <Link
                     href="/my-bookings"
                     onClick={() => setIsMobileMenuOpen(false)}

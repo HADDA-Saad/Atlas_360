@@ -62,7 +62,7 @@ export default function VideoPromoSection() {
                 </div>
                 <div className="flex items-center gap-1.5 text-[10px] font-medium tracking-wider text-muted-foreground uppercase">
                   <Film size={10} className="text-muted-foreground" />
-                  walkthrough_demo.mp4
+                  Platform Walkthrough
                 </div>
                 <div className="w-12" /> {/* Spacing */}
               </div>

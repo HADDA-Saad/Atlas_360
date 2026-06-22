@@ -19,6 +19,7 @@ interface Guide {
   reviewCount: number
   responseRate: number | null
   memberSince: number | null
+  avatar_url?: string | null
 }
 
 interface Itinerary {
@@ -296,9 +297,9 @@ export default function GuidesClient({ guides, itineraries, user }: GuidesClient
                   {/* Guide Identity Card Header */}
                   <div className="flex items-center gap-4 mb-5">
                     <div className="w-12 h-12 bg-primary/10 border border-primary/20 rounded-full flex items-center justify-center text-primary font-bold text-xs uppercase shadow-inner overflow-hidden shrink-0">
-                      {guide.profile_picture_url ? (
+                      {guide.avatar_url ? (
                         <img 
-                          src={guide.profile_picture_url} 
+                          src={guide.avatar_url} 
                           alt={guide.full_name || 'Guide'} 
                           className="w-full h-full object-cover" 
                         />
