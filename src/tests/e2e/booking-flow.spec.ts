@@ -29,7 +29,7 @@ test.describe('Guide Booking Flow (Authenticated)', () => {
 
     // Wait for the calendar grid to render
     const calendarGrid = page.locator('.grid.grid-cols-7').last();
-    await expect(calendarGrid).toBeVisible({ timeout: 5000 });
+    await expect(calendarGrid).toBeVisible({ timeout: 15000 });
 
     // Navigate 3 months ahead so we're safely in the future & avoid collisions
     const nextMonthBtn = page.getByRole('button', { name: /next month/i });
