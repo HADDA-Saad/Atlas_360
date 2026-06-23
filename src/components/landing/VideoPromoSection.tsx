@@ -7,8 +7,8 @@ import Image from 'next/image'
 export default function VideoPromoSection() {
   const [isOpen, setIsOpen] = useState(false)
 
-  // A beautiful free public stock video of the desert/Moroccan-like landscape for demo purposes
-  const videoUrl = '/demo.mp4'
+  // TODO: Replace this empty string with the Public URL from your Supabase Storage bucket
+  const videoUrl = 'https://usbcnmsodhnovziklmgp.supabase.co/storage/v1/object/public/videos/Atlas%20360%20App%20demo.mp4'
   return (
     <section className="bg-secondary/40 border-y border-border py-24 md:py-32">
       <div className="mx-auto max-w-7xl px-6 md:px-12">
@@ -137,7 +137,7 @@ export default function VideoPromoSection() {
               autoPlay
               controls
               playsInline
-              className="w-full h-full object-contain"
+              className="w-full h-full object-cover"
             />
           </div>
         </div>
