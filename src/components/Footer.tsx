@@ -37,13 +37,12 @@ export default function Footer() {
             </p>
           </div>
 
-          {/* Right Side: Links */}
           <div className="flex flex-wrap justify-center gap-x-8 gap-y-3">
-            <Link href="#" className="text-xs text-foreground/60 hover:text-primary transition-colors">Terms of Service</Link>
-            <Link href="#" className="text-xs text-foreground/60 hover:text-primary transition-colors">Privacy Policy</Link>
-            <Link href="#" className="text-xs text-foreground/60 hover:text-primary transition-colors">Contact Support</Link>
-            <Link href="#" className="text-xs text-foreground/60 hover:text-primary transition-colors">Cultural Ethics</Link>
-            <Link href="#" className="text-xs text-foreground/60 hover:text-primary transition-colors">Our Story</Link>
+            <Link href="/terms" className="text-xs text-foreground/60 hover:text-primary transition-colors">Terms of Service</Link>
+            <Link href="/privacy" className="text-xs text-foreground/60 hover:text-primary transition-colors">Privacy Policy</Link>
+            <Link href="/help" className="text-xs text-foreground/60 hover:text-primary transition-colors">Contact Support</Link>
+            <Link href="/about" className="text-xs text-foreground/60 hover:text-primary transition-colors">Cultural Ethics</Link>
+            <Link href="/about" className="text-xs text-foreground/60 hover:text-primary transition-colors">Our Story</Link>
           </div>
 
         </div>
