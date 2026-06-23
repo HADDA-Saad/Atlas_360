@@ -47,3 +47,6 @@ next-env.d.ts
 
 # scratch files
 scratch/
+
+# large assets
+public/demo.mp4

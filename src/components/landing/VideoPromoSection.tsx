@@ -8,13 +8,12 @@ export default function VideoPromoSection() {
   const [isOpen, setIsOpen] = useState(false)
 
   // A beautiful free public stock video of the desert/Moroccan-like landscape for demo purposes
-  const videoUrl = 'https://assets.mixkit.co/videos/preview/mixkit-sahara-desert-dunes-under-a-clear-sky-40097-large.mp4'
-
+  const videoUrl = '/demo.mp4'
   return (
     <section className="bg-secondary/40 border-y border-border py-24 md:py-32">
       <div className="mx-auto max-w-7xl px-6 md:px-12">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
-          
+
           {/* Left Side: Copy & Info */}
           <div className="lg:col-span-5 flex flex-col gap-6">
             <div className="flex flex-col gap-3">
@@ -27,7 +26,7 @@ export default function VideoPromoSection() {
                 <span className="italic text-foreground/80">in Action</span>
               </h2>
             </div>
-            
+
             <p className="text-muted-foreground text-sm md:text-base leading-relaxed font-light">
               Watch our short product demonstration to see how we blend immersive 360° Street View panoramas, intelligent route building, and certified local guides into a seamless travel platform.
             </p>
@@ -52,7 +51,7 @@ export default function VideoPromoSection() {
           {/* Right Side: Elegant Video Mockup/Placeholder */}
           <div className="lg:col-span-7">
             <div className="relative group rounded-xl overflow-hidden border border-border bg-card shadow-2xl transition-all duration-500 hover:border-primary/30">
-              
+
               {/* Browser/Player Header Bar */}
               <div className="flex items-center justify-between px-4 py-3 bg-secondary/80 border-b border-border">
                 <div className="flex items-center gap-1.5">
@@ -68,7 +67,7 @@ export default function VideoPromoSection() {
               </div>
 
               {/* Video Thumbnail Area */}
-              <div 
+              <div
                 className="relative aspect-video w-full bg-black/90 cursor-pointer overflow-hidden group/thumb"
                 onClick={() => setIsOpen(true)}
               >
@@ -116,16 +115,16 @@ export default function VideoPromoSection() {
 
       {/* Modern Lightbox Video Modal */}
       {isOpen && (
-        <div 
+        <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 backdrop-blur-md p-4 animate-in fade-in duration-300"
           onClick={() => setIsOpen(false)}
         >
-          <div 
+          <div
             className="relative w-full max-w-5xl rounded-xl overflow-hidden border border-white/10 bg-black/90 shadow-2xl aspect-video max-h-[85vh] animate-in zoom-in-95 duration-300"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Close Button */}
-            <button 
+            <button
               onClick={() => setIsOpen(false)}
               className="absolute top-4 right-4 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-black/60 text-white/80 hover:text-white hover:bg-black/90 border border-white/10 transition-all focus:outline-none"
             >
@@ -133,7 +132,7 @@ export default function VideoPromoSection() {
             </button>
 
             {/* Video Player */}
-            <video 
+            <video
               src={videoUrl}
               autoPlay
               controls
