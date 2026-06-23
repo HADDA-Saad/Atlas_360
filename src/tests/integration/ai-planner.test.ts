@@ -96,7 +96,7 @@ describe('POST /api/ai-itinerary', () => {
           select: vi.fn().mockReturnValue({
             eq: vi.fn().mockReturnValue({
               single: vi.fn().mockResolvedValue({
-                data: { tier: 'explorer', ai_generations_count: 1 },
+                data: { tier: 'explorer', ai_generations_count: 0 },
                 error: null,
               })
             })
@@ -153,11 +153,11 @@ describe('POST /api/ai-itinerary', () => {
     expect(res.status).toBe(200)
     const json = await res.json()
     expect(json.itinerary).toEqual(mockGeminiJSON)
-    expect(json.newGenerationsCount).toBe(2)
+    expect(json.newGenerationsCount).toBe(1)
 
     // Verify database count was incremented via adminSupabase
     expect(mockAdminFrom).toHaveBeenCalledWith('profiles')
-    expect(mockAdminUpdate).toHaveBeenCalledWith({ ai_generations_count: 2 })
+    expect(mockAdminUpdate).toHaveBeenCalledWith({ ai_generations_count: 1 })
     expect(mockAdminEq).toHaveBeenCalledWith('id', 'user-123')
   })
 })

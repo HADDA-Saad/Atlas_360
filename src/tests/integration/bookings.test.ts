@@ -13,6 +13,7 @@ const mockInsert = vi.fn();
 const mockIn = vi.fn();
 // End of active-booking-conflict chain: .eq().in().lte().gte()
 const mockGteActive = vi.fn();
+const mockMaybeSingle = vi.fn();
 
 // ── Admin client mocks (createAdminClient used for insert + notifications) ───
 const mockAdminFrom = vi.fn();
@@ -39,8 +40,9 @@ describe('POST /api/bookings', () => {
 
     // Server client chain
     mockFrom.mockReturnValue({ select: mockSelect, insert: mockInsert });
-    mockSelect.mockReturnValue({ eq: mockEq, single: mockSingle });
-    mockEq.mockReturnValue({ single: mockSingle, gte: mockGte, in: mockIn });
+    mockSelect.mockReturnValue({ eq: mockEq, single: mockSingle, maybeSingle: mockMaybeSingle });
+    mockEq.mockReturnValue({ single: mockSingle, maybeSingle: mockMaybeSingle, gte: mockGte, in: mockIn });
+    mockMaybeSingle.mockResolvedValue({ data: { full_name: 'Test Traveler' }, error: null });
     mockGte.mockReturnValue({ lte: mockLte });                   // availability chain: .gte().lte()
     mockIn.mockReturnValue({ lte: mockLte });                    // active-conflict chain: .in().lte()
     mockLte.mockReturnValue({ gte: mockGteActive });             // active-conflict chain: .lte().gte()

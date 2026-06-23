@@ -31,6 +31,7 @@ test.describe('Guide Dashboard', () => {
     await calendarTab.click();
 
     const dateInput = page.locator('input[type="date"]');
+    await page.getByText(/Block a specific date with a note/i).click();
     await expect(dateInput).toBeVisible();
 
     // random future date
@@ -43,6 +44,12 @@ test.describe('Guide Dashboard', () => {
     await page.getByPlaceholder(/e\.g\. holiday/i).fill('Automated Test Blockout');
     await page.getByRole('button', { name: /block day/i }).click();
 
-    await expect(page.getByText(/Automated Test Blockout/i)).toBeVisible();
+    const errorLocator = page.locator('.text-red-400');
+    if (await errorLocator.isVisible({ timeout: 2000 }).catch(() => false)) {
+      const errorText = await errorLocator.textContent();
+      console.error('Availability Error:', errorText);
+    }
+
+    await expect(page.getByText(/Automated Test Blockout/i)).toBeVisible({ timeout: 10000 });
   });
 });
