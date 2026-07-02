@@ -4,7 +4,7 @@ import type { UserTier } from '@/types'
 
 // UUID v4 regex pattern for validation
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
-const TIER_LEVELS: Record<UserTier, number> = { explorer: 0, nomad: 1, elite: 2 }
+const TIER_LEVELS: Record<UserTier, number> = { explorer: 0, nomad: 1, elite: 2, concierge: 3 }
 
 export async function GET(
   _request: Request,

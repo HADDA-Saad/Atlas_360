@@ -21,7 +21,7 @@ export default async function ComposePage() {
     .eq('id', user.id)
     .single()
 
-  if (!profile || profile.tier !== 'elite') {
+  if (!profile || (profile.tier !== 'elite' && profile.tier !== 'concierge')) {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 pt-24 atlas-grain text-center">
         <div className="w-16 h-16 rounded-full bg-card border border-border flex items-center justify-center mb-6 shadow-xl">

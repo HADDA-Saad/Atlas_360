@@ -31,10 +31,12 @@ export default function AnalyticsTab({ initialData }: AnalyticsTabProps) {
   const explorerCount = profiles.filter(p => p.tier === 'explorer').length
   const nomadCount = profiles.filter(p => p.tier === 'nomad').length
   const eliteCount = profiles.filter(p => p.tier === 'elite').length
+  const conciergeCount = profiles.filter(p => p.tier === 'concierge').length
 
   const explorerPct = (explorerCount / totalUsers) * 100
   const nomadPct = (nomadCount / totalUsers) * 100
   const elitePct = (eliteCount / totalUsers) * 100
+  const conciergePct = (conciergeCount / totalUsers) * 100
 
   // 2. Financial Metrics Calculations
   const validBookings = bookings.filter(b => b.status === 'paid' || b.status === 'completed')
@@ -42,7 +44,7 @@ export default function AnalyticsTab({ initialData }: AnalyticsTabProps) {
   const totalCommissions = validBookings.reduce((sum, b) => sum + b.commission_amount, 0)
 
   // Estimated subscription revenue
-  const monthlySubscriptionRevenue = (nomadCount * 99) + (eliteCount * 199) // Estimation in MAD
+  const monthlySubscriptionRevenue = (nomadCount * 99) + (eliteCount * 199) + (conciergeCount * 1000) // Estimation in MAD
 
   // 3. User Registration Timeline (Last 6 Months)
   const last6Months = Array.from({ length: 6 }).map((_, i) => {
@@ -139,10 +141,11 @@ export default function AnalyticsTab({ initialData }: AnalyticsTabProps) {
               <div style={{ width: `${explorerPct}%` }} className="bg-muted-foreground/30 h-full" title="Explorer" />
               <div style={{ width: `${nomadPct}%` }} className="bg-[#D4622E] h-full" title="Nomad" />
               <div style={{ width: `${elitePct}%` }} className="bg-amber-400 h-full" title="Elite" />
+              <div style={{ width: `${conciergePct}%` }} className="bg-purple-500 h-full" title="Concierge" />
             </div>
 
             {/* Tier Lists */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <div className="p-4 rounded-xl border border-border/40 bg-background/50 flex flex-col justify-between">
                 <span className="text-[9px] uppercase tracking-widest font-bold text-muted-foreground">Explorer (Free)</span>
                 <span className="font-[family-name:var(--font-cormorant)] text-2xl font-bold text-foreground mt-2">{explorerCount}</span>
@@ -157,6 +160,11 @@ export default function AnalyticsTab({ initialData }: AnalyticsTabProps) {
                 <span className="text-[9px] uppercase tracking-widest font-bold text-amber-400">Elite (199 MAD/mo)</span>
                 <span className="font-[family-name:var(--font-cormorant)] text-2xl font-bold text-amber-400 mt-2">{eliteCount}</span>
                 <span className="text-[10px] text-amber-400/80 mt-1">{elitePct.toFixed(0)}% of members</span>
+              </div>
+              <div className="p-4 rounded-xl border border-purple-500/10 bg-purple-500/5 flex flex-col justify-between">
+                <span className="text-[9px] uppercase tracking-widest font-bold text-purple-400">Concierge (1000 MAD/mo)</span>
+                <span className="font-[family-name:var(--font-cormorant)] text-2xl font-bold text-purple-400 mt-2">{conciergeCount}</span>
+                <span className="text-[10px] text-purple-400/80 mt-1">{conciergePct.toFixed(0)}% of members</span>
               </div>
             </div>
           </div>

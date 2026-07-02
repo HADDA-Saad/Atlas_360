@@ -9,7 +9,7 @@ export async function POST(request: Request) {
   // Check Elite tier
   const { data: profile } = await supabase
     .from('profiles').select('tier').eq('id', user.id).single()
-  if (profile?.tier !== 'elite') {
+  if (profile?.tier !== 'elite' && profile?.tier !== 'concierge') {
     return NextResponse.json({ error: 'Elite tier required' }, { status: 403 })
   }
 

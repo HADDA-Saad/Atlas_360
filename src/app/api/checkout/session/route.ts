@@ -80,7 +80,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ url: session.url, sessionId: session.id })
     }
 
-    if (tier !== 'nomad' && tier !== 'elite') {
+    if (tier !== 'nomad' && tier !== 'elite' && tier !== 'concierge') {
       return NextResponse.json({ error: 'Invalid tier requested.' }, { status: 400 })
     }
 
@@ -95,13 +95,17 @@ export async function POST(req: Request) {
 
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
 
-    const configuredPriceId = tier === 'elite'
-      ? (isYearly ? process.env.STRIPE_ELITE_YEARLY_PRICE_ID : process.env.STRIPE_ELITE_PRICE_ID)
-      : (isYearly ? process.env.STRIPE_NOMAD_YEARLY_PRICE_ID : process.env.STRIPE_NOMAD_PRICE_ID)
+    const configuredPriceId = tier === 'concierge'
+      ? (isYearly ? process.env.STRIPE_CONCIERGE_YEARLY_PRICE_ID : process.env.STRIPE_CONCIERGE_PRICE_ID)
+      : tier === 'elite'
+        ? (isYearly ? process.env.STRIPE_ELITE_YEARLY_PRICE_ID : process.env.STRIPE_ELITE_PRICE_ID)
+        : (isYearly ? process.env.STRIPE_NOMAD_YEARLY_PRICE_ID : process.env.STRIPE_NOMAD_PRICE_ID)
 
-    const fallbackAmount = tier === 'elite'
-      ? (isYearly ? 199000 : 19900)
-      : (isYearly ? 99000 : 9900)
+    const fallbackAmount = tier === 'concierge'
+      ? (isYearly ? 1000000 : 100000)
+      : tier === 'elite'
+        ? (isYearly ? 199000 : 19900)
+        : (isYearly ? 99000 : 9900)
 
     const lineItem = configuredPriceId
       ? { price: configuredPriceId, quantity: 1 }
@@ -109,7 +113,11 @@ export async function POST(req: Request) {
           price_data: {
             currency: 'mad',
             product_data: {
-              name: tier === 'elite' ? 'Atlas 360 - Elite Tier' : 'Atlas 360 - Nomad Tier',
+              name: tier === 'concierge'
+                ? 'Atlas 360 - Concierge Tier'
+                : tier === 'elite'
+                  ? 'Atlas 360 - Elite Tier'
+                  : 'Atlas 360 - Nomad Tier',
             },
             unit_amount: fallbackAmount,
             recurring: {

@@ -10,7 +10,7 @@ import type { Metadata } from 'next'
 
 export const dynamic = 'force-dynamic'
 
-const TIER_LEVELS: Record<UserTier, number> = { explorer: 0, nomad: 1, elite: 2 }
+const TIER_LEVELS: Record<UserTier, number> = { explorer: 0, nomad: 1, elite: 2, concierge: 3 }
 
 interface PublicStop {
   day_number: number

@@ -101,6 +101,7 @@ export default function UserManagementTab({ initialUsers }: UserManagementTabPro
   const getTierColor = (t: string) => {
     if (t === 'nomad') return 'bg-primary/10 text-[#D4622E] border-primary/20'
     if (t === 'elite') return 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+    if (t === 'concierge') return 'bg-purple-500/10 text-purple-400 border-purple-500/20'
     return 'bg-muted-foreground/15 text-muted-foreground border-muted-foreground/20' // explorer
   }
 
@@ -245,6 +246,7 @@ export default function UserManagementTab({ initialUsers }: UserManagementTabPro
                     <option value="explorer">Explorer (Free Tier)</option>
                     <option value="nomad">Nomad (Paid Subscriber)</option>
                     <option value="elite">Elite Explorer (Premium Subscriber)</option>
+                    <option value="concierge">Concierge Travel (Ultra-Premium)</option>
                   </select>
                 </div>
 

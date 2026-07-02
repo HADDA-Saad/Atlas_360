@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import ReviewSummaryBadge from '@/components/reviews/ReviewSummaryBadge'
 import type { Itinerary, UserTier } from '@/types'
 
-const TIER_LEVELS: Record<UserTier, number> = { explorer: 0, nomad: 1, elite: 2 }
+const TIER_LEVELS: Record<UserTier, number> = { explorer: 0, nomad: 1, elite: 2, concierge: 3 }
 
 interface ItineraryCardProps {
   itinerary: Itinerary

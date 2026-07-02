@@ -24,6 +24,7 @@ function getErrorMessage(error: unknown) {
 }
 
 function getPaidTier(value: string | null | undefined): PaidTier {
+  if (value === 'concierge') return 'concierge'
   if (value === 'elite') return 'elite'
   return 'nomad'
 }

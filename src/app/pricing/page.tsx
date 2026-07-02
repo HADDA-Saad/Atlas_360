@@ -30,6 +30,7 @@ export default function PricingPage() {
 
   const nomadPrice = billing === 'month' ? '99' : '990'
   const elitePrice = billing === 'month' ? '199' : '1990'
+  const conciergePrice = billing === 'month' ? '1000' : '10000'
   const period = billing === 'month' ? 'MAD / mo' : 'MAD / yr'
 
   return (
@@ -233,12 +234,85 @@ export default function PricingPage() {
         </div>
 
       </div>
+
+      {/* Concierge Plan (Bottom/Full-width) */}
+      <div className="max-w-5xl mx-auto w-full mt-8">
+        <div className="flex flex-col lg:flex-row bg-card border border-purple-500/30 rounded-3xl p-8 relative shadow-[0_0_40px_rgba(168,85,247,0.03)] transition-all duration-300 hover:border-purple-500/50 justify-between gap-8">
+          <div className="absolute top-0 left-6 -translate-y-1/2">
+            <span className="px-4 py-1 bg-purple-600 text-white text-[10px] font-bold uppercase tracking-widest rounded-full shadow-lg shadow-purple-500/20">
+              ULTRA-PREMIUM
+            </span>
+          </div>
+          
+          <div className="flex-1 min-w-[280px]">
+            <div className="mb-6">
+              <span className="inline-block px-3 py-1 bg-purple-500/10 border border-purple-500/20 text-purple-400 text-[11px] font-bold uppercase tracking-widest rounded-full mb-4">
+                Concierge
+              </span>
+              <h2 className="text-3xl font-[family-name:var(--font-cormorant)] text-foreground font-semibold tracking-tight">Concierge</h2>
+              <p className="text-[13px] text-muted-foreground mt-1">The ultimate tailor-made Moroccan travel experience</p>
+            </div>
+            
+            <div className="mb-6">
+              <div className="flex items-baseline gap-1.5">
+                <span className="font-[family-name:var(--font-cormorant)] text-5xl font-semibold text-foreground">{conciergePrice}</span>
+                <span className="text-sm font-medium text-muted-foreground">{period}</span>
+              </div>
+              <p className="text-[12px] text-muted-foreground/60 mt-2">
+                {billing === 'month' ? '~100 USD · complete personal coordination' : '~1000 USD · 2 months free'}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex-[2] border-t border-border lg:border-t-0 lg:border-l lg:border-r border-dashed border-border/60 lg:px-8 py-6 lg:py-0">
+            <h4 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-4">What's included:</h4>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 text-[13px]">
+              <div className="flex items-start gap-2 text-muted-foreground">
+                <CheckIcon concierge /> <span className="font-semibold text-foreground">Everything in Elite</span>
+              </div>
+              <div className="flex items-start gap-2 text-muted-foreground">
+                <CheckIcon concierge /> 24/7 Dedicated Local Concierge
+              </div>
+              <div className="flex items-start gap-2 text-muted-foreground">
+                <CheckIcon concierge /> Human Itinerary Review & Audit
+              </div>
+              <div className="flex items-start gap-2 text-muted-foreground">
+                <CheckIcon concierge /> 0% Booking Commission on Guides
+              </div>
+              <div className="flex items-start gap-2 text-muted-foreground">
+                <CheckIcon concierge /> Collaboration with up to 10 travelers
+              </div>
+              <div className="flex items-start gap-2 text-muted-foreground">
+                <CheckIcon concierge /> White-Label PDF Compilation
+              </div>
+              <div className="flex items-start gap-2 text-muted-foreground">
+                <CheckIcon concierge /> Invitation-Only VIP Experiences
+              </div>
+              <div className="flex items-start gap-2 text-muted-foreground">
+                <CheckIcon concierge /> Priority airport & driver bookings
+              </div>
+            </div>
+          </div>
+
+          <div className="flex-1 flex flex-col justify-center items-center min-w-[200px] border-t border-border lg:border-t-0 pt-6 lg:pt-0">
+            <button
+              onClick={() => handleSubscribe('concierge')}
+              className="w-full py-4 px-6 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-[12px] font-bold uppercase tracking-widest shadow-lg shadow-purple-500/20 transition-all duration-300 transform hover:-translate-y-0.5"
+            >
+              Subscribe to Concierge
+            </button>
+            <p className="text-[10px] text-muted-foreground text-center mt-3 leading-relaxed">
+              Charged {billing === 'month' ? 'monthly' : 'yearly'} · Cancel anytime
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
   )
 }
 
-function CheckIcon({ active, premium }: { active?: boolean, premium?: boolean }) {
-  const color = premium ? 'text-amber-400' : active ? 'text-primary' : 'text-muted-foreground'
+function CheckIcon({ active, premium, concierge }: { active?: boolean, premium?: boolean, concierge?: boolean }) {
+  const color = concierge ? 'text-purple-400' : premium ? 'text-amber-400' : active ? 'text-primary' : 'text-muted-foreground'
   return (
     <svg className={`w-4 h-4 flex-shrink-0 mt-0.5 ${color}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
       <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />

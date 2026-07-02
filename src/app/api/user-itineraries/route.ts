@@ -69,7 +69,7 @@ export async function POST(request: Request) {
       .eq('id', user.id)
       .single()
 
-    if (!profile || (profile.tier !== 'elite' && profile.tier !== 'nomad')) {
+    if (!profile || (profile.tier !== 'elite' && profile.tier !== 'nomad' && profile.tier !== 'concierge')) {
       return NextResponse.json({ error: 'Forbidden: Premium subscription required' }, { status: 403 })
     }
 

@@ -75,6 +75,7 @@ export default async function DashboardPage() {
   const getTierColor = (t: string) => {
     if (t === 'nomad') return 'bg-primary/10 text-[#D4622E] border-primary/20'
     if (t === 'elite') return 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+    if (t === 'concierge') return 'bg-purple-500/10 text-purple-400 border-purple-500/20'
     return 'bg-muted-foreground/15 text-muted-foreground border-muted-foreground/20' // explorer
   }
 
@@ -98,6 +99,11 @@ export default async function DashboardPage() {
           {tier === 'elite' && (
             <span className="px-3 py-1 bg-amber-500/10 border border-amber-500/20 text-amber-400 text-[10px] uppercase tracking-widest font-bold rounded-full mb-1">
               Elite Explorer
+            </span>
+          )}
+          {tier === 'concierge' && (
+            <span className="px-3 py-1 bg-purple-500/10 border border-purple-500/20 text-purple-400 text-[10px] uppercase tracking-widest font-bold rounded-full mb-1">
+              Concierge Explorer
             </span>
           )}
         </div>
@@ -177,7 +183,7 @@ export default async function DashboardPage() {
         </div>
 
         <div className="flex-1 flex flex-col gap-10">
-          {tier === 'elite' ? (
+          {tier === 'elite' || tier === 'concierge' ? (
             <CustomItinerariesList itineraries={itineraries || []} />
           ) : (
             <div className="flex flex-col">
